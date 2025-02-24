@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.utility;
-
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -12,7 +11,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.ForgeEventFactory;
-
 public abstract class AbstractBlockBreakQueue {
 	protected Consumer<BlockPos> makeCallbackFor(
 			Level world,

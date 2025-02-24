@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.mixin;
-
 import java.util.Collection;
 
 import org.spongepowered.asm.mixin.Mixin;
