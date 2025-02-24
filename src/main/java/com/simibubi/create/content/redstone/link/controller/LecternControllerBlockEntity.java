@@ -83,8 +83,7 @@ public class LecternControllerBlockEntity extends SmartBlockEntity {
 		return player.getPersistentData().contains("IsUsingLecternController");
 	}
 	public static boolean playerInRange(Player player, Level world, BlockPos pos) {
-		//double modifier = world.isRemote ? 0 : 1.0;
-		double reach = 0.4 * player.getAttributeValue(ForgeMod.BLOCK_REACH.get());// + modifier;
+		double reach = player.getAttributeValue(ForgeMod.BLOCK_REACH.get()) + 1;
 		return player.distanceToSqr(Vec3.atCenterOf(pos)) < reach * reach;
 	}
 	public void tryStopUsing(Player player) {
@@ -127,11 +126,8 @@ public class LecternControllerBlockEntity extends SmartBlockEntity {
 	public void swapControllers(ItemStack stack, Player player, InteractionHand hand, BlockState state) {
 		ItemStack newController = stack.copy();
 		stack.setCount(0);
-		if (player.getItemInHand(hand).isEmpty()) {
-			player.setItemInHand(hand, controller);
-		} else {
-			dropController(state);
-		}
+		if (player.getItemInHand(hand).isEmpty()) player.setItemInHand(hand, controller);
+		else dropController(state);
 		setController(newController);
 	}
 	public void dropController(BlockState state) {
