@@ -34,9 +34,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
-
-@ParametersAreNonnullByDefault
-public class SpoutCategory extends CreateRecipeCategory<FillingRecipe> {
+@ParametersAreNonnullByDefault public class SpoutCategory extends CreateRecipeCategory<FillingRecipe> {
 
 	private final AnimatedSpout spout = new AnimatedSpout();
 
@@ -50,73 +48,84 @@ public class SpoutCategory extends CreateRecipeCategory<FillingRecipe> {
 			if (PotionFluidHandler.isPotionItem(stack)) {
 				FluidStack fluidFromPotionItem = PotionFluidHandler.getFluidFromPotionItem(stack);
 				Ingredient bottle = Ingredient.of(Items.GLASS_BOTTLE);
-				consumer.accept(new ProcessingRecipeBuilder<>(FillingRecipe::new, Create.asResource("potions"))
-					.withItemIngredients(bottle)
-					.withFluidIngredients(FluidIngredient.fromFluidStack(fluidFromPotionItem))
-					.withSingleItemOutput(stack)
-					.build());
+				consumer.accept(new ProcessingRecipeBuilder<>(
+						FillingRecipe::new,
+						Create.asResource("potions")
+				).withItemIngredients(bottle)
+						.withFluidIngredients(FluidIngredient.fromFluidStack(fluidFromPotionItem))
+						.withSingleItemOutput(stack)
+						.build());
 				continue;
 			}
+			LazyOptional<IFluidHandlerItem> capability = stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM);
+			if (!capability.isPresent()) continue;
 
-			LazyOptional<IFluidHandlerItem> capability =
-				stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM);
-			if (!capability.isPresent())
-				continue;
+			var existingFluidHandler = capability.orElse(null);
+			int numTanks = existingFluidHandler.getTanks();
+			FluidStack existingFluid = numTanks == 1 ? existingFluidHandler.getFluidInTank(0) : FluidStack.EMPTY;
 
 			for (FluidStack fluidStack : fluidStacks) {
+				// Hoist the fluid equality check to avoid the work of copying the stack + populating capabilities
+				// when most fluids will not match
+				if (numTanks == 1 && (!existingFluid.isEmpty() && !existingFluid.isFluidEqual(fluidStack))) {
+					continue;
+				}
 				ItemStack copy = stack.copy();
-				copy.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM)
-					.ifPresent(fhi -> {
-						if (!GenericItemFilling.isFluidHandlerValid(copy, fhi))
-							return;
-						FluidStack fluidCopy = fluidStack.copy();
-						fluidCopy.setAmount(1000);
-						fhi.fill(fluidCopy, FluidAction.EXECUTE);
-						ItemStack container = fhi.getContainer();
-						if (ItemHelper.sameItem(container, copy))
-							return;
-						if (container.isEmpty())
-							return;
-
-						Ingredient bucket = Ingredient.of(stack);
-						ResourceLocation itemName = RegisteredObjects.getKeyOrThrow(stack.getItem());
-						ResourceLocation fluidName = RegisteredObjects.getKeyOrThrow(fluidCopy.getFluid());
-						consumer.accept(new ProcessingRecipeBuilder<>(FillingRecipe::new,
-							Create.asResource("fill_" + itemName.getNamespace() + "_" + itemName.getPath()
-								+ "_with_" + fluidName.getNamespace() + "_" + fluidName.getPath()))
-									.withItemIngredients(bucket)
-									.withFluidIngredients(FluidIngredient.fromFluidStack(fluidCopy))
-									.withSingleItemOutput(container)
-									.build());
-					});
+				copy.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM).ifPresent(fhi -> {
+					if (!GenericItemFilling.isFluidHandlerValid(copy, fhi)) return;
+					FluidStack fluidCopy = fluidStack.copy();
+					fluidCopy.setAmount(1000);
+					fhi.fill(fluidCopy, FluidAction.EXECUTE);
+					ItemStack container = fhi.getContainer();
+					if (ItemHelper.sameItem(container, copy)) return;
+					if (container.isEmpty()) return;
+					Ingredient bucket = Ingredient.of(stack);
+					ResourceLocation itemName = RegisteredObjects.getKeyOrThrow(stack.getItem());
+					ResourceLocation fluidName = RegisteredObjects.getKeyOrThrow(fluidCopy.getFluid());
+					consumer.accept(new ProcessingRecipeBuilder<>(
+							FillingRecipe::new,
+							Create.asResource("fill_"
+									+ itemName.getNamespace()
+									+ "_"
+									+ itemName.getPath()
+									+ "_with_"
+									+ fluidName.getNamespace()
+									+ "_"
+									+ fluidName.getPath())
+					).withItemIngredients(bucket)
+							.withFluidIngredients(FluidIngredient.fromFluidStack(fluidCopy))
+							.withSingleItemOutput(container)
+							.build());
+				});
 			}
 		}
 	}
-
-	@Override
-	public void setRecipe(IRecipeLayoutBuilder builder, FillingRecipe recipe, IFocusGroup focuses) {
-		builder
-				.addSlot(RecipeIngredientRole.INPUT, 27, 51)
+	@Override public void setRecipe(IRecipeLayoutBuilder builder, FillingRecipe recipe, IFocusGroup focuses) {
+		builder.addSlot(RecipeIngredientRole.INPUT, 27, 51)
 				.setBackground(getRenderedSlot(), -1, -1)
 				.addIngredients(recipe.getIngredients().get(0));
-		builder
-				.addSlot(RecipeIngredientRole.INPUT, 27, 32)
+		builder.addSlot(RecipeIngredientRole.INPUT, 27, 32)
 				.setBackground(getRenderedSlot(), -1, -1)
-				.addIngredients(ForgeTypes.FLUID_STACK, withImprovedVisibility(recipe.getRequiredFluid().getMatchingFluidStacks()))
-				.addTooltipCallback(addFluidTooltip(recipe.getRequiredFluid().getRequiredAmount()));
-		builder
-				.addSlot(RecipeIngredientRole.OUTPUT, 132, 51)
+				.addIngredients(
+						ForgeTypes.FLUID_STACK,
+						withImprovedVisibility(recipe.getRequiredFluid().getMatchingFluidStacks())
+				)
+				.addRichTooltipCallback(addFluidTooltip(recipe.getRequiredFluid().getRequiredAmount()));
+		builder.addSlot(RecipeIngredientRole.OUTPUT, 132, 51)
 				.setBackground(getRenderedSlot(), -1, -1)
 				.addItemStack(getResultItem(recipe));
 	}
-
 	@Override
-	public void draw(FillingRecipe recipe, IRecipeSlotsView iRecipeSlotsView, GuiGraphics graphics, double mouseX, double mouseY) {
+	public void draw(
+			FillingRecipe recipe,
+			IRecipeSlotsView iRecipeSlotsView,
+			GuiGraphics graphics,
+			double mouseX,
+			double mouseY
+	) {
 		AllGuiTextures.JEI_SHADOW.render(graphics, 62, 57);
 		AllGuiTextures.JEI_DOWN_ARROW.render(graphics, 126, 29);
-		spout.withFluids(recipe.getRequiredFluid()
-			.getMatchingFluidStacks())
-			.draw(graphics, getBackground().getWidth() / 2 - 13, 22);
+		spout.withFluids(recipe.getRequiredFluid().getMatchingFluidStacks())
+				.draw(graphics, getBackground().getWidth() / 2 - 13, 22);
 	}
-
 }

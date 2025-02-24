@@ -18,9 +18,7 @@ public class FanBlastingCategory extends ProcessingViaFanCategory<AbstractCookin
 	protected AllGuiTextures getBlockShadow() {
 		return AllGuiTextures.JEI_LIGHT;
 	}
-
-	@Override
-	protected void renderAttachedBlock(GuiGraphics graphics) {
+	@Override protected void renderAttachedBlock(GuiGraphics graphics) {
 		GuiGameElement.of(Fluids.LAVA)
 			.scale(SCALE)
 			.atLocal(0, 0, 2)

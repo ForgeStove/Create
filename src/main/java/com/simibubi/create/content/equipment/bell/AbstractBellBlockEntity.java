@@ -27,9 +27,8 @@ public abstract class AbstractBellBlockEntity extends SmartBlockEntity {
 	public AbstractBellBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 	}
-
-	@Override
-	public void addBehaviours(List<BlockEntityBehaviour> behaviours) { }
+	@Override public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+	}
 
 	public boolean ring(Level world, BlockPos pos, Direction direction) {
 		isRinging = true;
@@ -37,41 +36,30 @@ public abstract class AbstractBellBlockEntity extends SmartBlockEntity {
 		ringDirection = direction;
 		sendData();
 		return true;
-	};
-
-	@Override
-	public void tick() {
+	}
+	;
+	@Override public void tick() {
 		super.tick();
-
 		if (isRinging) {
 			++ringingTicks;
 		}
-
 		if (ringingTicks >= RING_DURATION) {
 			isRinging = false;
 			ringingTicks = 0;
 		}
 	}
-	
-	@Override
-	protected void write(CompoundTag tag, boolean clientPacket) {
+	@Override protected void write(CompoundTag tag, boolean clientPacket) {
 		super.write(tag, clientPacket);
-		if (!clientPacket || ringingTicks != 0 || !isRinging)
-			return;
+		if (!clientPacket || ringingTicks != 0 || !isRinging) return;
 		NBTHelper.writeEnum(tag, "Ringing", ringDirection);
 	}
-	
-	@Override
-	protected void read(CompoundTag tag, boolean clientPacket) {
+	@Override protected void read(CompoundTag tag, boolean clientPacket) {
 		super.read(tag, clientPacket);
-		if (!clientPacket || !tag.contains("Ringing"))
-			return;
+		if (!clientPacket || !tag.contains("Ringing")) return;
 		ringDirection = NBTHelper.readEnum(tag, "Ringing", Direction.class);
 		ringingTicks = 0;
 		isRinging = true;
 	}
-
-	@OnlyIn(Dist.CLIENT)
-	public abstract PartialModel getBellModel();
+	@OnlyIn(Dist.CLIENT) public abstract PartialModel getBellModel();
 
 }

@@ -30,20 +30,17 @@ public abstract class SequencedAssemblySubCategory {
 	public int getWidth() {
 		return width;
 	}
-
-	public void setRecipe(IRecipeLayoutBuilder builder, SequencedRecipe<?> recipe, IFocusGroup focuses, int x) {}
-
-	public abstract void draw(SequencedRecipe<?> recipe, GuiGraphics graphics, double mouseX, double mouseY, int index);
+	public void setRecipe(IRecipeLayoutBuilder builder, SequencedRecipe<?> recipe, IFocusGroup focuses, int x) {
+	}
+	public abstract void draw(SequencedRecipe<?> recipe, GuiGraphics graphics, double mouseX, double mouseY,
+			int index);
 
 	public static class AssemblyPressing extends SequencedAssemblySubCategory {
-
 		AnimatedPress press;
-
 		public AssemblyPressing() {
 			super(25);
 			press = new AnimatedPress(false);
 		}
-
 		@Override
 		public void draw(SequencedRecipe<?> recipe, GuiGraphics graphics, double mouseX, double mouseY, int index) {
 			PoseStack ms = graphics.pose();
@@ -54,31 +51,24 @@ public abstract class SequencedAssemblySubCategory {
 			press.draw(graphics, getWidth() / 2, 0);
 			ms.popPose();
 		}
-
 	}
-
 	public static class AssemblySpouting extends SequencedAssemblySubCategory {
-
 		AnimatedSpout spout;
-
 		public AssemblySpouting() {
 			super(25);
 			spout = new AnimatedSpout();
 		}
-
 		@Override
 		public void setRecipe(IRecipeLayoutBuilder builder, SequencedRecipe<?> recipe, IFocusGroup focuses, int x) {
-			FluidIngredient fluidIngredient = recipe.getRecipe()
-					.getFluidIngredients()
-					.get(0);
-
-			builder
-					.addSlot(RecipeIngredientRole.INPUT, x + 4, 15)
+			FluidIngredient fluidIngredient = recipe.getRecipe().getFluidIngredients().get(0);
+			builder.addSlot(RecipeIngredientRole.INPUT, x + 4, 15)
 					.setBackground(CreateRecipeCategory.getRenderedSlot(), -1, -1)
-					.addIngredients(ForgeTypes.FLUID_STACK, CreateRecipeCategory.withImprovedVisibility(fluidIngredient.getMatchingFluidStacks()))
-					.addTooltipCallback(CreateRecipeCategory.addFluidTooltip(fluidIngredient.getRequiredAmount()));
+					.addIngredients(
+							ForgeTypes.FLUID_STACK,
+							CreateRecipeCategory.withImprovedVisibility(fluidIngredient.getMatchingFluidStacks())
+					)
+					.addRichTooltipCallback(CreateRecipeCategory.addFluidTooltip(fluidIngredient.getRequiredAmount()));
 		}
-
 		@Override
 		public void draw(SequencedRecipe<?> recipe, GuiGraphics graphics, double mouseX, double mouseY, int index) {
 			PoseStack ms = graphics.pose();
@@ -86,39 +76,30 @@ public abstract class SequencedAssemblySubCategory {
 			ms.pushPose();
 			ms.translate(-7, 50, 0);
 			ms.scale(.75f, .75f, .75f);
-			spout.withFluids(recipe.getRecipe()
-				.getFluidIngredients()
-				.get(0)
-				.getMatchingFluidStacks())
-				.draw(graphics, getWidth() / 2, 0);
+			spout.withFluids(recipe.getRecipe().getFluidIngredients().get(0).getMatchingFluidStacks())
+					.draw(graphics, getWidth() / 2, 0);
 			ms.popPose();
 		}
-
 	}
-
 	public static class AssemblyDeploying extends SequencedAssemblySubCategory {
-
 		AnimatedDeployer deployer;
-
 		public AssemblyDeploying() {
 			super(25);
 			deployer = new AnimatedDeployer();
 		}
-
 		@Override
 		public void setRecipe(IRecipeLayoutBuilder builder, SequencedRecipe<?> recipe, IFocusGroup focuses, int x) {
-			IRecipeSlotBuilder slot = builder
-					.addSlot(RecipeIngredientRole.INPUT, x + 4, 15)
+			IRecipeSlotBuilder slot = builder.addSlot(RecipeIngredientRole.INPUT, x + 4, 15)
 					.setBackground(CreateRecipeCategory.getRenderedSlot(), -1, -1)
 					.addIngredients(recipe.getRecipe().getIngredients().get(1));
-
-			if (recipe.getAsAssemblyRecipe() instanceof DeployerApplicationRecipe deployerRecipe && deployerRecipe.shouldKeepHeldItem()) {
-				slot.addTooltipCallback(
-						(recipeSlotView, tooltip) -> tooltip.add(1, Lang.translateDirect("recipe.deploying.not_consumed").withStyle(ChatFormatting.GOLD))
-				);
+			if (recipe.getAsAssemblyRecipe() instanceof DeployerApplicationRecipe deployerRecipe
+					&& deployerRecipe.shouldKeepHeldItem()) {
+				slot.addTooltipCallback((recipeSlotView, tooltip) -> tooltip.add(
+						1,
+						Lang.translateDirect("recipe.deploying.not_consumed").withStyle(ChatFormatting.GOLD)
+				));
 			}
 		}
-
 		@Override
 		public void draw(SequencedRecipe<?> recipe, GuiGraphics graphics, double mouseX, double mouseY, int index) {
 			PoseStack ms = graphics.pose();
@@ -129,18 +110,13 @@ public abstract class SequencedAssemblySubCategory {
 			deployer.draw(graphics, getWidth() / 2, 0);
 			ms.popPose();
 		}
-
 	}
-
 	public static class AssemblyCutting extends SequencedAssemblySubCategory {
-
 		AnimatedSaw saw;
-
 		public AssemblyCutting() {
 			super(25);
 			saw = new AnimatedSaw();
 		}
-
 		@Override
 		public void draw(SequencedRecipe<?> recipe, GuiGraphics graphics, double mouseX, double mouseY, int index) {
 			PoseStack ms = graphics.pose();
@@ -150,7 +126,5 @@ public abstract class SequencedAssemblySubCategory {
 			saw.draw(graphics, getWidth() / 2, 30);
 			ms.popPose();
 		}
-
 	}
-
 }

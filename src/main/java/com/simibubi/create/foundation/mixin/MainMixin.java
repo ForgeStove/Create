@@ -14,9 +14,7 @@ import net.minecraft.server.Main;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.world.level.storage.LevelStorageSource.LevelStorageAccess;
-
-@Mixin(Main.class)
-public class MainMixin {
+@Mixin(Main.class) public class MainMixin {
 	/**
 	 * Forge completely bypasses vanilla's
 	 * {@link GameTestServer#create(Thread, LevelStorageAccess, PackRepository, Collection, BlockPos)},
@@ -28,14 +26,10 @@ public class MainMixin {
 	 * This may be desirable for other mods which pull Create into their development environments.
 	 */
 	@ModifyVariable(
-			method = "lambda$main$5",
-			at = @At(
-					value = "STORE",
-					ordinal = 0
-			),
-			require = 0 // don't crash if this fails
-	)
-	private static MinecraftServer create$correctlyInitializeGametestServer(MinecraftServer original) {
+			method = "lambda$main$5", at = @At(
+			value = "STORE", ordinal = 0
+	), require = 0 // don't crash if this fails
+	) private static MinecraftServer create$correctlyInitializeGametestServer(MinecraftServer original) {
 		if (original instanceof GameTestServer && !Boolean.getBoolean("create.useOriginalGametestServer")) {
 			return GameTestServer.create(
 					original.getRunningThread(),

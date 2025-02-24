@@ -1,5 +1,4 @@
 package com.simibubi.create;
-
 import java.util.Random;
 
 import org.slf4j.Logger;
@@ -54,57 +53,39 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-
-@Mod(Create.ID)
-public class Create {
-
+@Mod(Create.ID) public class Create {
 	public static final String ID = "create";
 	public static final String NAME = "Create";
-	public static final String VERSION = "0.5.1j";
-
+	public static final String VERSION = "0.5.1j-fix";
 	public static final Logger LOGGER = LogUtils.getLogger();
-
-	public static final Gson GSON = new GsonBuilder().setPrettyPrinting()
-		.disableHtmlEscaping()
-		.create();
-
+	public static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 	/** Use the {@link Random} of a local {@link Level} or {@link Entity} or create one */
-	@Deprecated
-	public static final Random RANDOM = new Random();
-
+	@Deprecated public static final Random RANDOM = new Random();
 	/**
 	 * <b>Other mods should not use this field!</b> If you are an addon developer, create your own instance of
 	 * {@link CreateRegistrate}.
 	 */
 	public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(ID)
-		.defaultCreativeTab((ResourceKey<CreativeModeTab>) null);
-
-	static {
-		REGISTRATE.setTooltipModifierFactory(item -> {
-			return new ItemDescription.Modifier(item, Palette.STANDARD_CREATE)
-				.andThen(TooltipModifier.mapNull(KineticStats.create(item)));
-		});
-	}
-
+			.defaultCreativeTab((ResourceKey<CreativeModeTab>) null);
 	public static final ServerSchematicLoader SCHEMATIC_RECEIVER = new ServerSchematicLoader();
 	public static final RedstoneLinkNetworkHandler REDSTONE_LINK_NETWORK_HANDLER = new RedstoneLinkNetworkHandler();
 	public static final TorquePropagator TORQUE_PROPAGATOR = new TorquePropagator();
 	public static final GlobalRailwayManager RAILWAYS = new GlobalRailwayManager();
 	public static final ServerLagger LAGGER = new ServerLagger();
-
+	static {
+		REGISTRATE.setTooltipModifierFactory(item -> new ItemDescription.Modifier(
+				item,
+				Palette.STANDARD_CREATE
+		).andThen(TooltipModifier.mapNull(KineticStats.create(item))));
+	}
 	public Create() {
 		onCtor();
 	}
-
 	public static void onCtor() {
 		ModLoadingContext modLoadingContext = ModLoadingContext.get();
-
-		IEventBus modEventBus = FMLJavaModLoadingContext.get()
-			.getModEventBus();
+		IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 		IEventBus forgeEventBus = MinecraftForge.EVENT_BUS;
-
 		REGISTRATE.registerEventListeners(modEventBus);
-
 		AllSoundEvents.prepare();
 		AllTags.init();
 		AllCreativeModeTabs.register(modEventBus);
@@ -123,9 +104,7 @@ public class Create {
 		AllPackets.registerPackets();
 		AllFeatures.register(modEventBus);
 		AllPlacementModifiers.register(modEventBus);
-
 		AllConfigs.register(modLoadingContext);
-
 		// FIXME: some of these registrations are not thread-safe
 		AllMovementBehaviours.registerDefaults();
 		AllInteractionBehaviours.registerDefaults();
@@ -138,41 +117,32 @@ public class Create {
 		BogeySizes.init();
 		AllBogeyStyles.register();
 		// ----
-
 		ComputerCraftProxy.register();
-
 		ForgeMod.enableMilkFluid();
 		CopperRegistries.inject();
-
 		modEventBus.addListener(Create::init);
 		modEventBus.addListener(EventPriority.LOWEST, CreateDatagen::gatherData);
 		modEventBus.addListener(AllSoundEvents::register);
-
 		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> CreateClient.onCtorClient(modEventBus, forgeEventBus));
-
 		// FIXME: this is not thread-safe
 		Mods.CURIOS.executeIfInstalled(() -> () -> Curios.init(modEventBus, forgeEventBus));
 	}
-
 	public static void init(final FMLCommonSetupEvent event) {
 		AllFluids.registerFluidInteractions();
-
 		event.enqueueWork(() -> {
 			// TODO: custom registration should all happen in one place
 			// Most registration happens in the constructor.
-			// These registrations use Create's registered objects directly so they must run after registration has finished.
+			// These registrations use Create's registered objects directly so they must run after registration has
+			// finished.
 			BuiltinPotatoProjectileTypes.register();
 			BoilerHeaters.registerDefaults();
 			// --
-
 			AttachedRegistry.unwrapAll();
 			AllAdvancements.register();
 			AllTriggers.register();
 		});
 	}
-
 	public static ResourceLocation asResource(String path) {
 		return new ResourceLocation(ID, path);
 	}
-
 }

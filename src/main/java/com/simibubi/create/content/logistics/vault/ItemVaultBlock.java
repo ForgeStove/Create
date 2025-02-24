@@ -43,47 +43,29 @@ public class ItemVaultBlock extends Block implements IWrenchable, IBE<ItemVaultB
 		super(p_i48440_1_);
 		registerDefaultState(defaultBlockState().setValue(LARGE, false));
 	}
-
-	@Override
-	protected void createBlockStateDefinition(Builder<Block, BlockState> pBuilder) {
+	@Override protected void createBlockStateDefinition(Builder<Block, BlockState> pBuilder) {
 		pBuilder.add(HORIZONTAL_AXIS, LARGE);
 		super.createBlockStateDefinition(pBuilder);
 	}
-
-	@Override
-	public BlockState getStateForPlacement(BlockPlaceContext pContext) {
-		if (pContext.getPlayer() == null || !pContext.getPlayer()
-			.isShiftKeyDown()) {
+	@Override public BlockState getStateForPlacement(BlockPlaceContext pContext) {
+		if (pContext.getPlayer() == null || !pContext.getPlayer().isShiftKeyDown()) {
 			BlockState placedOn = pContext.getLevel()
-				.getBlockState(pContext.getClickedPos()
-					.relative(pContext.getClickedFace()
-						.getOpposite()));
+					.getBlockState(pContext.getClickedPos().relative(pContext.getClickedFace().getOpposite()));
 			Axis preferredAxis = getVaultBlockAxis(placedOn);
-			if (preferredAxis != null)
-				return this.defaultBlockState()
-					.setValue(HORIZONTAL_AXIS, preferredAxis);
+			if (preferredAxis != null) return this.defaultBlockState().setValue(HORIZONTAL_AXIS, preferredAxis);
 		}
-		return this.defaultBlockState()
-			.setValue(HORIZONTAL_AXIS, pContext.getHorizontalDirection()
-				.getAxis());
+		return this.defaultBlockState().setValue(HORIZONTAL_AXIS, pContext.getHorizontalDirection().getAxis());
 	}
 
 	@Override
 	public void onPlace(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pIsMoving) {
-		if (pOldState.getBlock() == pState.getBlock())
-			return;
-		if (pIsMoving)
-			return;
+		if (pOldState.getBlock() == pState.getBlock()) return;
+		if (pIsMoving) return;
 		withBlockEntityDo(pLevel, pPos, ItemVaultBlockEntity::updateConnectivity);
 	}
-
-	@Override
-	public InteractionResult onWrenched(BlockState state, UseOnContext context) {
-		if (context.getClickedFace()
-			.getAxis()
-			.isVertical()) {
-			BlockEntity be = context.getLevel()
-				.getBlockEntity(context.getClickedPos());
+	@Override public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+		if (context.getClickedFace().getAxis().isVertical()) {
+			BlockEntity be = context.getLevel().getBlockEntity(context.getClickedPos());
 			if (be instanceof ItemVaultBlockEntity) {
 				ItemVaultBlockEntity vault = (ItemVaultBlockEntity) be;
 				ConnectivityHandler.splitMulti(vault);
@@ -94,85 +76,63 @@ public class ItemVaultBlock extends Block implements IWrenchable, IBE<ItemVaultB
 		InteractionResult onWrenched = IWrenchable.super.onWrenched(state, context);
 		return onWrenched;
 	}
-
 	@Override
 	public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean pIsMoving) {
 		if (state.hasBlockEntity() && (state.getBlock() != newState.getBlock() || !newState.hasBlockEntity())) {
 			BlockEntity be = world.getBlockEntity(pos);
-			if (!(be instanceof ItemVaultBlockEntity))
-				return;
+			if (!(be instanceof ItemVaultBlockEntity)) return;
 			ItemVaultBlockEntity vaultBE = (ItemVaultBlockEntity) be;
 			ItemHelper.dropContents(world, pos, vaultBE.inventory);
 			world.removeBlockEntity(pos);
 			ConnectivityHandler.splitMulti(vaultBE);
 		}
 	}
-
 	public static boolean isVault(BlockState state) {
 		return AllBlocks.ITEM_VAULT.has(state);
 	}
-
-	@Nullable
-	public static Axis getVaultBlockAxis(BlockState state) {
-		if (!isVault(state))
-			return null;
+	@Nullable public static Axis getVaultBlockAxis(BlockState state) {
+		if (!isVault(state)) return null;
 		return state.getValue(HORIZONTAL_AXIS);
 	}
-
 	public static boolean isLarge(BlockState state) {
-		if (!isVault(state))
-			return false;
+		if (!isVault(state)) return false;
 		return state.getValue(LARGE);
 	}
-
-	@Override
-	public BlockState rotate(BlockState state, Rotation rot) {
+	@Override public BlockState rotate(BlockState state, Rotation rot) {
 		Axis axis = state.getValue(HORIZONTAL_AXIS);
-		return state.setValue(HORIZONTAL_AXIS, rot.rotate(Direction.fromAxisAndDirection(axis, AxisDirection.POSITIVE))
-			.getAxis());
+		return state.setValue(
+				HORIZONTAL_AXIS,
+				rot.rotate(Direction.fromAxisAndDirection(axis, AxisDirection.POSITIVE)).getAxis()
+		);
 	}
-
-	@Override
-	public BlockState mirror(BlockState state, Mirror mirrorIn) {
+	@Override public BlockState mirror(BlockState state, Mirror mirrorIn) {
 		return state;
 	}
-
 	// Vaults are less noisy when placed in batch
-	public static final SoundType SILENCED_METAL =
-		new ForgeSoundType(0.1F, 1.5F, () -> SoundEvents.NETHERITE_BLOCK_BREAK, () -> SoundEvents.NETHERITE_BLOCK_STEP,
-			() -> SoundEvents.NETHERITE_BLOCK_PLACE, () -> SoundEvents.NETHERITE_BLOCK_HIT,
-			() -> SoundEvents.NETHERITE_BLOCK_FALL);
-
-	@Override
-	public SoundType getSoundType(BlockState state, LevelReader world, BlockPos pos, Entity entity) {
+	public static final SoundType SILENCED_METAL = new ForgeSoundType(
+			0.1F,
+			1.5F,
+			() -> SoundEvents.NETHERITE_BLOCK_BREAK,
+			() -> SoundEvents.NETHERITE_BLOCK_STEP,
+			() -> SoundEvents.NETHERITE_BLOCK_PLACE,
+			() -> SoundEvents.NETHERITE_BLOCK_HIT,
+			() -> SoundEvents.NETHERITE_BLOCK_FALL
+	);
+	@Override public SoundType getSoundType(BlockState state, LevelReader world, BlockPos pos, Entity entity) {
 		SoundType soundType = super.getSoundType(state, world, pos, entity);
-		if (entity != null && entity.getPersistentData()
-			.contains("SilenceVaultSound"))
-			return SILENCED_METAL;
+		if (entity != null && entity.getPersistentData().contains("SilenceVaultSound")) return SILENCED_METAL;
 		return soundType;
 	}
-
-	@Override
-	public boolean hasAnalogOutputSignal(BlockState p_149740_1_) {
+	@Override public boolean hasAnalogOutputSignal(BlockState p_149740_1_) {
 		return true;
 	}
-
-	@Override
-	public int getAnalogOutputSignal(BlockState pState, Level pLevel, BlockPos pPos) {
-		return getBlockEntityOptional(pLevel, pPos)
-			.map(vte -> vte.getCapability(ForgeCapabilities.ITEM_HANDLER))
-			.map(lo -> lo.map(ItemHelper::calcRedstoneFromInventory)
-				.orElse(0))
-			.orElse(0);
+	@Override public int getAnalogOutputSignal(BlockState pState, Level pLevel, BlockPos pPos) {
+		return ItemHelper.calcRedstoneFromBlockEntity(this, pLevel, pPos);
 	}
-
-	@Override
-	public BlockEntityType<? extends ItemVaultBlockEntity> getBlockEntityType() {
+	@Override public BlockEntityType<? extends ItemVaultBlockEntity> getBlockEntityType() {
 		return AllBlockEntityTypes.ITEM_VAULT.get();
 	}
-
-	@Override
-	public Class<ItemVaultBlockEntity> getBlockEntityClass() {
+	@Override public Class<ItemVaultBlockEntity> getBlockEntityClass() {
 		return ItemVaultBlockEntity.class;
 	}
 }

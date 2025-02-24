@@ -12,9 +12,7 @@ public class FanWashingCategory extends ProcessingViaFanCategory.MultiOutput<Spl
 	public FanWashingCategory(Info<SplashingRecipe> info) {
 		super(info);
 	}
-
-	@Override
-	protected void renderAttachedBlock(GuiGraphics graphics) {
+	@Override protected void renderAttachedBlock(GuiGraphics graphics) {
 		GuiGameElement.of(Fluids.WATER)
 			.scale(SCALE)
 			.atLocal(0, 0, 2)

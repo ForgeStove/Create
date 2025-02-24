@@ -14,24 +14,38 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.event.ForgeEventFactory;
 
 public abstract class AbstractBlockBreakQueue {
-	protected Consumer<BlockPos> makeCallbackFor(Level world, float effectChance, ItemStack toDamage,
-		@Nullable Player playerEntity, BiConsumer<BlockPos, ItemStack> drop) {
+	protected Consumer<BlockPos> makeCallbackFor(
+			Level world,
+			float effectChance,
+			ItemStack toDamage,
+			@Nullable Player playerEntity,
+			BiConsumer<BlockPos, ItemStack> drop
+	) {
 		return pos -> {
 			ItemStack usedTool = toDamage.copy();
-			BlockHelper.destroyBlockAs(world, pos, playerEntity, toDamage, effectChance,
-				stack -> drop.accept(pos, stack));
+			BlockHelper.destroyBlockAs(
+					world,
+					pos,
+					playerEntity,
+					toDamage,
+					effectChance,
+					stack -> drop.accept(pos, stack)
+			);
 			if (toDamage.isEmpty() && !usedTool.isEmpty())
 				ForgeEventFactory.onPlayerDestroyItem(playerEntity, usedTool, InteractionHand.MAIN_HAND);
 		};
 	}
-
 	public void destroyBlocks(Level world, @Nullable LivingEntity entity, BiConsumer<BlockPos, ItemStack> drop) {
 		Player playerEntity = entity instanceof Player ? ((Player) entity) : null;
-		ItemStack toDamage =
-			playerEntity != null && !playerEntity.isCreative() ? playerEntity.getMainHandItem() : ItemStack.EMPTY;
+		ItemStack toDamage = playerEntity != null && !playerEntity.isCreative()
+				? playerEntity.getMainHandItem()
+				: ItemStack.EMPTY;
 		destroyBlocks(world, toDamage, playerEntity, drop);
 	}
-
-	public abstract void destroyBlocks(Level world, ItemStack toDamage, @Nullable Player playerEntity,
-		BiConsumer<BlockPos, ItemStack> drop);
+	public abstract void destroyBlocks(
+			Level world,
+			ItemStack toDamage,
+			@Nullable Player playerEntity,
+			BiConsumer<BlockPos, ItemStack> drop
+	);
 }

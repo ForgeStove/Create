@@ -26,15 +26,12 @@ public abstract class AbstractBogeyBlockEntity extends CachedRenderBBBlockEntity
 	public AbstractBogeyBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 	}
-
 	public abstract BogeyStyle getDefaultStyle();
-
 	public CompoundTag getBogeyData() {
 		if (this.bogeyData == null || !this.bogeyData.contains(BOGEY_STYLE_KEY))
 			this.bogeyData = this.createBogeyData();
 		return this.bogeyData;
 	}
-
 	public void setBogeyData(@NotNull CompoundTag newData) {
 		if (!newData.contains(BOGEY_STYLE_KEY)) {
 			ResourceLocation style = getDefaultStyle().name;
@@ -49,9 +46,7 @@ public abstract class AbstractBogeyBlockEntity extends CachedRenderBBBlockEntity
 		NBTHelper.writeResourceLocation(data, BOGEY_STYLE_KEY, location);
 		markUpdated();
 	}
-
-	@NotNull
-	public BogeyStyle getStyle() {
+	@NotNull public BogeyStyle getStyle() {
 		CompoundTag data = this.getBogeyData();
 		ResourceLocation currentStyle = NBTHelper.readResourceLocation(data, BOGEY_STYLE_KEY);
 		BogeyStyle style = AllBogeyStyles.BOGEY_STYLES.get(currentStyle);
@@ -61,18 +56,13 @@ public abstract class AbstractBogeyBlockEntity extends CachedRenderBBBlockEntity
 		}
 		return style;
 	}
-
-	@Override
-	protected void saveAdditional(@NotNull CompoundTag pTag) {
+	@Override protected void saveAdditional(@NotNull CompoundTag pTag) {
 		CompoundTag data = this.getBogeyData();
 		if (data != null) pTag.put(BOGEY_DATA_KEY, data); // Now contains style
 		super.saveAdditional(pTag);
 	}
-
-	@Override
-	public void load(CompoundTag pTag) {
-		if (pTag.contains(BOGEY_DATA_KEY))
-			this.bogeyData = pTag.getCompound(BOGEY_DATA_KEY);
+	@Override public void load(CompoundTag pTag) {
+		if (pTag.contains(BOGEY_DATA_KEY)) this.bogeyData = pTag.getCompound(BOGEY_DATA_KEY);
 		else
 			this.bogeyData = this.createBogeyData();
 		super.load(pTag);
@@ -87,32 +77,25 @@ public abstract class AbstractBogeyBlockEntity extends CachedRenderBBBlockEntity
 		nbt.putBoolean(UPSIDE_DOWN_KEY, upsideDown);
 		return nbt;
 	}
-
-	@Override
-	protected AABB createRenderBoundingBox() {
+	@Override protected AABB createRenderBoundingBox() {
 		return super.createRenderBoundingBox().inflate(2);
 	}
-
 	// Ponder
 	LerpedFloat virtualAnimation = LerpedFloat.angular();
 
 	public float getVirtualAngle(float partialTicks) {
 		return virtualAnimation.getValue(partialTicks);
 	}
-
 	public void animate(float distanceMoved) {
 		BlockState blockState = getBlockState();
-		if (!(blockState.getBlock() instanceof AbstractBogeyBlock<?> type))
-			return;
+		if (!(blockState.getBlock() instanceof AbstractBogeyBlock<?> type)) return;
 		double angleDiff = 360 * distanceMoved / (Math.PI * 2 * type.getWheelRadius());
 		double newWheelAngle = (virtualAnimation.getValue() - angleDiff) % 360;
 		virtualAnimation.setValue(newWheelAngle);
 	}
-
 	private void markUpdated() {
 		setChanged();
 		Level level = getLevel();
-		if (level != null)
-			getLevel().sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+		if (level != null) getLevel().sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
 	}
 }

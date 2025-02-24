@@ -17,9 +17,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-
-@ParametersAreNonnullByDefault
-public class PolishingCategory extends CreateRecipeCategory<SandPaperPolishingRecipe> {
+@ParametersAreNonnullByDefault public class PolishingCategory extends CreateRecipeCategory<SandPaperPolishingRecipe> {
 
 	private final ItemStack renderedSandpaper;
 
@@ -30,29 +28,29 @@ public class PolishingCategory extends CreateRecipeCategory<SandPaperPolishingRe
 
 	@Override
 	public void setRecipe(IRecipeLayoutBuilder builder, SandPaperPolishingRecipe recipe, IFocusGroup focuses) {
-		builder
-				.addSlot(RecipeIngredientRole.INPUT, 27, 29)
+		builder.addSlot(RecipeIngredientRole.INPUT, 27, 29)
 				.setBackground(getRenderedSlot(), -1, -1)
 				.addIngredients(recipe.getIngredients().get(0));
 
 		ProcessingOutput output = recipe.getRollableResults().get(0);
-		builder
-				.addSlot(RecipeIngredientRole.OUTPUT, 132, 29)
+		builder.addSlot(RecipeIngredientRole.OUTPUT, 132, 29)
 				.setBackground(getRenderedSlot(output), -1, -1)
 				.addItemStack(output.getStack())
-				.addTooltipCallback(addStochasticTooltip(output));
+				.addRichTooltipCallback(addStochasticTooltip(output));
 	}
-
 	@Override
-	public void draw(SandPaperPolishingRecipe recipe, IRecipeSlotsView iRecipeSlotsView, GuiGraphics graphics, double mouseX, double mouseY) {
+	public void draw(
+			SandPaperPolishingRecipe recipe,
+			IRecipeSlotsView iRecipeSlotsView,
+			GuiGraphics graphics,
+			double mouseX,
+			double mouseY
+	) {
 		AllGuiTextures.JEI_SHADOW.render(graphics, 61, 21);
 		AllGuiTextures.JEI_LONG_ARROW.render(graphics, 52, 32);
-
 		NonNullList<Ingredient> ingredients = recipe.getIngredients();
-		ItemStack[] matchingStacks = ingredients.get(0)
-			.getItems();
-		if (matchingStacks.length == 0)
-			return;
+		ItemStack[] matchingStacks = ingredients.get(0).getItems();
+		if (matchingStacks.length == 0) return;
 
 
 		CompoundTag tag = renderedSandpaper.getOrCreateTag();
@@ -63,5 +61,4 @@ public class PolishingCategory extends CreateRecipeCategory<SandPaperPolishingRe
 				.scale(2)
 				.render(graphics);
 	}
-
 }

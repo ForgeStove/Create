@@ -18,9 +18,7 @@ public class FanSmokingCategory extends ProcessingViaFanCategory<SmokingRecipe> 
 	protected AllGuiTextures getBlockShadow() {
 		return AllGuiTextures.JEI_LIGHT;
 	}
-
-	@Override
-	protected void renderAttachedBlock(GuiGraphics graphics) {
+	@Override protected void renderAttachedBlock(GuiGraphics graphics) {
 		GuiGameElement.of(Blocks.FIRE.defaultBlockState())
 			.scale(SCALE)
 			.atLocal(0, 0, 2)
