@@ -48,6 +48,7 @@ public class BeltPressingCallbacks {
 			return PASS;
 
 		boolean bulk = behaviour.specifics.canProcessInBulk() || transported.stack.getCount() == 1;
+		transported.clearFanProcessingData();
 
 		List<TransportedItemStack> collect = results.stream()
 			.map(stack -> {

@@ -113,6 +113,7 @@ public class BeltDeployerCallbacks {
 				.collect(Collectors.toList());
 
 		blockEntity.award(AllAdvancements.DEPLOYER);
+		transported.clearFanProcessingData();
 
 		TransportedItemStack left = transported.copy();
 		blockEntity.player.spawnedItemEffects = transported.stack.copy();

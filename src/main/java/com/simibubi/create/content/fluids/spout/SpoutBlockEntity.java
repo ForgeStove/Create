@@ -103,6 +103,7 @@ public class SpoutBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		// Process finished
 		ItemStack out = FillingBySpout.fillItem(level, requiredAmountForItem, transported.stack, fluid);
 		if (!out.isEmpty()) {
+			transported.clearFanProcessingData();
 			List<TransportedItemStack> outList = new ArrayList<>();
 			TransportedItemStack held = null;
 			TransportedItemStack result = transported.copy();
@@ -124,11 +125,13 @@ public class SpoutBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		notifyUpdate();
 		return HOLD;
 	}
+
 	private FluidStack getCurrentFluidInTank() {
 		return tank.getPrimaryHandler().getFluid();
 	}
 	@Override protected void write(CompoundTag compound, boolean clientPacket) {
 		super.write(compound, clientPacket);
+
 		compound.putInt("ProcessingTicks", processingTicks);
 		if (sendSplash && clientPacket) {
 			compound.putBoolean("Splash", true);
@@ -139,12 +142,14 @@ public class SpoutBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		if (createdHoneyApple) NBTHelper.putMarker(compound, "HoneyApple");
 		if (createdSweetRoll) NBTHelper.putMarker(compound, "SweetRoll");
 	}
+
 	private boolean trackFoods() {
 		return getBehaviour(AdvancementBehaviour.TYPE).isOwnerPresent();
 	}
 	@Override protected void read(CompoundTag compound, boolean clientPacket) {
 		super.read(compound, clientPacket);
 		processingTicks = compound.getInt("ProcessingTicks");
+
 		createdChocolateBerries = compound.contains("ChocolateBerries");
 		createdHoneyApple = compound.contains("HoneyApple");
 		createdSweetRoll = compound.contains("SweetRoll");
@@ -155,8 +160,10 @@ public class SpoutBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		if (cap == ForgeCapabilities.FLUID_HANDLER && side != Direction.DOWN) return tank.getCapability().cast();
 		return super.getCapability(cap, side);
 	}
+
 	public void tick() {
 		super.tick();
+
 		FluidStack currentFluidInTank = getCurrentFluidInTank();
 		if (processingTicks == -1 && (isVirtual() || !level.isClientSide()) && !currentFluidInTank.isEmpty()) {
 			BlockSpoutingBehaviour.forEach(behaviour -> {

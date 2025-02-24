@@ -3,7 +3,9 @@ package com.simibubi.create.content.kinetics.belt.transport;
 import java.util.Random;
 
 import com.simibubi.create.content.kinetics.belt.BeltHelper;
+import com.simibubi.create.content.kinetics.fan.processing.AllFanProcessingTypes;
 import com.simibubi.create.content.kinetics.fan.processing.FanProcessingType;
+import com.simibubi.create.content.kinetics.fan.processing.FanProcessingTypeRegistry;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -11,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 
 public class TransportedItemStack implements Comparable<TransportedItemStack> {
 
-	private static Random R = new Random();
+	private static final Random R = new Random();
 
 	public ItemStack stack;
 	public float beltPosition;
@@ -64,23 +66,6 @@ public class TransportedItemStack implements Comparable<TransportedItemStack> {
 		return copy;
 	}
 
-	public CompoundTag serializeNBT() {
-		CompoundTag nbt = new CompoundTag();
-		nbt.put("Item", stack.serializeNBT());
-		nbt.putFloat("Pos", beltPosition);
-		nbt.putFloat("PrevPos", prevBeltPosition);
-		nbt.putFloat("Offset", sideOffset);
-		nbt.putFloat("PrevOffset", prevSideOffset);
-		nbt.putInt("InSegment", insertedAt);
-		nbt.putInt("Angle", angle);
-		nbt.putInt("InDirection", insertedFrom.get3DDataValue());
-		if (locked)
-			nbt.putBoolean("Locked", locked);
-		if (lockedExternally)
-			nbt.putBoolean("LockedExternally", lockedExternally);
-		return nbt;
-	}
-
 	public static TransportedItemStack read(CompoundTag nbt) {
 		TransportedItemStack stack = new TransportedItemStack(ItemStack.of(nbt.getCompound("Item")));
 		stack.beltPosition = nbt.getFloat("Pos");
@@ -92,7 +77,37 @@ public class TransportedItemStack implements Comparable<TransportedItemStack> {
 		stack.insertedFrom = Direction.from3DDataValue(nbt.getInt("InDirection"));
 		stack.locked = nbt.getBoolean("Locked");
 		stack.lockedExternally = nbt.getBoolean("LockedExternally");
+		if (nbt.contains("FanProcessingType")) {
+			stack.processedBy = AllFanProcessingTypes.parseLegacy(nbt.getString("FanProcessingType"));
+			stack.processingTime = nbt.getInt("FanProcessingTime");
+		}
+
 		return stack;
+	}
+	public CompoundTag serializeNBT() {
+		CompoundTag nbt = new CompoundTag();
+		nbt.put("Item", stack.serializeNBT());
+		nbt.putFloat("Pos", beltPosition);
+		nbt.putFloat("PrevPos", prevBeltPosition);
+		nbt.putFloat("Offset", sideOffset);
+		nbt.putFloat("PrevOffset", prevSideOffset);
+		nbt.putInt("InSegment", insertedAt);
+		nbt.putInt("Angle", angle);
+		nbt.putInt("InDirection", insertedFrom.get3DDataValue());
+		if (processedBy != null && processedBy != AllFanProcessingTypes.NONE) {
+			nbt.putString("FanProcessingType", FanProcessingTypeRegistry.getIdOrThrow(processedBy).toString());
+			nbt.putInt("FanProcessingTime", processingTime);
+		}
+
+		if (locked)
+			nbt.putBoolean("Locked", locked);
+		if (lockedExternally)
+			nbt.putBoolean("LockedExternally", lockedExternally);
+		return nbt;
+	}
+	public void clearFanProcessingData() {
+		processedBy = null;
+		processingTime = 0;
 	}
 
 }

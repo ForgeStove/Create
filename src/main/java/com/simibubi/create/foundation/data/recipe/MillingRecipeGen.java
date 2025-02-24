@@ -1069,6 +1069,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 			return null;
 		}
 	}
+
 	public MillingRecipeGen(PackOutput output) {
 		super(output);
 	}

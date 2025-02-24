@@ -1,5 +1,4 @@
 package com.simibubi.create.content.processing.basin;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -16,12 +15,13 @@ import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringB
 import com.simibubi.create.foundation.blockEntity.behaviour.fluid.SmartFluidTankBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.fluid.SmartFluidTankBehaviour.TankSegment;
 import com.simibubi.create.foundation.fluid.FluidIngredient;
-import com.simibubi.create.foundation.item.SmartInventory;
 import com.simibubi.create.foundation.recipe.DummyCraftingContainer;
 import com.simibubi.create.foundation.recipe.IRecipeTypeInfo;
 import com.simibubi.create.foundation.utility.Iterate;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -31,8 +31,7 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.items.IItemHandler;
-
-public class BasinRecipe extends ProcessingRecipe<SmartInventory> {
+public class BasinRecipe extends ProcessingRecipe<Container> {
 
 	public static boolean match(BasinBlockEntity basin, Recipe<?> recipe) {
 		FilteringBehaviour filter = basin.getFilter();
@@ -41,8 +40,7 @@ public class BasinRecipe extends ProcessingRecipe<SmartInventory> {
 
 		boolean filterTest = filter.test(recipe.getResultItem(basin.getLevel()
 			.registryAccess()));
-		if (recipe instanceof BasinRecipe) {
-			BasinRecipe basinRecipe = (BasinRecipe) recipe;
+		if (recipe instanceof BasinRecipe basinRecipe) {
 			if (basinRecipe.getRollableResults()
 				.isEmpty()
 				&& !basinRecipe.getFluidResults()
@@ -148,23 +146,27 @@ public class BasinRecipe extends ProcessingRecipe<SmartInventory> {
 			}
 
 			if (simulate) {
+				CraftingContainer remainderContainer = new DummyCraftingContainer(
+						availableItems,
+						extractedItemsFromSlot
+				);
+
 				if (recipe instanceof BasinRecipe basinRecipe) {
 					recipeOutputItems.addAll(basinRecipe.rollResults());
-					
+
 					for (FluidStack fluidStack : basinRecipe.getFluidResults())
 						if (!fluidStack.isEmpty())
 							recipeOutputFluids.add(fluidStack);
-					for (ItemStack stack : basinRecipe.getRemainingItems(basin.getInputInventory()))
+					for (ItemStack stack : basinRecipe.getRemainingItems(remainderContainer))
 						if (!stack.isEmpty())
 							recipeOutputItems.add(stack);
-					
+
 				} else {
 					recipeOutputItems.add(recipe.getResultItem(basin.getLevel()
 						.registryAccess()));
 
 					if (recipe instanceof CraftingRecipe craftingRecipe) {
-						for (ItemStack stack : craftingRecipe
-							.getRemainingItems(new DummyCraftingContainer(availableItems, extractedItemsFromSlot)))
+						for (ItemStack stack : craftingRecipe.getRemainingItems(remainderContainer))
 							if (!stack.isEmpty())
 								recipeOutputItems.add(stack);
 					}
@@ -224,8 +226,7 @@ public class BasinRecipe extends ProcessingRecipe<SmartInventory> {
 		return true;
 	}
 
-	@Override
-	public boolean matches(SmartInventory inv, @Nonnull Level worldIn) {
+	@Override public boolean matches(Container inv, @Nonnull Level worldIn) {
 		return false;
 	}
 

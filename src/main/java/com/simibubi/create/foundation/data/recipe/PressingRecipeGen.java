@@ -12,9 +12,8 @@ public class PressingRecipeGen extends ProcessingRecipeGen {
 
 	GeneratedRecipe
 
-	SUGAR_CANE = create(() -> Items.SUGAR_CANE, b -> b.output(Items.PAPER)),
-
-		PATH = create("path", b -> b.require(Ingredient.of(Items.GRASS_BLOCK, Items.DIRT))
+	SUGAR_CANE = create(() -> Items.SUGAR_CANE, b -> b.output(Items.PAPER)), PATH = create(
+			"path", b -> b.require(Ingredient.of(Items.GRASS_BLOCK, Items.DIRT, Items.COARSE_DIRT, Items.ROOTED_DIRT))
 			.output(Items.DIRT_PATH)),
 
 		IRON = create("iron_ingot", b -> b.require(I.iron())
