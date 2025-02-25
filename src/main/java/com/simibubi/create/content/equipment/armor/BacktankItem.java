@@ -1,5 +1,4 @@
 package com.simibubi.create.content.equipment.armor;
-
 import java.util.Locale;
 import java.util.function.Supplier;
 
@@ -22,21 +21,21 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.block.Block;
-
 public class BacktankItem extends BaseArmorItem implements ICapacityEnchantable {
 	public static final EquipmentSlot SLOT = EquipmentSlot.CHEST;
 	public static final ArmorItem.Type TYPE = ArmorItem.Type.CHESTPLATE;
 	public static final int BAR_COLOR = 0xEFEFEF;
-	
 	private final Supplier<BacktankBlockItem> blockItem;
-
-	public BacktankItem(ArmorMaterial material, Properties properties, ResourceLocation textureLoc, Supplier<BacktankBlockItem> placeable) {
+	public BacktankItem(
+			ArmorMaterial material,
+			Properties properties,
+			ResourceLocation textureLoc,
+			Supplier<BacktankBlockItem> placeable
+	) {
 		super(material, TYPE, properties, textureLoc);
 		this.blockItem = placeable;
 	}
-
-	@Nullable
-	public static BacktankItem getWornBy(Entity entity) {
+	@Nullable public static BacktankItem getWornBy(Entity entity) {
 		if (!(entity instanceof LivingEntity livingEntity)) {
 			return null;
 		}
@@ -45,73 +44,62 @@ public class BacktankItem extends BaseArmorItem implements ICapacityEnchantable 
 		}
 		return item;
 	}
-
-	@Override
-	public InteractionResult useOn(UseOnContext ctx) {
-		return blockItem.get()
-			.useOn(ctx);
+	@Override public InteractionResult useOn(UseOnContext ctx) {
+		return blockItem.get().useOn(ctx);
 	}
-
-	@Override
-	public boolean canBeDepleted() {
+	@Override public boolean canBeDepleted() {
 		return false;
 	}
-
-	@Override
-	public boolean isEnchantable(ItemStack p_77616_1_) {
+	@Override public boolean isEnchantable(ItemStack p_77616_1_) {
 		return true;
 	}
-
-	@Override
-	public boolean isBarVisible(ItemStack stack) {
+	@Override public boolean isBarVisible(ItemStack stack) {
 		return true;
 	}
-
-	@Override
-	public int getBarWidth(ItemStack stack) {
+	@Override public int getBarWidth(ItemStack stack) {
 		return Math.round(13.0F * Mth.clamp(getRemainingAir(stack) / ((float) BacktankUtil.maxAir(stack)), 0, 1));
 	}
-
-	@Override
-	public int getBarColor(ItemStack stack) {
+	@Override public int getBarColor(ItemStack stack) {
 		return BAR_COLOR;
 	}
-
 	public Block getBlock() {
 		return blockItem.get().getBlock();
 	}
-
 	public static int getRemainingAir(ItemStack stack) {
 		CompoundTag orCreateTag = stack.getOrCreateTag();
 		return orCreateTag.getInt("Air");
 	}
-
 	public static class BacktankBlockItem extends BlockItem {
 		private final Supplier<Item> actualItem;
-
 		public BacktankBlockItem(Block block, Supplier<Item> actualItem, Properties properties) {
 			super(block, properties);
 			this.actualItem = actualItem;
 		}
-
-		@Override
-		public String getDescriptionId() {
+		@Override public String getDescriptionId() {
 			return this.getOrCreateDescriptionId();
 		}
-
 		public Item getActualItem() {
 			return actualItem.get();
 		}
 	}
-
 	public static class Layered extends BacktankItem implements LayeredArmorItem {
-		public Layered(ArmorMaterial material, Properties properties, ResourceLocation textureLoc, Supplier<BacktankBlockItem> placeable) {
+		public Layered(
+				ArmorMaterial material,
+				Properties properties,
+				ResourceLocation textureLoc,
+				Supplier<BacktankBlockItem> placeable
+		) {
 			super(material, properties, textureLoc, placeable);
 		}
-
 		@Override
 		public String getArmorTextureLocation(LivingEntity entity, EquipmentSlot slot, ItemStack stack, int layer) {
-			return String.format(Locale.ROOT, "%s:textures/models/armor/%s_layer_%d.png", textureLoc.getNamespace(), textureLoc.getPath(), layer);
+			return String.format(
+					Locale.ROOT,
+					"%s:textures/models/armor/%s_layer_%d.png",
+					textureLoc.getNamespace(),
+					textureLoc.getPath(),
+					layer
+			);
 		}
 	}
 }

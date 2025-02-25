@@ -1,5 +1,4 @@
 package com.simibubi.create.content.contraptions.sync;
-
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 
@@ -12,21 +11,22 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.network.NetworkEvent.Context;
-
 public class ContraptionInteractionPacket extends SimplePacketBase {
-
-	private InteractionHand interactionHand;
-	private int target;
-	private BlockPos localPos;
-	private Direction face;
-
-	public ContraptionInteractionPacket(AbstractContraptionEntity target, InteractionHand hand, BlockPos localPos, Direction side) {
+	private final InteractionHand interactionHand;
+	private final int target;
+	private final BlockPos localPos;
+	private final Direction face;
+	public ContraptionInteractionPacket(
+			AbstractContraptionEntity target,
+			InteractionHand hand,
+			BlockPos localPos,
+			Direction side
+	) {
 		this.interactionHand = hand;
 		this.localPos = localPos;
 		this.target = target.getId();
 		this.face = side;
 	}
-
 	public ContraptionInteractionPacket(FriendlyByteBuf buffer) {
 		target = buffer.readInt();
 		int handId = buffer.readInt();
@@ -34,37 +34,27 @@ public class ContraptionInteractionPacket extends SimplePacketBase {
 		localPos = buffer.readBlockPos();
 		face = Direction.from3DDataValue(buffer.readShort());
 	}
-
-	@Override
-	public void write(FriendlyByteBuf buffer) {
+	@Override public void write(FriendlyByteBuf buffer) {
 		buffer.writeInt(target);
 		buffer.writeInt(interactionHand == null ? -1 : interactionHand.ordinal());
 		buffer.writeBlockPos(localPos);
 		buffer.writeShort(face.get3DDataValue());
 	}
-
-	@Override
-	public boolean handle(Context context) {
+	@Override public boolean handle(Context context) {
 		context.enqueueWork(() -> {
 			ServerPlayer sender = context.getSender();
-			if (sender == null)
-				return;
+			if (sender == null) return;
 			Entity entityByID = sender.level().getEntity(target);
-			if (!(entityByID instanceof AbstractContraptionEntity))
-				return;
-			AbstractContraptionEntity contraptionEntity = (AbstractContraptionEntity) entityByID;
+			if (!(entityByID instanceof AbstractContraptionEntity contraptionEntity)) return;
 			AABB bb = contraptionEntity.getBoundingBox();
 			double boundsExtra = Math.max(bb.getXsize(), bb.getYsize());
 			double d = sender.getAttribute(ForgeMod.BLOCK_REACH.get()).getValue() + 10 + boundsExtra;
-			if (!sender.hasLineOfSight(entityByID))
-				d -= 3;
+			if (!sender.hasLineOfSight(entityByID)) d -= 3;
 			d *= d;
-			if (sender.distanceToSqr(entityByID) > d) 
-				return;
+			if (sender.distanceToSqr(entityByID) > d) return;
 			if (contraptionEntity.handlePlayerInteraction(sender, localPos, face, interactionHand))
 				sender.swing(interactionHand, true);
 		});
 		return true;
 	}
-
 }

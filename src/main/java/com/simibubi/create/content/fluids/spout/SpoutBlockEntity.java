@@ -1,5 +1,4 @@
 package com.simibubi.create.content.fluids.spout;
-
 import static com.simibubi.create.content.kinetics.belt.behaviour.BeltProcessingBehaviour.ProcessingResult.HOLD;
 import static com.simibubi.create.content.kinetics.belt.behaviour.BeltProcessingBehaviour.ProcessingResult.PASS;
 
@@ -39,20 +38,14 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
-
 public class SpoutBlockEntity extends SmartBlockEntity implements IHaveGoggleInformation {
-
 	public static final int FILLING_TIME = 20;
 	protected BeltProcessingBehaviour beltProcessing;
-
 	public int processingTicks;
 	public boolean sendSplash;
 	public BlockSpoutingBehaviour customProcess;
-
 	SmartFluidTankBehaviour tank;
-
 	private boolean createdSweetRoll, createdHoneyApple, createdChocolateBerries;
-
 	public SpoutBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 		processingTicks = -1;
@@ -63,11 +56,9 @@ public class SpoutBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 	@Override public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		tank = SmartFluidTankBehaviour.single(this, 1000);
 		behaviours.add(tank);
-
 		beltProcessing = new BeltProcessingBehaviour(this).whenItemEnters(this::onItemReceived)
 				.whileItemHeld(this::whenItemHeld);
 		behaviours.add(beltProcessing);
-
 		registerAwardables(behaviours, AllAdvancements.SPOUT, AllAdvancements.FOODS);
 	}
 	protected ProcessingResult onItemReceived(
@@ -92,14 +83,12 @@ public class SpoutBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		int requiredAmountForItem = FillingBySpout.getRequiredAmountForItem(level, transported.stack, fluid.copy());
 		if (requiredAmountForItem == -1) return PASS;
 		if (requiredAmountForItem > fluid.getAmount()) return HOLD;
-
 		if (processingTicks == -1) {
 			processingTicks = FILLING_TIME;
 			notifyUpdate();
 			AllSoundEvents.SPOUTING.playOnServer(level, worldPosition, 0.75f, 0.9f + 0.2f * (float) Math.random());
 			return HOLD;
 		}
-
 		// Process finished
 		ItemStack out = FillingBySpout.fillItem(level, requiredAmountForItem, transported.stack, fluid);
 		if (!out.isEmpty()) {
@@ -112,7 +101,6 @@ public class SpoutBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 			outList.add(result);
 			handler.handleProcessingOnItem(transported, TransportedResult.convertToAndLeaveHeld(outList, held));
 		}
-
 		award(AllAdvancements.SPOUT);
 		if (trackFoods()) {
 			createdChocolateBerries |= AllItems.CHOCOLATE_BERRIES.isIn(out);
@@ -125,13 +113,11 @@ public class SpoutBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		notifyUpdate();
 		return HOLD;
 	}
-
 	private FluidStack getCurrentFluidInTank() {
 		return tank.getPrimaryHandler().getFluid();
 	}
 	@Override protected void write(CompoundTag compound, boolean clientPacket) {
 		super.write(compound, clientPacket);
-
 		compound.putInt("ProcessingTicks", processingTicks);
 		if (sendSplash && clientPacket) {
 			compound.putBoolean("Splash", true);
@@ -142,14 +128,12 @@ public class SpoutBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		if (createdHoneyApple) NBTHelper.putMarker(compound, "HoneyApple");
 		if (createdSweetRoll) NBTHelper.putMarker(compound, "SweetRoll");
 	}
-
 	private boolean trackFoods() {
 		return getBehaviour(AdvancementBehaviour.TYPE).isOwnerPresent();
 	}
 	@Override protected void read(CompoundTag compound, boolean clientPacket) {
 		super.read(compound, clientPacket);
 		processingTicks = compound.getInt("ProcessingTicks");
-
 		createdChocolateBerries = compound.contains("ChocolateBerries");
 		createdHoneyApple = compound.contains("HoneyApple");
 		createdSweetRoll = compound.contains("SweetRoll");
@@ -160,10 +144,8 @@ public class SpoutBlockEntity extends SmartBlockEntity implements IHaveGoggleInf
 		if (cap == ForgeCapabilities.FLUID_HANDLER && side != Direction.DOWN) return tank.getCapability().cast();
 		return super.getCapability(cap, side);
 	}
-
 	public void tick() {
 		super.tick();
-
 		FluidStack currentFluidInTank = getCurrentFluidInTank();
 		if (processingTicks == -1 && (isVirtual() || !level.isClientSide()) && !currentFluidInTank.isEmpty()) {
 			BlockSpoutingBehaviour.forEach(behaviour -> {

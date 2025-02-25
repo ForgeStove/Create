@@ -1,5 +1,4 @@
 package com.simibubi.create.content.contraptions.bearing;
-
 import com.simibubi.create.content.contraptions.AssemblyException;
 import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.contraptions.ContraptionType;
@@ -12,63 +11,41 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
 public class StabilizedContraption extends Contraption {
-
 	private Direction facing;
-
-	public StabilizedContraption() {}
-
+	public StabilizedContraption() {
+	}
 	public StabilizedContraption(Direction facing) {
 		this.facing = facing;
 	}
-
-	@Override
-	public boolean assemble(Level world, BlockPos pos) throws AssemblyException {
+	@Override public boolean assemble(Level world, BlockPos pos) throws AssemblyException {
 		BlockPos offset = pos.relative(facing);
-		if (!searchMovedStructure(world, offset, null))
-			return false;
+		if (!searchMovedStructure(world, offset, null)) return false;
 		startMoving(world);
-		if (blocks.isEmpty())
-			return false;
-		return true;
+		return !blocks.isEmpty();
 	}
-
-	@Override
-	protected boolean isAnchoringBlockAt(BlockPos pos) {
+	@Override protected boolean isAnchoringBlockAt(BlockPos pos) {
 		return false;
 	}
-
-	@Override
-	public ContraptionType getType() {
+	@Override public ContraptionType getType() {
 		return ContraptionType.STABILIZED;
 	}
-
-	@Override
-	public CompoundTag writeNBT(boolean spawnPacket) {
+	@Override public CompoundTag writeNBT(boolean spawnPacket) {
 		CompoundTag tag = super.writeNBT(spawnPacket);
 		tag.putInt("Facing", facing.get3DDataValue());
 		return tag;
 	}
-
-	@Override
-	public void readNBT(Level world, CompoundTag tag, boolean spawnData) {
+	@Override public void readNBT(Level world, CompoundTag tag, boolean spawnData) {
 		facing = Direction.from3DDataValue(tag.getInt("Facing"));
 		super.readNBT(world, tag, spawnData);
 	}
-
-	@Override
-	public boolean canBeStabilized(Direction facing, BlockPos localPos) {
+	@Override public boolean canBeStabilized(Direction facing, BlockPos localPos) {
 		return false;
 	}
-
 	public Direction getFacing() {
 		return facing;
 	}
-
-	@Override
-	@OnlyIn(Dist.CLIENT)
-	public ContraptionLighter<?> makeLighter() {
+	@Override @OnlyIn(Dist.CLIENT) public ContraptionLighter<?> makeLighter() {
 		return new NonStationaryLighter<>(this);
 	}
 }

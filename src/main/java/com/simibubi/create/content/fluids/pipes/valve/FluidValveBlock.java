@@ -1,5 +1,4 @@
 package com.simibubi.create.content.fluids.pipes.valve;
-
 import javax.annotation.Nonnull;
 
 import com.simibubi.create.AllBlockEntityTypes;
@@ -33,29 +32,25 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.ticks.TickPriority;
-
 public class FluidValveBlock extends DirectionalAxisKineticBlock
-	implements IAxisPipe, IBE<FluidValveBlockEntity>, ProperWaterloggedBlock {
-
+		implements IAxisPipe, IBE<FluidValveBlockEntity>, ProperWaterloggedBlock {
 	public static final BooleanProperty ENABLED = BooleanProperty.create("enabled");
-
 	public FluidValveBlock(Properties properties) {
 		super(properties);
-		registerDefaultState(defaultBlockState().setValue(ENABLED, false)
-			.setValue(WATERLOGGED, false));
+		registerDefaultState(defaultBlockState().setValue(ENABLED, false).setValue(WATERLOGGED, false));
 	}
-
 	@Override
-	public VoxelShape getShape(BlockState state, BlockGetter p_220053_2_, BlockPos p_220053_3_,
-		CollisionContext p_220053_4_) {
+	public VoxelShape getShape(
+			BlockState state,
+			BlockGetter p_220053_2_,
+			BlockPos p_220053_3_,
+			CollisionContext p_220053_4_
+	) {
 		return AllShapes.FLUID_VALVE.get(getPipeAxis(state));
 	}
-
-	@Override
-	protected void createBlockStateDefinition(Builder<Block, BlockState> builder) {
+	@Override protected void createBlockStateDefinition(Builder<Block, BlockState> builder) {
 		super.createBlockStateDefinition(builder.add(ENABLED, WATERLOGGED));
 	}
-
 	@Override
 	protected boolean prefersConnectionTo(LevelReader reader, BlockPos pos, Direction facing, boolean shaftAxis) {
 		if (!shaftAxis) {
@@ -63,18 +58,15 @@ public class FluidValveBlock extends DirectionalAxisKineticBlock
 			BlockState blockState = reader.getBlockState(offset);
 			return FluidPipeBlock.canConnectTo(reader, offset, blockState, facing);
 		}
-		return super.prefersConnectionTo(reader, pos, facing, shaftAxis);
+		return super.prefersConnectionTo(reader, pos, facing, true);
 	}
-
-	@Nonnull
-	public static Axis getPipeAxis(BlockState state) {
+	@Nonnull public static Axis getPipeAxis(BlockState state) {
 		if (!(state.getBlock() instanceof FluidValveBlock))
 			throw new IllegalStateException("Provided BlockState is for a different block.");
 		Direction facing = state.getValue(FACING);
 		boolean alongFirst = !state.getValue(AXIS_ALONG_FIRST_COORDINATE);
 		for (Axis axis : Iterate.axes) {
-			if (axis == facing.getAxis())
-				continue;
+			if (axis == facing.getAxis()) continue;
 			if (!alongFirst) {
 				alongFirst = true;
 				continue;
@@ -83,85 +75,69 @@ public class FluidValveBlock extends DirectionalAxisKineticBlock
 		}
 		throw new IllegalStateException("Impossible axis.");
 	}
-
-	@Override
-	public Axis getAxis(BlockState state) {
+	@Override public Axis getAxis(BlockState state) {
 		return getPipeAxis(state);
 	}
-
-	@Override
-	public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
+	@Override public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState,
+			boolean isMoving) {
 		boolean blockTypeChanged = !state.is(newState.getBlock());
-		if (blockTypeChanged && !world.isClientSide)
-			FluidPropagator.propagateChangedPipe(world, pos, state);
+		if (blockTypeChanged && !world.isClientSide) FluidPropagator.propagateChangedPipe(world, pos, state);
 		super.onRemove(state, world, pos, newState, isMoving);
 	}
-
-	@Override
-	public boolean canSurvive(BlockState p_196260_1_, LevelReader p_196260_2_, BlockPos p_196260_3_) {
+	@Override public boolean canSurvive(BlockState p_196260_1_, LevelReader p_196260_2_, BlockPos p_196260_3_) {
 		return true;
 	}
-
-	@Override
-	public void onPlace(BlockState state, Level world, BlockPos pos, BlockState oldState, boolean isMoving) {
+	@Override public void onPlace(BlockState state, Level world, BlockPos pos, BlockState oldState, boolean isMoving) {
 		super.onPlace(state, world, pos, oldState, isMoving);
-		if (world.isClientSide)
-			return;
-		if (state != oldState)
-			world.scheduleTick(pos, this, 1, TickPriority.HIGH);
+		if (world.isClientSide) return;
+		if (state != oldState) world.scheduleTick(pos, this, 1, TickPriority.HIGH);
 	}
-
 	@Override
-	public void neighborChanged(BlockState state, Level world, BlockPos pos, Block otherBlock, BlockPos neighborPos,
-		boolean isMoving) {
+	public void neighborChanged(
+			BlockState state,
+			Level world,
+			BlockPos pos,
+			Block otherBlock,
+			BlockPos neighborPos,
+			boolean isMoving
+	) {
 		DebugPackets.sendNeighborsUpdatePacket(world, pos);
 		Direction d = FluidPropagator.validateNeighbourChange(state, world, pos, otherBlock, neighborPos, isMoving);
-		if (d == null)
-			return;
-		if (!isOpenAt(state, d))
-			return;
+		if (d == null) return;
+		if (!isOpenAt(state, d)) return;
 		world.scheduleTick(pos, this, 1, TickPriority.HIGH);
 	}
-
 	public static boolean isOpenAt(BlockState state, Direction d) {
 		return d.getAxis() == getPipeAxis(state);
 	}
-
-	@Override
-	public void tick(BlockState state, ServerLevel world, BlockPos pos, RandomSource r) {
+	@Override public void tick(BlockState state, ServerLevel world, BlockPos pos, RandomSource r) {
 		FluidPropagator.propagateChangedPipe(world, pos, state);
 	}
-
 	@Override
 	public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType type) {
 		return false;
 	}
-
-	@Override
-	public Class<FluidValveBlockEntity> getBlockEntityClass() {
+	@Override public Class<FluidValveBlockEntity> getBlockEntityClass() {
 		return FluidValveBlockEntity.class;
 	}
-
-	@Override
-	public BlockEntityType<? extends FluidValveBlockEntity> getBlockEntityType() {
+	@Override public BlockEntityType<? extends FluidValveBlockEntity> getBlockEntityType() {
 		return AllBlockEntityTypes.FLUID_VALVE.get();
 	}
-
-	@Override
-	public BlockState getStateForPlacement(BlockPlaceContext context) {
+	@Override public BlockState getStateForPlacement(BlockPlaceContext context) {
 		return withWater(super.getStateForPlacement(context), context);
 	}
-
-	@Override
-	public BlockState updateShape(BlockState state, Direction direction, BlockState neighbourState, LevelAccessor world,
-		BlockPos pos, BlockPos neighbourPos) {
+	@Override public BlockState updateShape(
+			BlockState state,
+			Direction direction,
+			BlockState neighbourState,
+			LevelAccessor world,
+			BlockPos pos,
+			BlockPos neighbourPos
+	) {
 		updateWater(world, state, pos);
 		return state;
 	}
-
-	@Override
-	public FluidState getFluidState(BlockState state) {
+	@Override public FluidState getFluidState(BlockState state) {
 		return fluidState(state);
 	}
-
 }

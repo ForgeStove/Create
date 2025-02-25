@@ -1,5 +1,4 @@
 package com.simibubi.create;
-
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -42,9 +41,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
-
 public enum AllRecipeTypes implements IRecipeTypeInfo {
-
 	CONVERSION(ConversionRecipe::new),
 	CRUSHING(CrushingRecipe::new),
 	CUTTING(CuttingRecipe::new),
@@ -60,23 +57,25 @@ public enum AllRecipeTypes implements IRecipeTypeInfo {
 	FILLING(FillingRecipe::new),
 	EMPTYING(EmptyingRecipe::new),
 	ITEM_APPLICATION(ManualApplicationRecipe::new),
-
 	MECHANICAL_CRAFTING(MechanicalCraftingRecipe.Serializer::new),
 	SEQUENCED_ASSEMBLY(SequencedAssemblyRecipeSerializer::new),
-
-	TOOLBOX_DYEING(() -> new SimpleCraftingRecipeSerializer<>(ToolboxDyeingRecipe::new), () -> RecipeType.CRAFTING, false);
-
+	TOOLBOX_DYEING(
+			() -> new SimpleCraftingRecipeSerializer<>(ToolboxDyeingRecipe::new),
+			() -> RecipeType.CRAFTING,
+			false
+	);
 	public static final Predicate<? super Recipe<?>> CAN_BE_AUTOMATED = r -> !r.getId()
-		.getPath()
-		.endsWith("_manual_only");
-
+			.getPath()
+			.endsWith("_manual_only");
 	private final ResourceLocation id;
 	private final RegistryObject<RecipeSerializer<?>> serializerObject;
-	@Nullable
-	private final RegistryObject<RecipeType<?>> typeObject;
+	@Nullable private final RegistryObject<RecipeType<?>> typeObject;
 	private final Supplier<RecipeType<?>> type;
-
-	AllRecipeTypes(Supplier<RecipeSerializer<?>> serializerSupplier, Supplier<RecipeType<?>> typeSupplier, boolean registerType) {
+	AllRecipeTypes(
+			Supplier<RecipeSerializer<?>> serializerSupplier,
+			Supplier<RecipeType<?>> typeSupplier,
+			boolean registerType
+	) {
 		String name = Lang.asId(name());
 		id = Create.asResource(name);
 		serializerObject = Registers.SERIALIZER_REGISTER.register(name, serializerSupplier);
@@ -88,7 +87,6 @@ public enum AllRecipeTypes implements IRecipeTypeInfo {
 			type = typeSupplier;
 		}
 	}
-
 	AllRecipeTypes(Supplier<RecipeSerializer<?>> serializerSupplier) {
 		String name = Lang.asId(name());
 		id = Create.asResource(name);
@@ -96,49 +94,38 @@ public enum AllRecipeTypes implements IRecipeTypeInfo {
 		typeObject = Registers.TYPE_REGISTER.register(name, () -> RecipeType.simple(id));
 		type = typeObject;
 	}
-
 	AllRecipeTypes(ProcessingRecipeFactory<?> processingFactory) {
 		this(() -> new ProcessingRecipeSerializer<>(processingFactory));
 	}
-
 	public static void register(IEventBus modEventBus) {
 		ShapedRecipe.setCraftingSize(9, 9);
 		Registers.SERIALIZER_REGISTER.register(modEventBus);
 		Registers.TYPE_REGISTER.register(modEventBus);
 	}
-
-	@Override
-	public ResourceLocation getId() {
+	@Override public ResourceLocation getId() {
 		return id;
 	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T extends RecipeSerializer<?>> T getSerializer() {
+	@SuppressWarnings("unchecked") @Override public <T extends RecipeSerializer<?>> T getSerializer() {
 		return (T) serializerObject.get();
 	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T extends RecipeType<?>> T getType() {
+	@SuppressWarnings("unchecked") @Override public <T extends RecipeType<?>> T getType() {
 		return (T) type.get();
 	}
-
 	public <C extends Container, T extends Recipe<C>> Optional<T> find(C inv, Level world) {
-		return world.getRecipeManager()
-			.getRecipeFor(getType(), inv, world);
+		return world.getRecipeManager().getRecipeFor(getType(), inv, world);
 	}
-	
 	public static boolean shouldIgnoreInAutomation(Recipe<?> recipe) {
 		RecipeSerializer<?> serializer = recipe.getSerializer();
-		if (serializer != null && AllTags.AllRecipeSerializerTags.AUTOMATION_IGNORE.matches(serializer))
-			return true;
+		if (serializer != null && AllTags.AllRecipeSerializerTags.AUTOMATION_IGNORE.matches(serializer)) return true;
 		return !CAN_BE_AUTOMATED.test(recipe);
 	}
-
 	private static class Registers {
-		private static final DeferredRegister<RecipeSerializer<?>> SERIALIZER_REGISTER = DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, Create.ID);
-		private static final DeferredRegister<RecipeType<?>> TYPE_REGISTER = DeferredRegister.create(Registries.RECIPE_TYPE, Create.ID);
+		private static final DeferredRegister<RecipeSerializer<?>> SERIALIZER_REGISTER =
+				DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS,
+				Create.ID
+		);
+		private static final DeferredRegister<RecipeType<?>>
+				TYPE_REGISTER
+				= DeferredRegister.create(Registries.RECIPE_TYPE, Create.ID);
 	}
-
 }

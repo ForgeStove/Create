@@ -1,5 +1,4 @@
 package com.simibubi.create.compat.jei.category.sequencedAssembly;
-
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.compat.jei.category.CreateRecipeCategory;
 import com.simibubi.create.compat.jei.category.animations.AnimatedDeployer;
@@ -18,15 +17,11 @@ import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
-
 public abstract class SequencedAssemblySubCategory {
-
 	private final int width;
-
 	public SequencedAssemblySubCategory(int width) {
 		this.width = width;
 	}
-
 	public int getWidth() {
 		return width;
 	}
@@ -34,7 +29,6 @@ public abstract class SequencedAssemblySubCategory {
 	}
 	public abstract void draw(SequencedRecipe<?> recipe, GuiGraphics graphics, double mouseX, double mouseY,
 			int index);
-
 	public static class AssemblyPressing extends SequencedAssemblySubCategory {
 		AnimatedPress press;
 		public AssemblyPressing() {

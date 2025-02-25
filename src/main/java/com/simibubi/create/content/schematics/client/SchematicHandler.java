@@ -1,5 +1,4 @@
 package com.simibubi.create.content.schematics.client;
-
 import java.util.List;
 import java.util.Vector;
 
@@ -50,37 +49,30 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
-
 public class SchematicHandler implements IGuiOverlay {
-
 	private String displayedSchematic;
 	private SchematicTransformation transformation;
 	private AABB bounds;
 	private boolean deployed;
 	private boolean active;
 	private ToolType currentTool;
-
 	private static final int SYNC_DELAY = 10;
 	private int syncCooldown;
 	private int activeHotbarSlot;
 	private ItemStack activeSchematicItem;
 	private AABBOutline outline;
-
-	private Vector<SchematicRenderer> renderers;
-	private SchematicHotbarSlotOverlay overlay;
+	private final Vector<SchematicRenderer> renderers;
+	private final SchematicHotbarSlotOverlay overlay;
 	private ToolSelectionScreen selectionScreen;
-
 	public SchematicHandler() {
 		renderers = new Vector<>(3);
 		for (int i = 0; i < renderers.capacity(); i++)
 			renderers.add(new SchematicRenderer());
-
 		overlay = new SchematicHotbarSlotOverlay();
 		currentTool = ToolType.DEPLOY;
 		selectionScreen = new ToolSelectionScreen(ImmutableList.of(ToolType.DEPLOY), this::equip);
 		transformation = new SchematicTransformation();
 	}
-
 	public void tick() {
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.gameMode.getPlayerMode() == GameType.SPECTATOR) {
@@ -93,12 +85,8 @@ public class SchematicHandler implements IGuiOverlay {
 			}
 			return;
 		}
-
-		if (activeSchematicItem != null && transformation != null)
-			transformation.tick();
-
+		if (activeSchematicItem != null && transformation != null) transformation.tick();
 		renderers.forEach(SchematicRenderer::tick);
-
 		LocalPlayer player = mc.player;
 		ItemStack stack = findBlueprintInHand(player);
 		if (stack == null) {
@@ -111,30 +99,19 @@ public class SchematicHandler implements IGuiOverlay {
 			}
 			return;
 		}
-
-		if (!active || !stack.getTag()
-			.getString("File")
-			.equals(displayedSchematic)) {
+		if (!active || !stack.getTag().getString("File").equals(displayedSchematic)) {
 			renderers.forEach(r -> r.setActive(false));
 			init(player, stack);
 		}
-		if (!active)
-			return;
-
-		if (syncCooldown > 0)
-			syncCooldown--;
-		if (syncCooldown == 1)
-			sync();
-
+		if (!active) return;
+		if (syncCooldown > 0) syncCooldown--;
+		if (syncCooldown == 1) sync();
 		selectionScreen.update();
-		currentTool.getTool()
-			.updateSelection();
+		currentTool.getTool().updateSelection();
 	}
-
 	private void init(LocalPlayer player, ItemStack stack) {
 		loadSettings(stack);
-		displayedSchematic = stack.getTag()
-			.getString("File");
+		displayedSchematic = stack.getTag().getString("File");
 		active = true;
 		if (deployed) {
 			setupRenderer();
@@ -144,232 +121,171 @@ public class SchematicHandler implements IGuiOverlay {
 				selectionScreen.setSelectedElement(toolBefore);
 				equip(toolBefore);
 			}
-		} else
-			selectionScreen = new ToolSelectionScreen(ImmutableList.of(ToolType.DEPLOY), this::equip);
+		} else selectionScreen = new ToolSelectionScreen(ImmutableList.of(ToolType.DEPLOY), this::equip);
 	}
-
 	private void setupRenderer() {
 		Level clientWorld = Minecraft.getInstance().level;
-		StructureTemplate schematic =
-			SchematicItem.loadSchematic(clientWorld.holderLookup(Registries.BLOCK), activeSchematicItem);
+		StructureTemplate schematic = SchematicItem.loadSchematic(
+				clientWorld.holderLookup(Registries.BLOCK),
+				activeSchematicItem
+		);
 		Vec3i size = schematic.getSize();
-		if (size.equals(Vec3i.ZERO))
-			return;
-
+		if (size.equals(Vec3i.ZERO)) return;
 		SchematicWorld w = new SchematicWorld(clientWorld);
 		SchematicWorld wMirroredFB = new SchematicWorld(clientWorld);
 		SchematicWorld wMirroredLR = new SchematicWorld(clientWorld);
 		StructurePlaceSettings placementSettings = new StructurePlaceSettings();
 		StructureTransform transform;
 		BlockPos pos;
-
 		pos = BlockPos.ZERO;
-
 		try {
 			schematic.placeInWorld(w, pos, pos, placementSettings, w.getRandom(), Block.UPDATE_CLIENTS);
 			for (BlockEntity blockEntity : w.getBlockEntities())
 				blockEntity.setLevel(w);
 			w.fixControllerBlockEntities();
 		} catch (Exception e) {
-			Minecraft.getInstance().player.displayClientMessage(Lang.translate("schematic.error")
-				.component(), false);
+			Minecraft.getInstance().player.displayClientMessage(Lang.translate("schematic.error").component(), false);
 			Create.LOGGER.error("Failed to load Schematic for Previewing", e);
 			return;
 		}
-
 		placementSettings.setMirror(Mirror.FRONT_BACK);
 		pos = BlockPos.ZERO.east(size.getX() - 1);
-		schematic.placeInWorld(wMirroredFB, pos, pos, placementSettings, wMirroredFB.getRandom(), Block.UPDATE_CLIENTS);
-		transform = new StructureTransform(placementSettings.getRotationPivot(), Axis.Y, Rotation.NONE,
-			placementSettings.getMirror());
+		schematic.placeInWorld(wMirroredFB, pos, pos, placementSettings, wMirroredFB.getRandom(),
+				Block.UPDATE_CLIENTS);
+		transform = new StructureTransform(
+				placementSettings.getRotationPivot(),
+				Axis.Y,
+				Rotation.NONE,
+				placementSettings.getMirror()
+		);
 		for (BlockEntity be : wMirroredFB.getRenderedBlockEntities())
 			transform.apply(be);
 		wMirroredFB.fixControllerBlockEntities();
-
 		placementSettings.setMirror(Mirror.LEFT_RIGHT);
 		pos = BlockPos.ZERO.south(size.getZ() - 1);
-		schematic.placeInWorld(wMirroredLR, pos, pos, placementSettings, wMirroredFB.getRandom(), Block.UPDATE_CLIENTS);
-		transform = new StructureTransform(placementSettings.getRotationPivot(), Axis.Y, Rotation.NONE,
-			placementSettings.getMirror());
+		schematic.placeInWorld(wMirroredLR, pos, pos, placementSettings, wMirroredFB.getRandom(),
+				Block.UPDATE_CLIENTS);
+		transform = new StructureTransform(
+				placementSettings.getRotationPivot(),
+				Axis.Y,
+				Rotation.NONE,
+				placementSettings.getMirror()
+		);
 		for (BlockEntity be : wMirroredLR.getRenderedBlockEntities())
 			transform.apply(be);
 		wMirroredLR.fixControllerBlockEntities();
-
-		renderers.get(0)
-			.display(w);
-		renderers.get(1)
-			.display(wMirroredFB);
-		renderers.get(2)
-			.display(wMirroredLR);
+		renderers.get(0).display(w);
+		renderers.get(1).display(wMirroredFB);
+		renderers.get(2).display(wMirroredLR);
 	}
-
 	public void render(PoseStack ms, SuperRenderTypeBuffer buffer, Vec3 camera) {
 		boolean present = activeSchematicItem != null;
-		if (!active && !present)
-			return;
-
+		if (!active && !present) return;
 		if (active) {
 			ms.pushPose();
-			currentTool.getTool()
-				.renderTool(ms, buffer, camera);
+			currentTool.getTool().renderTool(ms, buffer, camera);
 			ms.popPose();
 		}
-
 		ms.pushPose();
 		transformation.applyTransformations(ms, camera);
-
 		if (!renderers.isEmpty()) {
 			float pt = AnimationTickHolder.getPartialTicks();
-			boolean lr = transformation.getScaleLR()
-				.getValue(pt) < 0;
-			boolean fb = transformation.getScaleFB()
-				.getValue(pt) < 0;
-			if (lr && !fb)
-				renderers.get(2)
-					.render(ms, buffer);
-			else if (fb && !lr)
-				renderers.get(1)
-					.render(ms, buffer);
-			else
-				renderers.get(0)
-					.render(ms, buffer);
+			boolean lr = transformation.getScaleLR().getValue(pt) < 0;
+			boolean fb = transformation.getScaleFB().getValue(pt) < 0;
+			if (lr && !fb) renderers.get(2).render(ms, buffer);
+			else if (fb && !lr) renderers.get(1).render(ms, buffer);
+			else renderers.get(0).render(ms, buffer);
 		}
-
-		if (active)
-			currentTool.getTool()
-				.renderOnSchematic(ms, buffer);
-
+		if (active) currentTool.getTool().renderOnSchematic(ms, buffer);
 		ms.popPose();
-
 	}
-
 	public void updateRenderers() {
 		for (SchematicRenderer renderer : renderers) {
 			renderer.update();
 		}
 	}
-
-	@Override
-	public void render(ForgeGui gui, GuiGraphics graphics, float partialTicks, int width, int height) {
-		if (Minecraft.getInstance().options.hideGui || !active)
-			return;
-		if (activeSchematicItem != null)
-			this.overlay.renderOn(graphics, activeHotbarSlot);
-		currentTool.getTool()
-			.renderOverlay(gui, graphics, partialTicks, width, height);
+	@Override public void render(ForgeGui gui, GuiGraphics graphics, float partialTicks, int width, int height) {
+		if (Minecraft.getInstance().options.hideGui || !active) return;
+		if (activeSchematicItem != null) this.overlay.renderOn(graphics, activeHotbarSlot);
+		currentTool.getTool().renderOverlay(gui, graphics, partialTicks, width, height);
 		selectionScreen.renderPassive(graphics, partialTicks);
 	}
-
 	public boolean onMouseInput(int button, boolean pressed) {
-		if (!active)
-			return false;
-		if (!pressed || button != 1)
-			return false;
+		if (!active) return false;
+		if (!pressed || button != 1) return false;
 		Minecraft mc = Minecraft.getInstance();
-		if (mc.player.isShiftKeyDown())
-			return false;
-		if (mc.hitResult instanceof BlockHitResult) {
-			BlockHitResult blockRayTraceResult = (BlockHitResult) mc.hitResult;
+		if (mc.player.isShiftKeyDown()) return false;
+		if (mc.hitResult instanceof BlockHitResult blockRayTraceResult) {
 			BlockState clickedBlock = mc.level.getBlockState(blockRayTraceResult.getBlockPos());
-			if (AllBlocks.SCHEMATICANNON.has(clickedBlock))
-				return false;
-			if (AllBlocks.DEPLOYER.has(clickedBlock))
-				return false;
+			if (AllBlocks.SCHEMATICANNON.has(clickedBlock)) return false;
+			if (AllBlocks.DEPLOYER.has(clickedBlock)) return false;
 		}
-		return currentTool.getTool()
-			.handleRightClick();
+		return currentTool.getTool().handleRightClick();
 	}
-
 	public void onKeyInput(int key, boolean pressed) {
-		if (!active)
-			return;
-		if (key != AllKeys.TOOL_MENU.getBoundCode())
-			return;
-
-		if (pressed && !selectionScreen.focused)
-			selectionScreen.focused = true;
+		if (!active) return;
+		if (key != AllKeys.TOOL_MENU.getBoundCode()) return;
+		if (pressed && !selectionScreen.focused) selectionScreen.focused = true;
 		if (!pressed && selectionScreen.focused) {
 			selectionScreen.focused = false;
 			selectionScreen.onClose();
 		}
 	}
-
 	public boolean mouseScrolled(double delta) {
-		if (!active)
-			return false;
-
+		if (!active) return false;
 		if (selectionScreen.focused) {
 			selectionScreen.cycle((int) delta);
 			return true;
 		}
-		if (AllKeys.ctrlDown())
-			return currentTool.getTool()
-				.handleMouseWheel(delta);
+		if (AllKeys.ctrlDown()) return currentTool.getTool().handleMouseWheel(delta);
 		return false;
 	}
-
 	private ItemStack findBlueprintInHand(Player player) {
 		ItemStack stack = player.getMainHandItem();
-		if (!AllItems.SCHEMATIC.isIn(stack))
-			return null;
-		if (!stack.hasTag())
-			return null;
-
+		if (!AllItems.SCHEMATIC.isIn(stack)) return null;
+		if (!stack.hasTag()) return null;
 		activeSchematicItem = stack;
 		activeHotbarSlot = player.getInventory().selected;
 		return stack;
 	}
-
 	private boolean itemLost(Player player) {
 		for (int i = 0; i < Inventory.getSelectionSize(); i++) {
-			if (player.getInventory()
-					.getItem(i)
-					.is(activeSchematicItem.getItem()))
-				continue;
-			if (!ItemStack.matches(player.getInventory()
-					.getItem(i), activeSchematicItem))
-				continue;
+			if (player.getInventory().getItem(i).is(activeSchematicItem.getItem())) continue;
+			if (!ItemStack.matches(player.getInventory().getItem(i), activeSchematicItem)) continue;
 			return false;
 		}
 		return true;
 	}
-
 	public void markDirty() {
 		syncCooldown = SYNC_DELAY;
 	}
-
 	public void sync() {
-		if (activeSchematicItem == null)
-			return;
-		AllPackets.getChannel().sendToServer(new SchematicSyncPacket(activeHotbarSlot, transformation.toSettings(),
-			transformation.getAnchor(), deployed));
+		if (activeSchematicItem == null) return;
+		AllPackets.getChannel()
+				.sendToServer(new SchematicSyncPacket(
+						activeHotbarSlot,
+						transformation.toSettings(),
+						transformation.getAnchor(),
+						deployed
+				));
 	}
-
 	public void equip(ToolType tool) {
 		this.currentTool = tool;
-		currentTool.getTool()
-			.init();
+		currentTool.getTool().init();
 	}
-
 	public void loadSettings(ItemStack blueprint) {
 		CompoundTag tag = blueprint.getTag();
 		BlockPos anchor = BlockPos.ZERO;
 		StructurePlaceSettings settings = SchematicItem.getSettings(blueprint);
 		transformation = new SchematicTransformation();
-
 		deployed = tag.getBoolean("Deployed");
-		if (deployed)
-			anchor = NbtUtils.readBlockPos(tag.getCompound("Anchor"));
+		if (deployed) anchor = NbtUtils.readBlockPos(tag.getCompound("Anchor"));
 		Vec3i size = NBTHelper.readVec3i(tag.getList("Bounds", Tag.TAG_INT));
-
 		bounds = new AABB(0, 0, 0, size.getX(), size.getY(), size.getZ());
 		outline = new AABBOutline(bounds);
-		outline.getParams()
-			.colored(0x6886c5)
-			.lineWidth(1 / 16f);
+		outline.getParams().colored(0x6886c5).lineWidth(1 / 16f);
 		transformation.init(anchor, settings, bounds);
 	}
-
 	public void deploy() {
 		if (!deployed) {
 			List<ToolType> tools = ToolType.getTools(Minecraft.getInstance().player.isCreative());
@@ -378,11 +294,9 @@ public class SchematicHandler implements IGuiOverlay {
 		deployed = true;
 		setupRenderer();
 	}
-
 	public String getCurrentSchematicName() {
 		return displayedSchematic != null ? displayedSchematic : "-";
 	}
-
 	public void printInstantly() {
 		AllPackets.getChannel().sendToServer(new SchematicPlacePacket(activeSchematicItem.copy()));
 		CompoundTag nbt = activeSchematicItem.getTag();
@@ -393,29 +307,22 @@ public class SchematicHandler implements IGuiOverlay {
 		active = false;
 		markDirty();
 	}
-
 	public boolean isActive() {
 		return active;
 	}
-
 	public AABB getBounds() {
 		return bounds;
 	}
-
 	public SchematicTransformation getTransformation() {
 		return transformation;
 	}
-
 	public boolean isDeployed() {
 		return deployed;
 	}
-
 	public ItemStack getActiveSchematicItem() {
 		return activeSchematicItem;
 	}
-
 	public AABBOutline getOutline() {
 		return outline;
 	}
-
 }

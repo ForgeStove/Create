@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.utility;
-
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,9 +24,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.registries.ForgeRegistries;
-
 public final class NBTProcessors {
-
 	private static final Map<BlockEntityType<?>, UnaryOperator<CompoundTag>> processors = new HashMap<>();
 	private static final Map<BlockEntityType<?>, UnaryOperator<CompoundTag>> survivalProcessors = new HashMap<>();
 	public static synchronized void addProcessor(BlockEntityType<?> type, UnaryOperator<CompoundTag> processor) {
@@ -93,7 +90,6 @@ public final class NBTProcessors {
 			return null; // "Amendments" compat: sign data contains itemstacks
 		return data;
 	};
-
 	public static UnaryOperator<CompoundTag> itemProcessor(String tagKey) {
 		return data -> {
 			CompoundTag compound = data.getCompound(tagKey);
@@ -107,7 +103,6 @@ public final class NBTProcessors {
 			return data;
 		};
 	}
-
 	public static ItemStack withUnsafeNBTDiscarded(ItemStack stack) {
 		CompoundTag tag = stack.getTag();
 		if (tag == null) return stack;
@@ -115,7 +110,6 @@ public final class NBTProcessors {
 		copy.setTag(withUnsafeNBTDiscarded(tag));
 		return copy;
 	}
-
 	public static CompoundTag withUnsafeNBTDiscarded(CompoundTag tag) {
 		if (tag == null) return null;
 		CompoundTag copy = tag.copy();
@@ -127,10 +121,8 @@ public final class NBTProcessors {
 		if (name.equals("Enchantments")) return false;
 		if (name.contains("Potion")) return false;
 		if (name.contains("Damage")) return false;
-		if (name.equals("display")) return false;
-		return true;
+		return !name.equals("display");
 	}
-
 	public static boolean textComponentHasClickEvent(String json) {
 		return textComponentHasClickEvent(Component.Serializer.fromJson(json.isEmpty() ? "\"\"" : json));
 	}
@@ -141,7 +133,6 @@ public final class NBTProcessors {
 	}
 	private NBTProcessors() {
 	}
-
 	@Nullable
 	public static CompoundTag process(
 			BlockState blockState,

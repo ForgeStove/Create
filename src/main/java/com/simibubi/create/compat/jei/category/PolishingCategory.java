@@ -1,5 +1,4 @@
 package com.simibubi.create.compat.jei.category;
-
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import com.simibubi.create.AllItems;
@@ -18,28 +17,23 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 @ParametersAreNonnullByDefault public class PolishingCategory extends CreateRecipeCategory<SandPaperPolishingRecipe> {
-
 	private final ItemStack renderedSandpaper;
-
 	public PolishingCategory(Info<SandPaperPolishingRecipe> info) {
 		super(info);
 		renderedSandpaper = AllItems.SAND_PAPER.asStack();
 	}
-
 	@Override
 	public void setRecipe(IRecipeLayoutBuilder builder, SandPaperPolishingRecipe recipe, IFocusGroup focuses) {
 		builder.addSlot(RecipeIngredientRole.INPUT, 27, 29)
 				.setBackground(getRenderedSlot(), -1, -1)
 				.addIngredients(recipe.getIngredients().get(0));
-
 		ProcessingOutput output = recipe.getRollableResults().get(0);
 		builder.addSlot(RecipeIngredientRole.OUTPUT, 132, 29)
 				.setBackground(getRenderedSlot(output), -1, -1)
 				.addItemStack(output.getStack())
 				.addRichTooltipCallback(addStochasticTooltip(output));
 	}
-	@Override
-	public void draw(
+	@Override public void draw(
 			SandPaperPolishingRecipe recipe,
 			IRecipeSlotsView iRecipeSlotsView,
 			GuiGraphics graphics,
@@ -51,8 +45,6 @@ import net.minecraft.world.item.crafting.Ingredient;
 		NonNullList<Ingredient> ingredients = recipe.getIngredients();
 		ItemStack[] matchingStacks = ingredients.get(0).getItems();
 		if (matchingStacks.length == 0) return;
-
-
 		CompoundTag tag = renderedSandpaper.getOrCreateTag();
 		tag.put("Polishing", matchingStacks[0].serializeNBT());
 		tag.putBoolean("JEI", true);

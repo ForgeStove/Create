@@ -1,5 +1,4 @@
 package com.simibubi.create.content.decoration.copycat;
-
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -35,13 +34,9 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-
 public class CopycatPanelBlock extends WaterloggedCopycatBlock {
-
 	public static final DirectionProperty FACING = BlockStateProperties.FACING;
-
 	private static final int placementHelperId = PlacementHelpers.register(new PlacementHelper());
-
 	public CopycatPanelBlock(Properties pProperties) {
 		super(pProperties);
 		registerDefaultState(defaultBlockState().setValue(FACING, Direction.UP));
@@ -60,18 +55,15 @@ public class CopycatPanelBlock extends WaterloggedCopycatBlock {
 	) {
 		if (!CopycatSpecialCases.isTrapdoorMaterial(material))
 			return super.prepareMaterial(pLevel, pPos, pState, pPlayer, pHand, pHit, material);
-
 		Direction panelFacing = pState.getValue(FACING);
 		if (panelFacing == Direction.DOWN) material = material.setValue(TrapDoorBlock.HALF, Half.TOP);
 		if (panelFacing.getAxis() == Axis.Y)
 			return material.setValue(TrapDoorBlock.FACING, pPlayer.getDirection()).setValue(TrapDoorBlock.OPEN, false);
-
 		boolean clickedNearTop = pHit.getLocation().y - .5 > pPos.getY();
 		return material.setValue(TrapDoorBlock.OPEN, true)
 				.setValue(TrapDoorBlock.HALF, clickedNearTop ? Half.TOP : Half.BOTTOM)
 				.setValue(TrapDoorBlock.FACING, panelFacing);
 	}
-
 	@Override
 	public InteractionResult use(
 			BlockState state,
@@ -81,7 +73,6 @@ public class CopycatPanelBlock extends WaterloggedCopycatBlock {
 			InteractionHand hand,
 			BlockHitResult ray
 	) {
-
 		if (!player.isShiftKeyDown() && player.mayBuild()) {
 			ItemStack heldItem = player.getItemInHand(hand);
 			IPlacementHelper placementHelper = PlacementHelpers.get(placementHelperId);
@@ -91,10 +82,8 @@ public class CopycatPanelBlock extends WaterloggedCopycatBlock {
 				return InteractionResult.SUCCESS;
 			}
 		}
-
 		return super.use(state, world, pos, player, hand, ray);
 	}
-
 	@Override
 	public boolean isIgnoredConnectivitySide(
 			BlockAndTintGetter reader,
@@ -106,14 +95,12 @@ public class CopycatPanelBlock extends WaterloggedCopycatBlock {
 		Direction facing = state.getValue(FACING);
 		BlockState toState = reader.getBlockState(toPos);
 		if (!toState.is(this)) return facing != face.getOpposite();
-
 		BlockPos diff = fromPos.subtract(toPos);
 		int coord = facing.getAxis().choose(diff.getX(), diff.getY(), diff.getZ());
 		return facing == toState.getValue(FACING).getOpposite() && !(
 				coord != 0 && coord == facing.getAxisDirection().getStep()
 		);
 	}
-
 	@Override
 	public boolean canConnectTexturesToward(
 			BlockAndTintGetter reader,
@@ -124,13 +111,11 @@ public class CopycatPanelBlock extends WaterloggedCopycatBlock {
 		Direction facing = state.getValue(FACING);
 		BlockState toState = reader.getBlockState(toPos);
 		if (toPos.equals(fromPos.relative(facing))) return false;
-
 		BlockPos diff = fromPos.subtract(toPos);
 		int coord = facing.getAxis().choose(diff.getX(), diff.getY(), diff.getZ());
 		if (!toState.is(this)) return coord != -facing.getAxisDirection().getStep();
 		if (isOccluded(state, toState, facing)) return true;
-		if (toState.setValue(WATERLOGGED, false) == state.setValue(WATERLOGGED, false) && coord == 0) return true;
-		return false;
+		return toState.setValue(WATERLOGGED, false) == state.setValue(WATERLOGGED, false) && coord == 0;
 	}
 	@Override public boolean canFaceBeOccluded(BlockState state, Direction face) {
 		return state.getValue(FACING).getOpposite() == face;
@@ -145,7 +130,6 @@ public class CopycatPanelBlock extends WaterloggedCopycatBlock {
 	@Override protected void createBlockStateDefinition(Builder<Block, BlockState> pBuilder) {
 		super.createBlockStateDefinition(pBuilder.add(FACING));
 	}
-
 	@Override
 	public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
 		return AllShapes.CASING_3PX.get(pState.getValue(FACING));

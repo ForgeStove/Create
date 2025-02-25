@@ -1,5 +1,4 @@
 package com.simibubi.create.content.redstone.analogLever;
-
 import com.jozufozu.flywheel.api.Material;
 import com.jozufozu.flywheel.api.MaterialManager;
 import com.jozufozu.flywheel.api.instance.DynamicInstance;
@@ -14,67 +13,45 @@ import com.simibubi.create.foundation.utility.Color;
 
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.properties.AttachFace;
-
 public class AnalogLeverInstance extends BlockEntityInstance<AnalogLeverBlockEntity> implements DynamicInstance {
-
 	protected final ModelData handle;
 	protected final ModelData indicator;
-
 	final float rX;
 	final float rY;
-
 	public AnalogLeverInstance(MaterialManager materialManager, AnalogLeverBlockEntity blockEntity) {
 		super(materialManager, blockEntity);
-
 		Material<ModelData> mat = getTransformMaterial();
-
-		handle = mat.getModel(AllPartialModels.ANALOG_LEVER_HANDLE, blockState)
-			.createInstance();
-		indicator = mat.getModel(AllPartialModels.ANALOG_LEVER_INDICATOR, blockState)
-			.createInstance();
-
+		handle = mat.getModel(AllPartialModels.ANALOG_LEVER_HANDLE, blockState).createInstance();
+		indicator = mat.getModel(AllPartialModels.ANALOG_LEVER_INDICATOR, blockState).createInstance();
 		AttachFace face = blockState.getValue(AnalogLeverBlock.FACE);
 		rX = face == AttachFace.FLOOR ? 0 : face == AttachFace.WALL ? 90 : 180;
 		rY = AngleHelper.horizontalAngle(blockState.getValue(AnalogLeverBlock.FACING));
-
 		transform(indicator.loadIdentity());
 		animateLever();
 	}
-
-	@Override
-	public void beginFrame() {
-		if (!blockEntity.clientState.settled())
-			animateLever();
+	@Override public void beginFrame() {
+		if (!blockEntity.clientState.settled()) animateLever();
 	}
-
 	protected void animateLever() {
 		float state = blockEntity.clientState.getValue(AnimationTickHolder.getPartialTicks());
-
 		indicator.setColor(Color.mixColors(0x2C0300, 0xCD0000, state / 15f));
-
 		float angle = (float) ((state / 15) * 90 / 180 * Math.PI);
-
 		transform(handle.loadIdentity()).translate(1 / 2f, 1 / 16f, 1 / 2f)
-			.rotate(Direction.EAST, angle)
-			.translate(-1 / 2f, -1 / 16f, -1 / 2f);
+				.rotate(Direction.EAST, angle)
+				.translate(-1 / 2f, -1 / 16f, -1 / 2f);
 	}
-
-	@Override
-	public void remove() {
+	@Override public void remove() {
 		handle.delete();
 		indicator.delete();
 	}
-
-	@Override
-	public void updateLight() {
+	@Override public void updateLight() {
 		relight(pos, handle, indicator);
 	}
-
 	private <T extends Translate<T> & Rotate<T>> T transform(T msr) {
 		return msr.translate(getInstancePosition())
-			.centre()
-			.rotate(Direction.UP, (float) (rY / 180 * Math.PI))
-			.rotate(Direction.EAST, (float) (rX / 180 * Math.PI))
-			.unCentre();
+				.centre()
+				.rotate(Direction.UP, (float) (rY / 180 * Math.PI))
+				.rotate(Direction.EAST, (float) (rX / 180 * Math.PI))
+				.unCentre();
 	}
 }

@@ -1,5 +1,4 @@
 package com.simibubi.create.content.equipment.armor;
-
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -26,65 +25,44 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.Vec3;
-
 public class BacktankBlockEntity extends KineticBlockEntity implements Nameable {
-
 	public int airLevel;
 	public int airLevelTimer;
-	private Component defaultName;
+	private final Component defaultName;
 	private Component customName;
-
 	private int capacityEnchantLevel;
-
 	private CompoundTag vanillaTag;
 	private CompoundTag forgeCapsTag;
-
 	public BacktankBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 		defaultName = getDefaultName(state);
 		vanillaTag = new CompoundTag();
 		forgeCapsTag = null;
 	}
-
 	public static Component getDefaultName(BlockState state) {
 		if (AllBlocks.NETHERITE_BACKTANK.has(state)) {
-			AllItems.NETHERITE_BACKTANK.get()
-				.getDescription();
+			AllItems.NETHERITE_BACKTANK.get().getDescription();
 		}
-
-		return AllItems.COPPER_BACKTANK.get()
-			.getDescription();
+		return AllItems.COPPER_BACKTANK.get().getDescription();
 	}
-
-	@Override
-	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+	@Override public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		super.addBehaviours(behaviours);
 		registerAwardables(behaviours, AllAdvancements.BACKTANK);
 	}
-
-	@Override
-	public void onSpeedChanged(float previousSpeed) {
+	@Override public void onSpeedChanged(float previousSpeed) {
 		super.onSpeedChanged(previousSpeed);
-		if (getSpeed() != 0)
-			award(AllAdvancements.BACKTANK);
+		if (getSpeed() != 0) award(AllAdvancements.BACKTANK);
 	}
-
-	@Override
-	public void tick() {
+	@Override public void tick() {
 		super.tick();
-		if (getSpeed() == 0)
-			return;
-
+		if (getSpeed() == 0) return;
 		BlockState state = getBlockState();
 		BooleanProperty waterProperty = BlockStateProperties.WATERLOGGED;
-		if (state.hasProperty(waterProperty) && state.getValue(waterProperty))
-			return;
-
+		if (state.hasProperty(waterProperty) && state.getValue(waterProperty)) return;
 		if (airLevelTimer > 0) {
 			airLevelTimer--;
 			return;
 		}
-
 		int max = BacktankUtil.maxAir(capacityEnchantLevel);
 		if (level.isClientSide) {
 			Vec3 centerOf = VecHelper.getCenterOf(worldPosition);
@@ -93,85 +71,65 @@ public class BacktankBlockEntity extends KineticBlockEntity implements Nameable 
 			if (airLevel != max) level.addParticle(new AirParticleData(1, .05f), v.x, v.y, v.z, m.x, m.y, m.z);
 			return;
 		}
-		if (airLevel == max)
-			return;
-
+		if (airLevel == max) return;
 		int prevComparatorLevel = getComparatorOutput();
 		float abs = Math.abs(getSpeed());
 		int increment = Mth.clamp(((int) abs - 100) / 20, 1, 5);
 		airLevel = Math.min(max, airLevel + increment);
 		if (getComparatorOutput() != prevComparatorLevel && !level.isClientSide)
 			level.updateNeighbourForOutputSignal(worldPosition, state.getBlock());
-		if (airLevel == max)
-			sendData();
+		if (airLevel == max) sendData();
 		airLevelTimer = Mth.clamp((int) (128f - abs / 5f) - 108, 0, 20);
 	}
-
 	public int getComparatorOutput() {
 		int max = BacktankUtil.maxAir(capacityEnchantLevel);
 		return ComparatorUtil.fractionToRedstoneLevel(airLevel / (float) max);
 	}
-
-	@Override
-	protected void write(CompoundTag compound, boolean clientPacket) {
+	@Override protected void write(CompoundTag compound, boolean clientPacket) {
 		super.write(compound, clientPacket);
 		compound.putInt("Air", airLevel);
 		compound.putInt("Timer", airLevelTimer);
 		compound.putInt("CapacityEnchantment", capacityEnchantLevel);
-
-		if (this.customName != null)
-			compound.putString("CustomName", Component.Serializer.toJson(this.customName));
-
+		if (this.customName != null) compound.putString("CustomName", Component.Serializer.toJson(this.customName));
 		compound.put("VanillaTag", vanillaTag);
-		if (forgeCapsTag != null)
-			compound.put("ForgeCapsTag", forgeCapsTag);
+		if (forgeCapsTag != null) compound.put("ForgeCapsTag", forgeCapsTag);
 	}
-
-	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
+	@Override protected void read(CompoundTag compound, boolean clientPacket) {
 		super.read(compound, clientPacket);
 		int prev = airLevel;
 		airLevel = compound.getInt("Air");
 		airLevelTimer = compound.getInt("Timer");
 		capacityEnchantLevel = compound.getInt("CapacityEnchantment");
-
 		if (compound.contains("CustomName", 8))
 			this.customName = Component.Serializer.fromJson(compound.getString("CustomName"));
 		vanillaTag = compound.getCompound("VanillaTag");
 		forgeCapsTag = compound.contains("ForgeCapsTag") ? compound.getCompound("ForgeCapsTag") : null;
-
 		if (prev != 0 && prev != airLevel && airLevel == BacktankUtil.maxAir(capacityEnchantLevel) && clientPacket)
 			playFilledEffect();
 	}
-
 	protected void playFilledEffect() {
 		AllSoundEvents.CONFIRM.playAt(level, worldPosition, 0.4f, 1, true);
 		Vec3 baseMotion = new Vec3(.25, 0.1, 0);
 		Vec3 baseVec = VecHelper.getCenterOf(worldPosition);
 		for (int i = 0; i < 360; i += 10) {
 			Vec3 m = VecHelper.rotate(baseMotion, i, Axis.Y);
-			Vec3 v = baseVec.add(m.normalize()
-				.scale(.25f));
+			Vec3 v = baseVec.add(m.normalize().scale(.25f));
 			level.addParticle(ParticleTypes.SPIT, v.x, v.y, v.z, m.x, m.y, m.z);
 		}
 	}
 	@Override public Component getName() {
 		return this.customName != null ? this.customName : defaultName;
 	}
-
 	public int getAirLevel() {
 		return airLevel;
 	}
-
 	public void setAirLevel(int airLevel) {
 		this.airLevel = airLevel;
 		sendData();
 	}
-
 	public void setCustomName(Component customName) {
 		this.customName = customName;
 	}
-
 	public void setCapacityEnchantLevel(int capacityEnchantLevel) {
 		this.capacityEnchantLevel = capacityEnchantLevel;
 	}
@@ -181,12 +139,10 @@ public class BacktankBlockEntity extends KineticBlockEntity implements Nameable 
 		// Prevent nesting of the ctrl+pick block added tag
 		vanillaTag.remove("BlockEntityTag");
 	}
-
 	public CompoundTag getVanillaTag() {
 		return vanillaTag;
 	}
 	public CompoundTag getForgeCapsTag() {
 		return forgeCapsTag;
 	}
-
 }

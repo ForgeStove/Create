@@ -1,5 +1,4 @@
 package com.simibubi.create.content.kinetics.speedController;
-
 import java.util.function.Predicate;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -32,87 +31,76 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
-public class SpeedControllerBlock extends HorizontalAxisKineticBlock implements IBE<SpeedControllerBlockEntity> {
-
+@ParametersAreNonnullByDefault @MethodsReturnNonnullByDefault public class SpeedControllerBlock
+		extends HorizontalAxisKineticBlock implements IBE<SpeedControllerBlockEntity> {
 	private static final int placementHelperId = PlacementHelpers.register(new PlacementHelper());
-
 	public SpeedControllerBlock(Properties properties) {
 		super(properties);
 	}
-
-	@Override
-	public BlockState getStateForPlacement(BlockPlaceContext context) {
-		BlockState above = context.getLevel()
-			.getBlockState(context.getClickedPos()
-				.above());
-		if (ICogWheel.isLargeCog(above) && above.getValue(CogWheelBlock.AXIS)
-			.isHorizontal())
-			return defaultBlockState().setValue(HORIZONTAL_AXIS, above.getValue(CogWheelBlock.AXIS) == Axis.X ? Axis.Z : Axis.X);
+	@Override public BlockState getStateForPlacement(BlockPlaceContext context) {
+		BlockState above = context.getLevel().getBlockState(context.getClickedPos().above());
+		if (ICogWheel.isLargeCog(above) && above.getValue(CogWheelBlock.AXIS).isHorizontal())
+			return defaultBlockState().setValue(
+					HORIZONTAL_AXIS,
+					above.getValue(CogWheelBlock.AXIS) == Axis.X ? Axis.Z : Axis.X
+			);
 		return super.getStateForPlacement(context);
 	}
-
-	@Override
-	public void neighborChanged(BlockState state, Level world, BlockPos pos, Block p_220069_4_, BlockPos neighbourPos,
-		boolean p_220069_6_) {
-		if (neighbourPos.equals(pos.above()))
-			withBlockEntityDo(world, pos, SpeedControllerBlockEntity::updateBracket);
+	@Override public void neighborChanged(
+			BlockState state,
+			Level world,
+			BlockPos pos,
+			Block p_220069_4_,
+			BlockPos neighbourPos,
+			boolean p_220069_6_
+	) {
+		if (neighbourPos.equals(pos.above())) withBlockEntityDo(world, pos, SpeedControllerBlockEntity::updateBracket);
 	}
-
 	@Override
-	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand,
-		BlockHitResult ray) {
-
+	public InteractionResult use(
+			BlockState state,
+			Level world,
+			BlockPos pos,
+			Player player,
+			InteractionHand hand,
+			BlockHitResult ray
+	) {
 		ItemStack heldItem = player.getItemInHand(hand);
 		IPlacementHelper helper = PlacementHelpers.get(placementHelperId);
-		if (helper.matchesItem(heldItem))
-			return helper.getOffset(player, world, state, pos, ray).placeInWorld(world, (BlockItem) heldItem.getItem(), player, hand, ray);
-
+		if (helper.matchesItem(heldItem)) return helper.getOffset(player, world, state, pos, ray)
+				.placeInWorld(world, (BlockItem) heldItem.getItem(), player, hand, ray);
 		return InteractionResult.PASS;
 	}
-
 	@Override
 	public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
 		return AllShapes.SPEED_CONTROLLER;
 	}
-
-	@MethodsReturnNonnullByDefault
-	private static class PlacementHelper implements IPlacementHelper {
-		@Override
-		public Predicate<ItemStack> getItemPredicate() {
+	@MethodsReturnNonnullByDefault private static class PlacementHelper implements IPlacementHelper {
+		@Override public Predicate<ItemStack> getItemPredicate() {
 			return ((Predicate<ItemStack>) ICogWheel::isLargeCogItem).and(ICogWheel::isDedicatedCogItem);
 		}
-
-		@Override
-		public Predicate<BlockState> getStatePredicate() {
+		@Override public Predicate<BlockState> getStatePredicate() {
 			return AllBlocks.ROTATION_SPEED_CONTROLLER::has;
 		}
-
 		@Override
-		public PlacementOffset getOffset(Player player, Level world, BlockState state, BlockPos pos, BlockHitResult ray) {
+		public PlacementOffset getOffset(
+				Player player,
+				Level world,
+				BlockState state,
+				BlockPos pos,
+				BlockHitResult ray
+		) {
 			BlockPos newPos = pos.above();
-			if (!world.getBlockState(newPos)
-				.canBeReplaced())
-				return PlacementOffset.fail();
-
+			if (!world.getBlockState(newPos).canBeReplaced()) return PlacementOffset.fail();
 			Axis newAxis = state.getValue(HORIZONTAL_AXIS) == Axis.X ? Axis.Z : Axis.X;
-
-			if (!CogWheelBlock.isValidCogwheelPosition(true, world, newPos, newAxis))
-				return PlacementOffset.fail();
-
+			if (!CogWheelBlock.isValidCogwheelPosition(true, world, newPos, newAxis)) return PlacementOffset.fail();
 			return PlacementOffset.success(newPos, s -> s.setValue(CogWheelBlock.AXIS, newAxis));
 		}
 	}
-
-	@Override
-	public Class<SpeedControllerBlockEntity> getBlockEntityClass() {
+	@Override public Class<SpeedControllerBlockEntity> getBlockEntityClass() {
 		return SpeedControllerBlockEntity.class;
 	}
-	
-	@Override
-	public BlockEntityType<? extends SpeedControllerBlockEntity> getBlockEntityType() {
+	@Override public BlockEntityType<? extends SpeedControllerBlockEntity> getBlockEntityType() {
 		return AllBlockEntityTypes.ROTATION_SPEED_CONTROLLER.get();
 	}
 }

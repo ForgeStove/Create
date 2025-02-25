@@ -1,5 +1,4 @@
 package com.simibubi.create.content.trains.station;
-
 import com.simibubi.create.content.decoration.slidingDoor.DoorControl;
 import com.simibubi.create.foundation.networking.BlockEntityConfigurationPacket;
 
@@ -9,33 +8,27 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-
 public class StationEditPacket extends BlockEntityConfigurationPacket<StationBlockEntity> {
-
 	boolean dropSchedule;
 	boolean assemblyMode;
 	Boolean tryAssemble;
 	DoorControl doorControl;
 	String name;
-
 	public static StationEditPacket dropSchedule(BlockPos pos) {
 		StationEditPacket packet = new StationEditPacket(pos);
 		packet.dropSchedule = true;
 		return packet;
 	}
-
 	public static StationEditPacket tryAssemble(BlockPos pos) {
 		StationEditPacket packet = new StationEditPacket(pos);
 		packet.tryAssemble = true;
 		return packet;
 	}
-
 	public static StationEditPacket tryDisassemble(BlockPos pos) {
 		StationEditPacket packet = new StationEditPacket(pos);
 		packet.tryAssemble = false;
 		return packet;
 	}
-
 	public static StationEditPacket configure(BlockPos pos, boolean assemble, String name, DoorControl doorControl) {
 		StationEditPacket packet = new StationEditPacket(pos);
 		packet.assemblyMode = assemble;
@@ -44,23 +37,17 @@ public class StationEditPacket extends BlockEntityConfigurationPacket<StationBlo
 		packet.doorControl = doorControl;
 		return packet;
 	}
-
 	public StationEditPacket(FriendlyByteBuf buffer) {
 		super(buffer);
 	}
-
 	public StationEditPacket(BlockPos pos) {
 		super(pos);
 	}
-
-	@Override
-	protected void writeSettings(FriendlyByteBuf buffer) {
+	@Override protected void writeSettings(FriendlyByteBuf buffer) {
 		buffer.writeBoolean(dropSchedule);
-		if (dropSchedule)
-			return;
+		if (dropSchedule) return;
 		buffer.writeBoolean(doorControl != null);
-		if (doorControl != null)
-			buffer.writeVarInt(doorControl.ordinal());
+		if (doorControl != null) buffer.writeVarInt(doorControl.ordinal());
 		buffer.writeBoolean(tryAssemble != null);
 		if (tryAssemble != null) {
 			buffer.writeBoolean(tryAssemble);
@@ -69,9 +56,7 @@ public class StationEditPacket extends BlockEntityConfigurationPacket<StationBlo
 		buffer.writeBoolean(assemblyMode);
 		buffer.writeUtf(name);
 	}
-
-	@Override
-	protected void readSettings(FriendlyByteBuf buffer) {
+	@Override protected void readSettings(FriendlyByteBuf buffer) {
 		if (buffer.readBoolean()) {
 			dropSchedule = true;
 			return;
@@ -86,52 +71,32 @@ public class StationEditPacket extends BlockEntityConfigurationPacket<StationBlo
 		assemblyMode = buffer.readBoolean();
 		name = buffer.readUtf(256);
 	}
-
-	@Override
-	protected void applySettings(ServerPlayer player, StationBlockEntity be) {
+	@Override protected void applySettings(ServerPlayer player, StationBlockEntity be) {
 		Level level = be.getLevel();
 		BlockPos blockPos = be.getBlockPos();
 		BlockState blockState = level.getBlockState(blockPos);
-
 		if (dropSchedule) {
 			be.dropSchedule(player);
 			return;
 		}
-		
-		if (doorControl != null)
-			be.doorControls.set(doorControl);
-
-		if (!name.isBlank())
-			be.updateName(name);
-
-		if (!(blockState.getBlock() instanceof StationBlock))
-			return;
-
+		if (doorControl != null) be.doorControls.set(doorControl);
+		if (!name.isBlank()) be.updateName(name);
+		if (!(blockState.getBlock() instanceof StationBlock)) return;
 		Boolean isAssemblyMode = blockState.getValue(StationBlock.ASSEMBLING);
 		boolean assemblyComplete = false;
-
 		if (tryAssemble != null) {
-			if (!isAssemblyMode)
-				return;
+			if (!isAssemblyMode) return;
 			if (tryAssemble) {
 				be.assemble(player.getUUID());
-				assemblyComplete = be.getStation() != null && be.getStation()
-					.getPresentTrain() != null;
+				assemblyComplete = be.getStation() != null && be.getStation().getPresentTrain() != null;
 			} else {
-				if (be.tryDisassembleTrain(player) && be.tryEnterAssemblyMode())
-					be.refreshAssemblyInfo();
+				if (be.tryDisassembleTrain(player) && be.tryEnterAssemblyMode()) be.refreshAssemblyInfo();
 			}
-			if (!assemblyComplete)
-				return;
+			if (!assemblyComplete) return;
 		}
-
-		if (assemblyMode)
-			be.enterAssemblyMode(player);
-		else
-			be.exitAssemblyMode();
+		if (assemblyMode) be.enterAssemblyMode(player);
+		else be.exitAssemblyMode();
 	}
-
-	@Override
-	protected void applySettings(StationBlockEntity be) {}
-
+	@Override protected void applySettings(StationBlockEntity be) {
+	}
 }

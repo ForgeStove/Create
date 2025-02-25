@@ -1,5 +1,4 @@
 package com.simibubi.create.content.decoration.placard;
-
 import java.util.List;
 
 import com.simibubi.create.AllBlockEntityTypes;
@@ -42,187 +41,145 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.items.ItemHandlerHelper;
-
 public class PlacardBlock extends FaceAttachedHorizontalDirectionalBlock
-	implements ProperWaterloggedBlock, IBE<PlacardBlockEntity>, ISpecialBlockItemRequirement, IWrenchable {
-
+		implements ProperWaterloggedBlock, IBE<PlacardBlockEntity>, ISpecialBlockItemRequirement, IWrenchable {
 	public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
-
 	public PlacardBlock(Properties p_53182_) {
 		super(p_53182_);
-		registerDefaultState(defaultBlockState().setValue(WATERLOGGED, false)
-			.setValue(POWERED, false));
+		registerDefaultState(defaultBlockState().setValue(WATERLOGGED, false).setValue(POWERED, false));
 	}
-
-	@Override
-	protected void createBlockStateDefinition(Builder<Block, BlockState> pBuilder) {
+	@Override protected void createBlockStateDefinition(Builder<Block, BlockState> pBuilder) {
 		super.createBlockStateDefinition(pBuilder.add(FACE, FACING, WATERLOGGED, POWERED));
 	}
-
-	@Override
-	public boolean canSurvive(BlockState pState, LevelReader pLevel, BlockPos pPos) {
+	@Override public boolean canSurvive(BlockState pState, LevelReader pLevel, BlockPos pPos) {
 		return canAttachLenient(pLevel, pPos, getConnectedDirection(pState).getOpposite());
 	}
-
 	public static boolean canAttachLenient(LevelReader pReader, BlockPos pPos, Direction pDirection) {
 		BlockPos blockpos = pPos.relative(pDirection);
-		return !pReader.getBlockState(blockpos)
-			.getCollisionShape(pReader, blockpos)
-			.isEmpty();
+		return !pReader.getBlockState(blockpos).getCollisionShape(pReader, blockpos).isEmpty();
 	}
-
-	@Override
-	public BlockState getStateForPlacement(BlockPlaceContext pContext) {
+	@Override public BlockState getStateForPlacement(BlockPlaceContext pContext) {
 		BlockState stateForPlacement = super.getStateForPlacement(pContext);
-		if (stateForPlacement == null)
-			return null;
+		if (stateForPlacement == null) return null;
 		if (stateForPlacement.getValue(FACE) == AttachFace.FLOOR)
-			stateForPlacement = stateForPlacement.setValue(FACING, stateForPlacement.getValue(FACING)
-				.getOpposite());
+			stateForPlacement = stateForPlacement.setValue(FACING, stateForPlacement.getValue(FACING).getOpposite());
 		return withWater(stateForPlacement, pContext);
 	}
-
-	@Override
-	public boolean isSignalSource(BlockState pState) {
+	@Override public boolean isSignalSource(BlockState pState) {
 		return true;
 	}
-
-	@Override
-	public int getSignal(BlockState pBlockState, BlockGetter pBlockAccess, BlockPos pPos, Direction pSide) {
+	@Override public int getSignal(BlockState pBlockState, BlockGetter pBlockAccess, BlockPos pPos, Direction pSide) {
 		return pBlockState.getValue(POWERED) ? 15 : 0;
 	}
-
 	@Override
 	public int getDirectSignal(BlockState pBlockState, BlockGetter pBlockAccess, BlockPos pPos, Direction pSide) {
 		return pBlockState.getValue(POWERED) && getConnectedDirection(pBlockState) == pSide ? 15 : 0;
 	}
-
 	@Override
 	public VoxelShape getShape(BlockState pState, BlockGetter pLevel, BlockPos pPos, CollisionContext pContext) {
 		return AllShapes.PLACARD.get(getConnectedDirection(pState));
 	}
-
-	@Override
-	public BlockState updateShape(BlockState pState, Direction pFacing, BlockState pFacingState, LevelAccessor pLevel,
-		BlockPos pCurrentPos, BlockPos pFacingPos) {
+	@Override public BlockState updateShape(
+			BlockState pState,
+			Direction pFacing,
+			BlockState pFacingState,
+			LevelAccessor pLevel,
+			BlockPos pCurrentPos,
+			BlockPos pFacingPos
+	) {
 		updateWater(pLevel, pState, pCurrentPos);
 		return super.updateShape(pState, pFacing, pFacingState, pLevel, pCurrentPos, pFacingPos);
 	}
-
-	@Override
-	public FluidState getFluidState(BlockState pState) {
+	@Override public FluidState getFluidState(BlockState pState) {
 		return fluidState(pState);
 	}
-
 	@Override
-	public InteractionResult use(BlockState pState, Level pLevel, BlockPos pPos, Player player, InteractionHand pHand,
-		BlockHitResult pHit) {
-		if (player.isShiftKeyDown())
-			return InteractionResult.PASS;
-		if (pLevel.isClientSide)
-			return InteractionResult.SUCCESS;
-
+	public InteractionResult use(
+			BlockState pState,
+			Level pLevel,
+			BlockPos pPos,
+			Player player,
+			InteractionHand pHand,
+			BlockHitResult pHit
+	) {
+		if (player.isShiftKeyDown()) return InteractionResult.PASS;
+		if (pLevel.isClientSide) return InteractionResult.SUCCESS;
 		ItemStack inHand = player.getItemInHand(pHand);
-		return onBlockEntityUse(pLevel, pPos, pte -> {
-			ItemStack inBlock = pte.getHeldItem();
-
-			if (!player.mayBuild() || inHand.isEmpty() || !inBlock.isEmpty()) {
-				if (inBlock.isEmpty())
-					return InteractionResult.FAIL;
-				if (inHand.isEmpty())
-					return InteractionResult.FAIL;
-				if (pState.getValue(POWERED))
-					return InteractionResult.FAIL;
-
-				boolean test = inBlock.getItem() instanceof FilterItem ? FilterItemStack.of(inBlock)
-					.test(pLevel, inHand) : ItemHandlerHelper.canItemStacksStack(inHand, inBlock);
-				if (!test) {
-					AllSoundEvents.DENY.play(pLevel, null, pPos, 1, 1);
+		return onBlockEntityUse(
+				pLevel, pPos, pte -> {
+					ItemStack inBlock = pte.getHeldItem();
+					if (!player.mayBuild() || inHand.isEmpty() || !inBlock.isEmpty()) {
+						if (inBlock.isEmpty()) return InteractionResult.FAIL;
+						if (inHand.isEmpty()) return InteractionResult.FAIL;
+						if (pState.getValue(POWERED)) return InteractionResult.FAIL;
+						boolean test = inBlock.getItem() instanceof FilterItem ? FilterItemStack.of(inBlock)
+								.test(pLevel, inHand) : ItemHandlerHelper.canItemStacksStack(inHand, inBlock);
+						if (!test) {
+							AllSoundEvents.DENY.play(pLevel, null, pPos, 1, 1);
+							return InteractionResult.SUCCESS;
+						}
+						AllSoundEvents.CONFIRM.play(pLevel, null, pPos, 1, 1);
+						pLevel.setBlock(pPos, pState.setValue(POWERED, true), 3);
+						updateNeighbours(pState, pLevel, pPos);
+						pte.poweredTicks = 19;
+						pte.notifyUpdate();
+						return InteractionResult.SUCCESS;
+					}
+					pLevel.playSound(null, pPos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 1, 1);
+					pte.setHeldItem(ItemHandlerHelper.copyStackWithSize(inHand, 1));
+					if (!player.isCreative()) {
+						inHand.shrink(1);
+						if (inHand.isEmpty()) player.setItemInHand(pHand, ItemStack.EMPTY);
+					}
 					return InteractionResult.SUCCESS;
 				}
-
-				AllSoundEvents.CONFIRM.play(pLevel, null, pPos, 1, 1);
-				pLevel.setBlock(pPos, pState.setValue(POWERED, true), 3);
-				updateNeighbours(pState, pLevel, pPos);
-				pte.poweredTicks = 19;
-				pte.notifyUpdate();
-				return InteractionResult.SUCCESS;
-			}
-
-			pLevel.playSound(null, pPos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, 1, 1);
-			pte.setHeldItem(ItemHandlerHelper.copyStackWithSize(inHand, 1));
-
-			if (!player.isCreative()) {
-				inHand.shrink(1);
-				if (inHand.isEmpty())
-					player.setItemInHand(pHand, ItemStack.EMPTY);
-			}
-
-			return InteractionResult.SUCCESS;
-		});
+		);
 	}
-
 	public static Direction connectedDirection(BlockState state) {
 		return getConnectedDirection(state);
 	}
-
 	@Override
 	public void onRemove(BlockState pState, Level pLevel, BlockPos pPos, BlockState pNewState, boolean pIsMoving) {
 		boolean blockChanged = !pState.is(pNewState.getBlock());
-		if (!pIsMoving && blockChanged)
-			if (pState.getValue(POWERED))
-				updateNeighbours(pState, pLevel, pPos);
-
+		if (!pIsMoving && blockChanged) if (pState.getValue(POWERED)) updateNeighbours(pState, pLevel, pPos);
 		if (pState.hasBlockEntity() && (blockChanged || !pNewState.hasBlockEntity())) {
-			if (!pIsMoving)
-				withBlockEntityDo(pLevel, pPos, be -> Block.popResource(pLevel, pPos, be.getHeldItem()));
+			if (!pIsMoving) withBlockEntityDo(pLevel, pPos, be -> Block.popResource(pLevel, pPos, be.getHeldItem()));
 			pLevel.removeBlockEntity(pPos);
 		}
 	}
-
 	public static void updateNeighbours(BlockState pState, Level pLevel, BlockPos pPos) {
 		pLevel.updateNeighborsAt(pPos, pState.getBlock());
 		pLevel.updateNeighborsAt(pPos.relative(getConnectedDirection(pState).getOpposite()), pState.getBlock());
 	}
-
-	@Override
-	public void attack(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer) {
-		if (pLevel.isClientSide)
-			return;
-		withBlockEntityDo(pLevel, pPos, pte -> {
-			ItemStack heldItem = pte.getHeldItem();
-			if (heldItem.isEmpty())
-				return;
-			pPlayer.getInventory()
-				.placeItemBackInInventory(heldItem);
-			pLevel.playSound(null, pPos, SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.BLOCKS, 1, 1);
-			pte.setHeldItem(ItemStack.EMPTY);
-		});
+	@Override public void attack(BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer) {
+		if (pLevel.isClientSide) return;
+		withBlockEntityDo(
+				pLevel, pPos, pte -> {
+					ItemStack heldItem = pte.getHeldItem();
+					if (heldItem.isEmpty()) return;
+					pPlayer.getInventory().placeItemBackInInventory(heldItem);
+					pLevel.playSound(null, pPos, SoundEvents.ITEM_FRAME_REMOVE_ITEM, SoundSource.BLOCKS, 1, 1);
+					pte.setHeldItem(ItemStack.EMPTY);
+				}
+		);
 	}
-
-	@Override
-	public ItemRequirement getRequiredItems(BlockState state, BlockEntity be) {
+	@Override public ItemRequirement getRequiredItems(BlockState state, BlockEntity be) {
 		ItemStack placardStack = AllBlocks.PLACARD.asStack();
 		if (be instanceof PlacardBlockEntity pbe) {
 			ItemStack heldItem = pbe.getHeldItem();
 			if (!heldItem.isEmpty()) {
 				return new ItemRequirement(List.of(
-					new ItemRequirement.StackRequirement(placardStack, ItemUseType.CONSUME),
-					new ItemRequirement.StrictNbtStackRequirement(heldItem, ItemUseType.CONSUME)
+						new ItemRequirement.StackRequirement(placardStack, ItemUseType.CONSUME),
+						new ItemRequirement.StrictNbtStackRequirement(heldItem, ItemUseType.CONSUME)
 				));
 			}
 		}
 		return new ItemRequirement(ItemUseType.CONSUME, placardStack);
 	}
-
-	@Override
-	public Class<PlacardBlockEntity> getBlockEntityClass() {
+	@Override public Class<PlacardBlockEntity> getBlockEntityClass() {
 		return PlacardBlockEntity.class;
 	}
-
-	@Override
-	public BlockEntityType<? extends PlacardBlockEntity> getBlockEntityType() {
+	@Override public BlockEntityType<? extends PlacardBlockEntity> getBlockEntityType() {
 		return AllBlockEntityTypes.PLACARD.get();
 	}
-
 }

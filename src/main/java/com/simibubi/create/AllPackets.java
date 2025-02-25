@@ -1,5 +1,4 @@
 package com.simibubi.create;
-
 import static net.minecraftforge.network.NetworkDirection.PLAY_TO_CLIENT;
 import static net.minecraftforge.network.NetworkDirection.PLAY_TO_SERVER;
 
@@ -104,14 +103,15 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.network.PacketDistributor.TargetPoint;
 import net.minecraftforge.network.simple.SimpleChannel;
-
 public enum AllPackets {
-
 	// Client to Server
 	CONFIGURE_SCHEMATICANNON(ConfigureSchematicannonPacket.class, ConfigureSchematicannonPacket::new, PLAY_TO_SERVER),
 	CONFIGURE_STOCKSWITCH(ConfigureThresholdSwitchPacket.class, ConfigureThresholdSwitchPacket::new, PLAY_TO_SERVER),
-	CONFIGURE_SEQUENCER(ConfigureSequencedGearshiftPacket.class, ConfigureSequencedGearshiftPacket::new,
-		PLAY_TO_SERVER),
+	CONFIGURE_SEQUENCER(
+			ConfigureSequencedGearshiftPacket.class,
+			ConfigureSequencedGearshiftPacket::new,
+			PLAY_TO_SERVER
+	),
 	PLACE_SCHEMATIC(SchematicPlacePacket.class, SchematicPlacePacket::new, PLAY_TO_SERVER),
 	UPLOAD_SCHEMATIC(SchematicUploadPacket.class, SchematicUploadPacket::new, PLAY_TO_SERVER),
 	CLEAR_CONTAINER(ClearMenuPacket.class, ClearMenuPacket::new, PLAY_TO_SERVER),
@@ -129,12 +129,18 @@ public enum AllPackets {
 	EJECTOR_ELYTRA(EjectorElytraPacket.class, EjectorElytraPacket::new, PLAY_TO_SERVER),
 	LINKED_CONTROLLER_INPUT(LinkedControllerInputPacket.class, LinkedControllerInputPacket::new, PLAY_TO_SERVER),
 	LINKED_CONTROLLER_BIND(LinkedControllerBindPacket.class, LinkedControllerBindPacket::new, PLAY_TO_SERVER),
-	LINKED_CONTROLLER_USE_LECTERN(LinkedControllerStopLecternPacket.class, LinkedControllerStopLecternPacket::new,
-		PLAY_TO_SERVER),
+	LINKED_CONTROLLER_USE_LECTERN(
+			LinkedControllerStopLecternPacket.class,
+			LinkedControllerStopLecternPacket::new,
+			PLAY_TO_SERVER
+	),
 	C_CONFIGURE_CONFIG(CConfigureConfigPacket.class, CConfigureConfigPacket::new, PLAY_TO_SERVER),
 	SUBMIT_GHOST_ITEM(GhostItemSubmitPacket.class, GhostItemSubmitPacket::new, PLAY_TO_SERVER),
-	BLUEPRINT_COMPLETE_RECIPE(BlueprintAssignCompleteRecipePacket.class, BlueprintAssignCompleteRecipePacket::new,
-		PLAY_TO_SERVER),
+	BLUEPRINT_COMPLETE_RECIPE(
+			BlueprintAssignCompleteRecipePacket.class,
+			BlueprintAssignCompleteRecipePacket::new,
+			PLAY_TO_SERVER
+	),
 	CONFIGURE_SYMMETRY_WAND(ConfigureSymmetryWandPacket.class, ConfigureSymmetryWandPacket::new, PLAY_TO_SERVER),
 	CONFIGURE_WORLDSHAPER(ConfigureWorldshaperPacket.class, ConfigureWorldshaperPacket::new, PLAY_TO_SERVER),
 	TOOLBOX_EQUIP(ToolboxEquipPacket.class, ToolboxEquipPacket::new, PLAY_TO_SERVER),
@@ -157,14 +163,19 @@ public enum AllPackets {
 	EJECTOR_AWARD(EjectorAwardPacket.class, EjectorAwardPacket::new, PLAY_TO_SERVER),
 	TRACK_GRAPH_REQUEST(TrackGraphRequestPacket.class, TrackGraphRequestPacket::new, PLAY_TO_SERVER),
 	CONFIGURE_ELEVATOR_CONTACT(ElevatorContactEditPacket.class, ElevatorContactEditPacket::new, PLAY_TO_SERVER),
-	REQUEST_FLOOR_LIST(ElevatorFloorListPacket.RequestFloorList.class, ElevatorFloorListPacket.RequestFloorList::new,
-		PLAY_TO_SERVER),
+	REQUEST_FLOOR_LIST(
+			ElevatorFloorListPacket.RequestFloorList.class,
+			ElevatorFloorListPacket.RequestFloorList::new,
+			PLAY_TO_SERVER
+	),
 	ELEVATOR_SET_FLOOR(ElevatorTargetFloorPacket.class, ElevatorTargetFloorPacket::new, PLAY_TO_SERVER),
 	VALUE_SETTINGS(ValueSettingsPacket.class, ValueSettingsPacket::new, PLAY_TO_SERVER),
 	CLIPBOARD_EDIT(ClipboardEditPacket.class, ClipboardEditPacket::new, PLAY_TO_SERVER),
-	CONTRAPTION_COLLIDER_LOCK_REQUEST(ContraptionColliderLockPacketRequest.class,
-		ContraptionColliderLockPacketRequest::new, PLAY_TO_SERVER),
-
+	CONTRAPTION_COLLIDER_LOCK_REQUEST(
+			ContraptionColliderLockPacketRequest.class,
+			ContraptionColliderLockPacketRequest::new,
+			PLAY_TO_SERVER
+	),
 	// Server to Client
 	SYMMETRY_EFFECT(SymmetryEffectPacket.class, SymmetryEffectPacket::new, PLAY_TO_CLIENT),
 	SERVER_SPEED(ServerSpeedProvider.Packet.class, ServerSpeedProvider.Packet::new, PLAY_TO_CLIENT),
@@ -185,10 +196,16 @@ public enum AllPackets {
 	FUNNEL_FLAP(FunnelFlapPacket.class, FunnelFlapPacket::new, PLAY_TO_CLIENT),
 	POTATO_CANNON(PotatoCannonPacket.class, PotatoCannonPacket::new, PLAY_TO_CLIENT),
 	SOUL_PULSE(SoulPulseEffectPacket.class, SoulPulseEffectPacket::new, PLAY_TO_CLIENT),
-	PERSISTENT_DATA(ISyncPersistentData.PersistentDataPacket.class, ISyncPersistentData.PersistentDataPacket::new,
-		PLAY_TO_CLIENT),
-	SYNC_POTATO_PROJECTILE_TYPES(PotatoProjectileTypeManager.SyncPacket.class,
-		PotatoProjectileTypeManager.SyncPacket::new, PLAY_TO_CLIENT),
+	PERSISTENT_DATA(
+			ISyncPersistentData.PersistentDataPacket.class,
+			ISyncPersistentData.PersistentDataPacket::new,
+			PLAY_TO_CLIENT
+	),
+	SYNC_POTATO_PROJECTILE_TYPES(
+			PotatoProjectileTypeManager.SyncPacket.class,
+			PotatoProjectileTypeManager.SyncPacket::new,
+			PLAY_TO_CLIENT
+	),
 	SYNC_RAIL_GRAPH(TrackGraphSyncPacket.class, TrackGraphSyncPacket::new, PLAY_TO_CLIENT),
 	SYNC_EDGE_GROUP(SignalEdgeGroupPacket.class, SignalEdgeGroupPacket::new, PLAY_TO_CLIENT),
 	SYNC_TRAIN(TrainPacket.class, TrainPacket::new, PLAY_TO_CLIENT),
@@ -200,59 +217,63 @@ public enum AllPackets {
 	S_TRAIN_PROMPT(TrainPromptPacket.class, TrainPromptPacket::new, PLAY_TO_CLIENT),
 	CONTRAPTION_RELOCATION(ContraptionRelocationPacket.class, ContraptionRelocationPacket::new, PLAY_TO_CLIENT),
 	TRACK_GRAPH_ROLL_CALL(TrackGraphRollCallPacket.class, TrackGraphRollCallPacket::new, PLAY_TO_CLIENT),
-	S_PLACE_EJECTOR(ArmPlacementPacket.ClientBoundRequest.class, ArmPlacementPacket.ClientBoundRequest::new,
-		PLAY_TO_CLIENT),
-	S_PLACE_ARM(EjectorPlacementPacket.ClientBoundRequest.class, EjectorPlacementPacket.ClientBoundRequest::new,
-		PLAY_TO_CLIENT),
+	S_PLACE_EJECTOR(
+			ArmPlacementPacket.ClientBoundRequest.class,
+			ArmPlacementPacket.ClientBoundRequest::new,
+			PLAY_TO_CLIENT
+	),
+	S_PLACE_ARM(
+			EjectorPlacementPacket.ClientBoundRequest.class,
+			EjectorPlacementPacket.ClientBoundRequest::new,
+			PLAY_TO_CLIENT
+	),
 	UPDATE_ELEVATOR_FLOORS(ElevatorFloorListPacket.class, ElevatorFloorListPacket::new, PLAY_TO_CLIENT),
 	CONTRAPTION_ACTOR_TOGGLE(ContraptionDisableActorPacket.class, ContraptionDisableActorPacket::new, PLAY_TO_CLIENT),
 	CONTRAPTION_COLLIDER_LOCK(ContraptionColliderLockPacket.class, ContraptionColliderLockPacket::new, PLAY_TO_CLIENT),
 	ATTACHED_COMPUTER(AttachedComputerPacket.class, AttachedComputerPacket::new, PLAY_TO_CLIENT),
-	SERVER_DEBUG_INFO(ServerDebugInfoPacket.class, ServerDebugInfoPacket::new, PLAY_TO_CLIENT)
-	;
-
+	SERVER_DEBUG_INFO(ServerDebugInfoPacket.class, ServerDebugInfoPacket::new, PLAY_TO_CLIENT);
 	public static final ResourceLocation CHANNEL_NAME = Create.asResource("main");
 	public static final int NETWORK_VERSION = 3;
 	public static final String NETWORK_VERSION_STR = String.valueOf(NETWORK_VERSION);
 	private static SimpleChannel channel;
-
-	private PacketType<?> packetType;
-
-	<T extends SimplePacketBase> AllPackets(Class<T> type, Function<FriendlyByteBuf, T> factory,
-		NetworkDirection direction) {
+	private final PacketType<?> packetType;
+	<T extends SimplePacketBase> AllPackets(
+			Class<T> type,
+			Function<FriendlyByteBuf, T> factory,
+			NetworkDirection direction
+	) {
 		packetType = new PacketType<>(type, factory, direction);
 	}
-
 	public static void registerPackets() {
 		channel = NetworkRegistry.ChannelBuilder.named(CHANNEL_NAME)
-			.serverAcceptedVersions(NETWORK_VERSION_STR::equals)
-			.clientAcceptedVersions(NETWORK_VERSION_STR::equals)
-			.networkProtocolVersion(() -> NETWORK_VERSION_STR)
-			.simpleChannel();
-
+				.serverAcceptedVersions(NETWORK_VERSION_STR::equals)
+				.clientAcceptedVersions(NETWORK_VERSION_STR::equals)
+				.networkProtocolVersion(() -> NETWORK_VERSION_STR)
+				.simpleChannel();
 		for (AllPackets packet : values())
 			packet.packetType.register();
 	}
-
 	public static SimpleChannel getChannel() {
 		return channel;
 	}
-
 	public static void sendToNear(Level world, BlockPos pos, int range, Object message) {
 		getChannel().send(
-			PacketDistributor.NEAR.with(TargetPoint.p(pos.getX(), pos.getY(), pos.getZ(), range, world.dimension())),
-			message);
+				PacketDistributor.NEAR.with(TargetPoint.p(
+						pos.getX(),
+						pos.getY(),
+						pos.getZ(),
+						range,
+						world.dimension()
+				)), message
+		);
 	}
-
 	private static class PacketType<T extends SimplePacketBase> {
 		private static int index = 0;
-
-		private BiConsumer<T, FriendlyByteBuf> encoder;
-		private Function<FriendlyByteBuf, T> decoder;
-		private BiConsumer<T, Supplier<Context>> handler;
-		private Class<T> type;
-		private NetworkDirection direction;
-
+		private final BiConsumer<T, FriendlyByteBuf> encoder;
+		private final Function<FriendlyByteBuf, T> decoder;
+		private final BiConsumer<T, Supplier<Context>> handler;
+		private final Class<T> type;
+		private final NetworkDirection direction;
 		private PacketType(Class<T> type, Function<FriendlyByteBuf, T> factory, NetworkDirection direction) {
 			encoder = T::write;
 			decoder = factory;
@@ -265,14 +286,12 @@ public enum AllPackets {
 			this.type = type;
 			this.direction = direction;
 		}
-
 		private void register() {
 			getChannel().messageBuilder(type, index++, direction)
-				.encoder(encoder)
-				.decoder(decoder)
-				.consumerNetworkThread(handler)
-				.add();
+					.encoder(encoder)
+					.decoder(decoder)
+					.consumerNetworkThread(handler)
+					.add();
 		}
 	}
-
 }

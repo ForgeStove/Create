@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.utility;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,9 +16,7 @@ import com.google.gson.stream.JsonWriter;
 import com.simibubi.create.Create;
 
 import net.minecraft.nbt.CompoundTag;
-
 public class FilesHelper {
-
 	public static void createFolderIfMissing(String name) {
 		try {
 			Files.createDirectories(Paths.get(name));
@@ -27,7 +24,6 @@ public class FilesHelper {
 			Create.LOGGER.warn("Could not create Folder: {}", name);
 		}
 	}
-
 	public static String findFirstValidFilename(String name, Path folderPath, String extension) {
 		int index = 0;
 		String filename;
@@ -39,16 +35,14 @@ public class FilesHelper {
 		} while (Files.exists(filepath));
 		return filename;
 	}
-
 	public static String slug(String name) {
-		return Lang.asId(name)
-			.replaceAll("\\W+", "_");
+		return Lang.asId(name).replaceAll("\\W+", "_");
 	}
-
 	public static boolean saveTagCompoundAsJson(CompoundTag compound, String path) {
 		try {
-			Files.deleteIfExists(Paths.get(path));
-			JsonWriter writer = new JsonWriter(Files.newBufferedWriter(Paths.get(path), StandardOpenOption.CREATE));
+			Path path1 = Paths.get(path);
+			Files.deleteIfExists(path1);
+			JsonWriter writer = new JsonWriter(Files.newBufferedWriter(path1, StandardOpenOption.CREATE));
 			writer.setIndent("  ");
 			Streams.write(JsonParser.parseString(compound.toString()), writer);
 			writer.close();
@@ -58,11 +52,11 @@ public class FilesHelper {
 		}
 		return false;
 	}
-
 	public static boolean saveTagCompoundAsJsonCompact(CompoundTag compound, String path) {
 		try {
-			Files.deleteIfExists(Paths.get(path));
-			JsonWriter writer = new JsonWriter(Files.newBufferedWriter(Paths.get(path), StandardOpenOption.CREATE));
+			Path path1 = Paths.get(path);
+			Files.deleteIfExists(path1);
+			JsonWriter writer = new JsonWriter(Files.newBufferedWriter(path1, StandardOpenOption.CREATE));
 			Streams.write(JsonParser.parseString(compound.toString()), writer);
 			writer.close();
 			return true;
@@ -70,9 +64,7 @@ public class FilesHelper {
 			e.printStackTrace();
 		}
 		return false;
-
 	}
-
 	private static JsonElement loadJson(InputStream inputStream) {
 		try {
 			JsonReader reader = new JsonReader(new BufferedReader(new InputStreamReader(inputStream)));
@@ -86,11 +78,9 @@ public class FilesHelper {
 		}
 		return null;
 	}
-
 	public static JsonElement loadJsonResource(String filepath) {
 		return loadJson(ClassLoader.getSystemResourceAsStream(filepath));
 	}
-
 	public static JsonElement loadJson(String filepath) {
 		try {
 			return loadJson(Files.newInputStream(Paths.get(filepath), StandardOpenOption.READ));
@@ -99,5 +89,4 @@ public class FilesHelper {
 		}
 		return null;
 	}
-
 }

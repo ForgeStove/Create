@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.outliner;
-
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -23,26 +22,20 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-
 public abstract class Outline {
-
 	protected final OutlineParams params;
-
 	protected final Vector4f colorTemp = new Vector4f();
 	protected final Vector3f diffPosTemp = new Vector3f();
 	protected final Vector3f minPosTemp = new Vector3f();
 	protected final Vector3f maxPosTemp = new Vector3f();
 	protected final Vector4f posTransformTemp = new Vector4f();
 	protected final Vector3f normalTransformTemp = new Vector3f();
-
 	public Outline() {
 		params = new OutlineParams();
 	}
-
 	public OutlineParams getParams() {
 		return params;
 	}
-
 	public abstract void render(PoseStack ms, SuperRenderTypeBuffer buffer, Vec3 camera, float pt);
 	public void tick() {
 	}
@@ -59,12 +52,10 @@ public abstract class Outline {
 	) {
 		Vector3f diff = this.diffPosTemp;
 		diff.set((float) (end.x - start.x), (float) (end.y - start.y), (float) (end.z - start.z));
-
 		float length = Mth.sqrt(diff.x() * diff.x() + diff.y() * diff.y() + diff.z() * diff.z());
 		float hAngle = AngleHelper.deg(Mth.atan2(diff.x(), diff.z()));
 		float hDistance = Mth.sqrt(diff.x() * diff.x() + diff.z() * diff.z());
 		float vAngle = AngleHelper.deg(Mth.atan2(hDistance, diff.y())) - 90;
-
 		poseStack.pushPose();
 		TransformStack.cast(poseStack)
 				.translate(start.x - camera.x, start.y - camera.y, start.z - camera.z)
@@ -96,11 +87,9 @@ public abstract class Outline {
 	) {
 		Vector3f minPos = minPosTemp;
 		Vector3f maxPos = maxPosTemp;
-
 		float halfWidth = width / 2;
 		minPos.set(origin.x() - halfWidth, origin.y() - halfWidth, origin.z() - halfWidth);
 		maxPos.set(origin.x() + halfWidth, origin.y() + halfWidth, origin.z() + halfWidth);
-
 		switch (direction) {
 			case DOWN -> {
 				minPos.add(0, -length, 0);
@@ -121,7 +110,6 @@ public abstract class Outline {
 				maxPos.add(length, 0, 0);
 			}
 		}
-
 		bufferCuboid(pose, consumer, minPos, maxPos, color, lightmap, disableNormals);
 	}
 	public void bufferCuboid(
@@ -135,73 +123,59 @@ public abstract class Outline {
 	) {
 		Vector4f posTransformTemp = this.posTransformTemp;
 		Vector3f normalTransformTemp = this.normalTransformTemp;
-
 		float minX = minPos.x();
 		float minY = minPos.y();
 		float minZ = minPos.z();
 		float maxX = maxPos.x();
 		float maxY = maxPos.y();
 		float maxZ = maxPos.z();
-
 		Matrix4f posMatrix = pose.pose();
-
 		posTransformTemp.set(minX, minY, maxZ, 1);
 		posTransformTemp.mul(posMatrix);
 		double x0 = posTransformTemp.x();
 		double y0 = posTransformTemp.y();
 		double z0 = posTransformTemp.z();
-
 		posTransformTemp.set(minX, minY, minZ, 1);
 		posTransformTemp.mul(posMatrix);
 		double x1 = posTransformTemp.x();
 		double y1 = posTransformTemp.y();
 		double z1 = posTransformTemp.z();
-
 		posTransformTemp.set(maxX, minY, minZ, 1);
 		posTransformTemp.mul(posMatrix);
 		double x2 = posTransformTemp.x();
 		double y2 = posTransformTemp.y();
 		double z2 = posTransformTemp.z();
-
 		posTransformTemp.set(maxX, minY, maxZ, 1);
 		posTransformTemp.mul(posMatrix);
 		double x3 = posTransformTemp.x();
 		double y3 = posTransformTemp.y();
 		double z3 = posTransformTemp.z();
-
 		posTransformTemp.set(minX, maxY, minZ, 1);
 		posTransformTemp.mul(posMatrix);
 		double x4 = posTransformTemp.x();
 		double y4 = posTransformTemp.y();
 		double z4 = posTransformTemp.z();
-
 		posTransformTemp.set(minX, maxY, maxZ, 1);
 		posTransformTemp.mul(posMatrix);
 		double x5 = posTransformTemp.x();
 		double y5 = posTransformTemp.y();
 		double z5 = posTransformTemp.z();
-
 		posTransformTemp.set(maxX, maxY, maxZ, 1);
 		posTransformTemp.mul(posMatrix);
 		double x6 = posTransformTemp.x();
 		double y6 = posTransformTemp.y();
 		double z6 = posTransformTemp.z();
-
 		posTransformTemp.set(maxX, maxY, minZ, 1);
 		posTransformTemp.mul(posMatrix);
 		double x7 = posTransformTemp.x();
 		double y7 = posTransformTemp.y();
 		double z7 = posTransformTemp.z();
-
 		float r = color.x();
 		float g = color.y();
 		float b = color.z();
 		float a = color.w();
-
 		Matrix3f normalMatrix = pose.normal();
-
 		// down
-
 		if (disableNormals) {
 			normalTransformTemp.set(0, 1, 0);
 		} else {
@@ -211,7 +185,6 @@ public abstract class Outline {
 		float nx0 = normalTransformTemp.x();
 		float ny0 = normalTransformTemp.y();
 		float nz0 = normalTransformTemp.z();
-
 		consumer.vertex(x0, y0, z0)
 				.color(r, g, b, a)
 				.uv(0, 0)
@@ -219,7 +192,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx0, ny0, nz0)
 				.endVertex();
-
 		consumer.vertex(x1, y1, z1)
 				.color(r, g, b, a)
 				.uv(0, 1)
@@ -227,7 +199,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx0, ny0, nz0)
 				.endVertex();
-
 		consumer.vertex(x2, y2, z2)
 				.color(r, g, b, a)
 				.uv(1, 1)
@@ -235,7 +206,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx0, ny0, nz0)
 				.endVertex();
-
 		consumer.vertex(x3, y3, z3)
 				.color(r, g, b, a)
 				.uv(1, 0)
@@ -243,7 +213,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx0, ny0, nz0)
 				.endVertex();
-
 		// up
 		normalTransformTemp.set(0, 1, 0);
 		normalTransformTemp.mul(normalMatrix);
@@ -257,7 +226,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx1, ny1, nz1)
 				.endVertex();
-
 		consumer.vertex(x5, y5, z5)
 				.color(r, g, b, a)
 				.uv(0, 1)
@@ -265,7 +233,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx1, ny1, nz1)
 				.endVertex();
-
 		consumer.vertex(x6, y6, z6)
 				.color(r, g, b, a)
 				.uv(1, 1)
@@ -273,7 +240,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx1, ny1, nz1)
 				.endVertex();
-
 		consumer.vertex(x7, y7, z7)
 				.color(r, g, b, a)
 				.uv(1, 0)
@@ -281,7 +247,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx1, ny1, nz1)
 				.endVertex();
-
 		// north
 		if (disableNormals) {
 			normalTransformTemp.set(0, 1, 0);
@@ -299,7 +264,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx2, ny2, nz2)
 				.endVertex();
-
 		consumer.vertex(x2, y2, z2)
 				.color(r, g, b, a)
 				.uv(0, 1)
@@ -307,7 +271,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx2, ny2, nz2)
 				.endVertex();
-
 		consumer.vertex(x1, y1, z1)
 				.color(r, g, b, a)
 				.uv(1, 1)
@@ -315,7 +278,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx2, ny2, nz2)
 				.endVertex();
-
 		consumer.vertex(x4, y4, z4)
 				.color(r, g, b, a)
 				.uv(1, 0)
@@ -323,7 +285,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx2, ny2, nz2)
 				.endVertex();
-
 		// south
 		if (disableNormals) {
 			normalTransformTemp.set(0, 1, 0);
@@ -341,7 +302,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx3, ny3, nz3)
 				.endVertex();
-
 		consumer.vertex(x0, y0, z0)
 				.color(r, g, b, a)
 				.uv(0, 1)
@@ -349,7 +309,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx3, ny3, nz3)
 				.endVertex();
-
 		consumer.vertex(x3, y3, z3)
 				.color(r, g, b, a)
 				.uv(1, 1)
@@ -357,7 +316,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx3, ny3, nz3)
 				.endVertex();
-
 		consumer.vertex(x6, y6, z6)
 				.color(r, g, b, a)
 				.uv(1, 0)
@@ -365,7 +323,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx3, ny3, nz3)
 				.endVertex();
-
 		// west
 		if (disableNormals) {
 			normalTransformTemp.set(0, 1, 0);
@@ -383,7 +340,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx4, ny4, nz4)
 				.endVertex();
-
 		consumer.vertex(x1, y1, z1)
 				.color(r, g, b, a)
 				.uv(0, 1)
@@ -391,7 +347,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx4, ny4, nz4)
 				.endVertex();
-
 		consumer.vertex(x0, y0, z0)
 				.color(r, g, b, a)
 				.uv(1, 1)
@@ -399,7 +354,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx4, ny4, nz4)
 				.endVertex();
-
 		consumer.vertex(x5, y5, z5)
 				.color(r, g, b, a)
 				.uv(1, 0)
@@ -407,7 +361,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx4, ny4, nz4)
 				.endVertex();
-
 		// east
 		if (disableNormals) {
 			normalTransformTemp.set(0, 1, 0);
@@ -425,7 +378,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx5, ny5, nz5)
 				.endVertex();
-
 		consumer.vertex(x3, y3, z3)
 				.color(r, g, b, a)
 				.uv(0, 1)
@@ -433,7 +385,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx5, ny5, nz5)
 				.endVertex();
-
 		consumer.vertex(x2, y2, z2)
 				.color(r, g, b, a)
 				.uv(1, 1)
@@ -441,7 +392,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx5, ny5, nz5)
 				.endVertex();
-
 		consumer.vertex(x7, y7, z7)
 				.color(r, g, b, a)
 				.uv(1, 0)
@@ -517,7 +467,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx, ny, nz)
 				.endVertex();
-
 		consumer.vertex(x1, y1, z1)
 				.color(r, g, b, a)
 				.uv(minU, maxV)
@@ -525,7 +474,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx, ny, nz)
 				.endVertex();
-
 		consumer.vertex(x2, y2, z2)
 				.color(r, g, b, a)
 				.uv(maxU, maxV)
@@ -533,7 +481,6 @@ public abstract class Outline {
 				.uv2(lightmap)
 				.normal(nx, ny, nz)
 				.endVertex();
-
 		consumer.vertex(x3, y3, z3)
 				.color(r, g, b, a)
 				.uv(maxU, minV)

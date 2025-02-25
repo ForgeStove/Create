@@ -1,5 +1,4 @@
 package com.simibubi.create.content.equipment.armor;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -49,7 +48,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraftforge.common.util.FakePlayer;
 public class BacktankBlock extends HorizontalKineticBlock
 		implements IBE<BacktankBlockEntity>, SimpleWaterloggedBlock, ISpecialBlockItemRequirement {
-
 	public BacktankBlock(Properties properties) {
 		super(properties);
 		registerDefaultState(defaultBlockState().setValue(BlockStateProperties.WATERLOGGED, false));
@@ -92,7 +90,6 @@ public class BacktankBlock extends HorizontalKineticBlock
 	@Override public Axis getRotationAxis(BlockState state) {
 		return Axis.Y;
 	}
-
 	@Override
 	public void setPlacedBy(Level worldIn, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
 		super.setPlacedBy(worldIn, pos, state, placer, stack);
@@ -115,10 +112,8 @@ public class BacktankBlock extends HorizontalKineticBlock
 	// outside of the vanilla tag
 	public List<ItemStack> getDrops(BlockState pState, LootParams.Builder pBuilder) {
 		List<ItemStack> lootDrops = super.getDrops(pState, pBuilder);
-
 		BlockEntity blockEntity = pBuilder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
 		if (!(blockEntity instanceof BacktankBlockEntity bbe)) return lootDrops;
-
 		CompoundTag forgeCapsTag = bbe.getForgeCapsTag();
 		if (forgeCapsTag == null) return lootDrops;
 		return lootDrops.stream().map(stack -> {
@@ -128,7 +123,6 @@ public class BacktankBlock extends HorizontalKineticBlock
 			return modifiedStack;
 		}).toList();
 	}
-
 	@Override
 	public InteractionResult use(
 			BlockState state,
@@ -153,15 +147,14 @@ public class BacktankBlock extends HorizontalKineticBlock
 	@Override public ItemStack getCloneItemStack(BlockGetter blockGetter, BlockPos pos, BlockState state) {
 		Item item = asItem();
 		if (item instanceof BacktankItem.BacktankBlockItem placeable) item = placeable.getActualItem();
-
 		Optional<BacktankBlockEntity> blockEntityOptional = getBlockEntityOptional(blockGetter, pos);
-
 		CompoundTag forgeCapsTag = blockEntityOptional.map(BacktankBlockEntity::getForgeCapsTag)
-				.map(CompoundTag::copy).orElse(null);
+				.map(CompoundTag::copy)
+				.orElse(null);
 		CompoundTag vanillaTag = blockEntityOptional.map(BacktankBlockEntity::getVanillaTag)
-				.map(CompoundTag::copy).orElse(new CompoundTag());
+				.map(CompoundTag::copy)
+				.orElse(new CompoundTag());
 		int air = blockEntityOptional.map(BacktankBlockEntity::getAirLevel).orElse(0);
-
 		ItemStack stack = new ItemStack(item, 1, forgeCapsTag);
 		vanillaTag.putInt("Air", air);
 		stack.setTag(vanillaTag);

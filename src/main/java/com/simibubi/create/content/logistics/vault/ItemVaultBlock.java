@@ -1,5 +1,4 @@
 package com.simibubi.create.content.logistics.vault;
-
 import javax.annotation.Nullable;
 
 import com.simibubi.create.AllBlockEntityTypes;
@@ -31,14 +30,10 @@ import net.minecraft.world.level.block.state.StateDefinition.Builder;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.ForgeSoundType;
-
 public class ItemVaultBlock extends Block implements IWrenchable, IBE<ItemVaultBlockEntity> {
-
 	public static final Property<Axis> HORIZONTAL_AXIS = BlockStateProperties.HORIZONTAL_AXIS;
 	public static final BooleanProperty LARGE = BooleanProperty.create("large");
-
 	public ItemVaultBlock(Properties p_i48440_1_) {
 		super(p_i48440_1_);
 		registerDefaultState(defaultBlockState().setValue(LARGE, false));
@@ -56,7 +51,6 @@ public class ItemVaultBlock extends Block implements IWrenchable, IBE<ItemVaultB
 		}
 		return this.defaultBlockState().setValue(HORIZONTAL_AXIS, pContext.getHorizontalDirection().getAxis());
 	}
-
 	@Override
 	public void onPlace(BlockState pState, Level pLevel, BlockPos pPos, BlockState pOldState, boolean pIsMoving) {
 		if (pOldState.getBlock() == pState.getBlock()) return;
@@ -66,8 +60,7 @@ public class ItemVaultBlock extends Block implements IWrenchable, IBE<ItemVaultB
 	@Override public InteractionResult onWrenched(BlockState state, UseOnContext context) {
 		if (context.getClickedFace().getAxis().isVertical()) {
 			BlockEntity be = context.getLevel().getBlockEntity(context.getClickedPos());
-			if (be instanceof ItemVaultBlockEntity) {
-				ItemVaultBlockEntity vault = (ItemVaultBlockEntity) be;
+			if (be instanceof ItemVaultBlockEntity vault) {
 				ConnectivityHandler.splitMulti(vault);
 				vault.removeController(true);
 			}
@@ -80,8 +73,7 @@ public class ItemVaultBlock extends Block implements IWrenchable, IBE<ItemVaultB
 	public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean pIsMoving) {
 		if (state.hasBlockEntity() && (state.getBlock() != newState.getBlock() || !newState.hasBlockEntity())) {
 			BlockEntity be = world.getBlockEntity(pos);
-			if (!(be instanceof ItemVaultBlockEntity)) return;
-			ItemVaultBlockEntity vaultBE = (ItemVaultBlockEntity) be;
+			if (!(be instanceof ItemVaultBlockEntity vaultBE)) return;
 			ItemHelper.dropContents(world, pos, vaultBE.inventory);
 			world.removeBlockEntity(pos);
 			ConnectivityHandler.splitMulti(vaultBE);

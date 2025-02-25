@@ -1,5 +1,4 @@
 package com.simibubi.create.content.logistics.depot;
-
 import com.simibubi.create.AllPackets;
 
 import net.minecraft.core.BlockPos;
@@ -15,41 +14,32 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.network.PacketDistributor;
-
-@EventBusSubscriber
-public class EjectorItem extends BlockItem {
-
+@EventBusSubscriber public class EjectorItem extends BlockItem {
 	public EjectorItem(Block p_i48527_1_, Properties p_i48527_2_) {
 		super(p_i48527_1_, p_i48527_2_);
 	}
-
-	@Override
-	public InteractionResult useOn(UseOnContext ctx) {
+	@Override public InteractionResult useOn(UseOnContext ctx) {
 		Player player = ctx.getPlayer();
-		if (player != null && player.isShiftKeyDown())
-			return InteractionResult.SUCCESS;
+		if (player != null && player.isShiftKeyDown()) return InteractionResult.SUCCESS;
 		return super.useOn(ctx);
 	}
-
-	@Override
-	protected BlockState getPlacementState(BlockPlaceContext p_195945_1_) {
+	@Override protected BlockState getPlacementState(BlockPlaceContext p_195945_1_) {
 		BlockState stateForPlacement = super.getPlacementState(p_195945_1_);
 		return stateForPlacement;
 	}
-
 	@Override
-	protected boolean updateCustomBlockEntityTag(BlockPos pos, Level world, Player player, ItemStack p_195943_4_,
-		BlockState p_195943_5_) {
-		if (!world.isClientSide && player instanceof ServerPlayer sp)
-			AllPackets.getChannel()
+	protected boolean updateCustomBlockEntityTag(
+			BlockPos pos,
+			Level world,
+			Player player,
+			ItemStack p_195943_4_,
+			BlockState p_195943_5_
+	) {
+		if (!world.isClientSide && player instanceof ServerPlayer sp) AllPackets.getChannel()
 				.send(PacketDistributor.PLAYER.with(() -> sp), new EjectorPlacementPacket.ClientBoundRequest(pos));
 		return super.updateCustomBlockEntityTag(pos, world, player, p_195943_4_, p_195943_5_);
 	}
-
-	@Override
-	public boolean canAttackBlock(BlockState state, Level world, BlockPos pos,
-		Player p_195938_4_) {
+	@Override public boolean canAttackBlock(BlockState state, Level world, BlockPos pos, Player p_195938_4_) {
 		return !p_195938_4_.isShiftKeyDown();
 	}
-
 }

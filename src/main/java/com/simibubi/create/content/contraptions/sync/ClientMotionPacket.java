@@ -1,5 +1,4 @@
 package com.simibubi.create.content.contraptions.sync;
-
 import com.simibubi.create.AllPackets;
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 
@@ -8,40 +7,31 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkEvent.Context;
 import net.minecraftforge.network.PacketDistributor;
-
 public class ClientMotionPacket extends SimplePacketBase {
-
-	private Vec3 motion;
-	private boolean onGround;
-	private float limbSwing;
-
+	private final Vec3 motion;
+	private final boolean onGround;
+	private final float limbSwing;
 	public ClientMotionPacket(Vec3 motion, boolean onGround, float limbSwing) {
 		this.motion = motion;
 		this.onGround = onGround;
 		this.limbSwing = limbSwing;
 	}
-
 	public ClientMotionPacket(FriendlyByteBuf buffer) {
 		motion = new Vec3(buffer.readFloat(), buffer.readFloat(), buffer.readFloat());
 		onGround = buffer.readBoolean();
 		limbSwing = buffer.readFloat();
 	}
-
-	@Override
-	public void write(FriendlyByteBuf buffer) {
+	@Override public void write(FriendlyByteBuf buffer) {
 		buffer.writeFloat((float) motion.x);
 		buffer.writeFloat((float) motion.y);
 		buffer.writeFloat((float) motion.z);
 		buffer.writeBoolean(onGround);
 		buffer.writeFloat(limbSwing);
 	}
-
-	@Override
-	public boolean handle(Context context) {
+	@Override public boolean handle(Context context) {
 		context.enqueueWork(() -> {
 			ServerPlayer sender = context.getSender();
-			if (sender == null)
-				return;
+			if (sender == null) return;
 			sender.setDeltaMovement(motion);
 			sender.setOnGround(onGround);
 			if (onGround) {
@@ -50,10 +40,11 @@ public class ClientMotionPacket extends SimplePacketBase {
 				sender.connection.aboveGroundTickCount = 0;
 				sender.connection.aboveGroundVehicleTickCount = 0;
 			}
-			AllPackets.getChannel().send(PacketDistributor.TRACKING_ENTITY.with(() -> sender),
-				new LimbSwingUpdatePacket(sender.getId(), sender.position(), limbSwing));
+			AllPackets.getChannel().send(
+					PacketDistributor.TRACKING_ENTITY.with(() -> sender),
+					new LimbSwingUpdatePacket(sender.getId(), sender.position(), limbSwing)
+			);
 		});
 		return true;
 	}
-
 }

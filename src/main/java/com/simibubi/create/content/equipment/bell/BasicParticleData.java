@@ -1,5 +1,4 @@
 package com.simibubi.create.content.equipment.bell;
-
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import com.mojang.brigadier.StringReader;
@@ -17,53 +16,56 @@ import net.minecraft.core.particles.ParticleType;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
-@ParametersAreNonnullByDefault
-@MethodsReturnNonnullByDefault
-public abstract class BasicParticleData<T extends Particle> implements ParticleOptions, ICustomParticleDataWithSprite<BasicParticleData<T>> {
-
-	public BasicParticleData() { }
-
-	@Override
-	public Deserializer<BasicParticleData<T>> getDeserializer() {
+@ParametersAreNonnullByDefault @MethodsReturnNonnullByDefault
+public abstract class BasicParticleData<T extends Particle>
+		implements ParticleOptions, ICustomParticleDataWithSprite<BasicParticleData<T>> {
+	public BasicParticleData() {
+	}
+	@Override public Deserializer<BasicParticleData<T>> getDeserializer() {
 		BasicParticleData<T> data = this;
-		return new ParticleOptions.Deserializer<BasicParticleData<T>>() {
+		return new ParticleOptions.Deserializer<>() {
 			@Override
 			public BasicParticleData<T> fromCommand(ParticleType<BasicParticleData<T>> arg0, StringReader reader) {
 				return data;
 			}
-
 			@Override
 			public BasicParticleData<T> fromNetwork(ParticleType<BasicParticleData<T>> type, FriendlyByteBuf buffer) {
 				return data;
 			}
 		};
 	}
-
-	@Override
-	public Codec<BasicParticleData<T>> getCodec(ParticleType<BasicParticleData<T>> type) {
+	@Override public Codec<BasicParticleData<T>> getCodec(ParticleType<BasicParticleData<T>> type) {
 		return Codec.unit(this);
 	}
-
 	public interface IBasicParticleFactory<U extends Particle> {
-		U makeParticle(ClientLevel worldIn, double x, double y, double z, double vx, double vy, double vz, SpriteSet sprite);
+		U makeParticle(
+				ClientLevel worldIn,
+				double x,
+				double y,
+				double z,
+				double vx,
+				double vy,
+				double vz,
+				SpriteSet sprite
+		);
 	}
-
-	@OnlyIn(Dist.CLIENT)
-	public abstract IBasicParticleFactory<T> getBasicFactory();
-
-	@Override
-	@OnlyIn(Dist.CLIENT)
+	@OnlyIn(Dist.CLIENT) public abstract IBasicParticleFactory<T> getBasicFactory();
+	@Override @OnlyIn(Dist.CLIENT)
 	public ParticleEngine.SpriteParticleRegistration<BasicParticleData<T>> getMetaFactory() {
-		return animatedSprite -> (data, worldIn, x, y, z, vx, vy, vz) ->
-				getBasicFactory().makeParticle(worldIn, x, y, z, vx, vy, vz, animatedSprite);
+		return animatedSprite -> (data, worldIn, x, y, z, vx, vy, vz) -> getBasicFactory().makeParticle(
+				worldIn,
+				x,
+				y,
+				z,
+				vx,
+				vy,
+				vz,
+				animatedSprite
+		);
 	}
-
-	@Override
-	public String writeToString() {
+	@Override public String writeToString() {
 		return RegisteredObjects.getKeyOrThrow(getType()).toString();
 	}
-
-	@Override
-	public void writeToNetwork(FriendlyByteBuf buffer) { }
+	@Override public void writeToNetwork(FriendlyByteBuf buffer) {
+	}
 }

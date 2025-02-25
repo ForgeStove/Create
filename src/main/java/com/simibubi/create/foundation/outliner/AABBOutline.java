@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.outliner;
-
 import java.util.Optional;
 
 import org.joml.Vector3f;
@@ -15,13 +14,10 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-
 public class AABBOutline extends Outline {
 	protected AABB bb;
-
 	protected final Vector3f minPosTemp1 = new Vector3f();
 	protected final Vector3f maxPosTemp1 = new Vector3f();
-
 	protected final Vector4f colorTemp1 = new Vector4f();
 	protected final Vector3f pos0Temp = new Vector3f();
 	protected final Vector3f pos1Temp = new Vector3f();
@@ -29,15 +25,12 @@ public class AABBOutline extends Outline {
 	protected final Vector3f pos3Temp = new Vector3f();
 	protected final Vector3f normalTemp = new Vector3f();
 	protected final Vector3f originTemp = new Vector3f();
-
 	public AABBOutline(AABB bb) {
 		setBounds(bb);
 	}
-
 	public AABB getBounds() {
 		return bb;
 	}
-
 	public void setBounds(AABB bb) {
 		this.bb = bb;
 	}
@@ -59,19 +52,15 @@ public class AABBOutline extends Outline {
 	) {
 		Vector3f minPos = minPosTemp1;
 		Vector3f maxPos = maxPosTemp1;
-
 		boolean cameraInside = box.contains(camera);
 		boolean cull = !cameraInside && !params.disableCull;
 		float inflate = cameraInside ? -1 / 128f : 1 / 128f;
 		box = box.move(camera.scale(-1));
 		minPos.set((float) box.minX - inflate, (float) box.minY - inflate, (float) box.minZ - inflate);
 		maxPos.set((float) box.maxX + inflate, (float) box.maxY + inflate, (float) box.maxZ + inflate);
-
 		renderBoxFaces(ms, buffer, cull, params.getHighlightedFace(), minPos, maxPos, color, lightmap);
-
 		float lineWidth = params.getLineWidth();
 		if (lineWidth == 0) return;
-
 		VertexConsumer consumer = buffer.getBuffer(RenderTypes.getOutlineSolid());
 		renderBoxEdges(ms, consumer, minPos, maxPos, lineWidth, color, lightmap, disableLineNormals);
 	}
@@ -110,9 +99,8 @@ public class AABBOutline extends Outline {
 		//		Optional<AllSpecialTextures> optionalFaceTexture = highlighted ? params.hightlightedFaceTexture :
 		//		params.faceTexture;
 		Optional<AllSpecialTextures> optionalFaceTexture = params.faceTexture;
-		if (!optionalFaceTexture.isPresent()) return;
+		if (optionalFaceTexture.isEmpty()) return;
 		AllSpecialTextures faceTexture = optionalFaceTexture.get();
-
 		RenderType renderType = RenderTypes.getOutlineTranslucent(faceTexture.getLocation(), cull);
 		VertexConsumer consumer = buffer.getLateBuffer(renderType);
 		float alphaMult = highlighted ? 1 : 0.5f;
@@ -250,7 +238,6 @@ public class AABBOutline extends Outline {
 				lightmap,
 				disableNormals
 		);
-
 		origin.set(maxPos.x(), minPos.y(), minPos.z());
 		bufferCuboidLine(pose, consumer, origin, Direction.UP, lineLengthY, lineWidth, color, lightmap,
 				disableNormals);
@@ -265,7 +252,6 @@ public class AABBOutline extends Outline {
 				lightmap,
 				disableNormals
 		);
-
 		origin.set(minPos.x(), maxPos.y(), minPos.z());
 		bufferCuboidLine(
 				pose,
@@ -289,7 +275,6 @@ public class AABBOutline extends Outline {
 				lightmap,
 				disableNormals
 		);
-
 		origin.set(minPos.x(), minPos.y(), maxPos.z());
 		bufferCuboidLine(
 				pose,
@@ -304,7 +289,6 @@ public class AABBOutline extends Outline {
 		);
 		bufferCuboidLine(pose, consumer, origin, Direction.UP, lineLengthY, lineWidth, color, lightmap,
 				disableNormals);
-
 		origin.set(minPos.x(), maxPos.y(), maxPos.z());
 		bufferCuboidLine(
 				pose,
@@ -317,11 +301,9 @@ public class AABBOutline extends Outline {
 				lightmap,
 				disableNormals
 		);
-
 		origin.set(maxPos.x(), minPos.y(), maxPos.z());
 		bufferCuboidLine(pose, consumer, origin, Direction.UP, lineLengthY, lineWidth, color, lightmap,
 				disableNormals);
-
 		origin.set(maxPos.x(), maxPos.y(), minPos.z());
 		bufferCuboidLine(
 				pose,

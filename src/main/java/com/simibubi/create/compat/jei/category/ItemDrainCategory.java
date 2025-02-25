@@ -1,5 +1,4 @@
 package com.simibubi.create.compat.jei.category;
-
 import java.util.function.Consumer;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -26,7 +25,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackLinkedSet;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.PotionItem;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
@@ -34,13 +32,10 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 @ParametersAreNonnullByDefault public class ItemDrainCategory extends CreateRecipeCategory<EmptyingRecipe> {
-
 	private final AnimatedItemDrain drain = new AnimatedItemDrain();
-
 	public ItemDrainCategory(Info<EmptyingRecipe> info) {
 		super(info);
 	}
-
 	public static void consumeRecipes(Consumer<EmptyingRecipe> consumer, IIngredientManager ingredientManager) {
 		ObjectOpenCustomHashSet<ItemStack>
 				emptiedItems
@@ -60,7 +55,6 @@ import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 			}
 			LazyOptional<IFluidHandlerItem> capability = stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM);
 			if (!capability.isPresent()) continue;
-
 			ItemStack copy = stack.copy();
 			capability = copy.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM);
 			IFluidHandlerItem handler = capability.orElse(null);
@@ -68,12 +62,10 @@ import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 			ItemStack result = handler.getContainer();
 			if (extracted.isEmpty()) continue;
 			if (result.isEmpty()) continue;
-
 			// There can be a lot of duplicate empty tanks (e.g. from emptying tanks with different fluids). Merge
 			// them to reduce memory usage. If the item is exactly the same as the input, just use the input stack
 			// instead of the copy.
 			result = ItemHelper.sameItem(stack, result) ? stack : emptiedItems.addOrGet(result);
-
 			Ingredient ingredient = Ingredient.of(stack);
 			ResourceLocation itemName = RegisteredObjects.getKeyOrThrow(stack.getItem());
 			ResourceLocation fluidName = RegisteredObjects.getKeyOrThrow(extracted.getFluid());
@@ -102,8 +94,7 @@ import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 				.setBackground(getRenderedSlot(), -1, -1)
 				.addItemStack(getResultItem(recipe));
 	}
-	@Override
-	public void draw(
+	@Override public void draw(
 			EmptyingRecipe recipe,
 			IRecipeSlotsView iRecipeSlotsView,
 			GuiGraphics graphics,

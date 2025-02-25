@@ -1,5 +1,4 @@
 package com.simibubi.create.content.kinetics.gearbox;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -21,58 +20,43 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.HitResult;
-
 public class GearboxBlock extends RotatedPillarKineticBlock implements IBE<GearboxBlockEntity> {
-
 	public GearboxBlock(Properties properties) {
 		super(properties);
 	}
-
-	@Override
-	public PushReaction getPistonPushReaction(BlockState state) {
+	@Override public PushReaction getPistonPushReaction(BlockState state) {
 		return PushReaction.PUSH_ONLY;
 	}
-
-	@SuppressWarnings("deprecation")
-	@Override
+	@SuppressWarnings("deprecation") @Override
 	public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
-		if (state.getValue(AXIS).isVertical())
-			return super.getDrops(state, builder);
-		return Arrays.asList(new ItemStack(AllItems.VERTICAL_GEARBOX.get()));
+		if (state.getValue(AXIS).isVertical()) return super.getDrops(state, builder);
+		return List.of(new ItemStack(AllItems.VERTICAL_GEARBOX.get()));
 	}
-	
 	@Override
-	public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter world, BlockPos pos,
-			Player player) {
-		if (state.getValue(AXIS).isVertical())
-			return super.getCloneItemStack(state, target, world, pos, player);
+	public ItemStack getCloneItemStack(
+			BlockState state,
+			HitResult target,
+			BlockGetter world,
+			BlockPos pos,
+			Player player
+	) {
+		if (state.getValue(AXIS).isVertical()) return super.getCloneItemStack(state, target, world, pos, player);
 		return new ItemStack(AllItems.VERTICAL_GEARBOX.get());
 	}
-
-	@Override
-	public BlockState getStateForPlacement(BlockPlaceContext context) {
+	@Override public BlockState getStateForPlacement(BlockPlaceContext context) {
 		return defaultBlockState().setValue(AXIS, Axis.Y);
 	}
-
 	// IRotate:
-
-	@Override
-	public boolean hasShaftTowards(LevelReader world, BlockPos pos, BlockState state, Direction face) {
+	@Override public boolean hasShaftTowards(LevelReader world, BlockPos pos, BlockState state, Direction face) {
 		return face.getAxis() != state.getValue(AXIS);
 	}
-
-	@Override
-	public Axis getRotationAxis(BlockState state) {
+	@Override public Axis getRotationAxis(BlockState state) {
 		return state.getValue(AXIS);
 	}
-
-	@Override
-	public Class<GearboxBlockEntity> getBlockEntityClass() {
+	@Override public Class<GearboxBlockEntity> getBlockEntityClass() {
 		return GearboxBlockEntity.class;
 	}
-
-	@Override
-	public BlockEntityType<? extends GearboxBlockEntity> getBlockEntityType() {
+	@Override public BlockEntityType<? extends GearboxBlockEntity> getBlockEntityType() {
 		return AllBlockEntityTypes.GEARBOX.get();
 	}
 }

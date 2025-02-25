@@ -1,5 +1,4 @@
 package com.simibubi.create.content.redstone.thresholdSwitch;
-
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.content.redstone.DirectedDirectionalBlock;
@@ -34,112 +33,85 @@ import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.items.IItemHandler;
-
 public class ThresholdSwitchBlock extends DirectedDirectionalBlock implements IBE<ThresholdSwitchBlockEntity> {
-
 	public static final IntegerProperty LEVEL = IntegerProperty.create("level", 0, 5);
-
 	public ThresholdSwitchBlock(Properties p_i48377_1_) {
 		super(p_i48377_1_);
 	}
-
 	@Override
 	public void onPlace(BlockState state, Level worldIn, BlockPos pos, BlockState oldState, boolean isMoving) {
 		updateObservedInventory(state, worldIn, pos);
 	}
-
 	private void updateObservedInventory(BlockState state, LevelReader world, BlockPos pos) {
 		withBlockEntityDo(world, pos, ThresholdSwitchBlockEntity::updateCurrentLevel);
 	}
-
-	@Override
-	public boolean canConnectRedstone(BlockState state, BlockGetter world, BlockPos pos, Direction side) {
+	@Override public boolean canConnectRedstone(BlockState state, BlockGetter world, BlockPos pos, Direction side) {
 		return side != null && side.getOpposite() != getTargetDirection(state);
 	}
-
-	@Override
-	public boolean isSignalSource(BlockState state) {
+	@Override public boolean isSignalSource(BlockState state) {
 		return true;
 	}
-
-	@Override
-	public int getSignal(BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side) {
-		if (side == getTargetDirection(blockState)
-			.getOpposite())
-			return 0;
+	@Override public int getSignal(BlockState blockState, BlockGetter blockAccess, BlockPos pos, Direction side) {
+		if (side == getTargetDirection(blockState).getOpposite()) return 0;
 		return getBlockEntityOptional(blockAccess, pos).filter(ThresholdSwitchBlockEntity::isPowered)
-			.map($ -> 15)
-			.orElse(0);
+				.map($ -> 15)
+				.orElse(0);
 	}
-
-	@Override
-	public void tick(BlockState blockState, ServerLevel world, BlockPos pos, RandomSource random) {
+	@Override public void tick(BlockState blockState, ServerLevel world, BlockPos pos, RandomSource random) {
 		getBlockEntityOptional(world, pos).ifPresent(ThresholdSwitchBlockEntity::updatePowerAfterDelay);
 	}
-
-	@Override
-	protected void createBlockStateDefinition(Builder<Block, BlockState> builder) {
+	@Override protected void createBlockStateDefinition(Builder<Block, BlockState> builder) {
 		super.createBlockStateDefinition(builder.add(LEVEL));
 	}
-
 	@Override
-	public InteractionResult use(BlockState state, Level worldIn, BlockPos pos, Player player, InteractionHand handIn,
-		BlockHitResult hit) {
-		if (player != null && AllItems.WRENCH.isIn(player.getItemInHand(handIn)))
-			return InteractionResult.PASS;
-		DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
-			() -> () -> withBlockEntityDo(worldIn, pos, be -> this.displayScreen(be, player)));
+	public InteractionResult use(
+			BlockState state,
+			Level worldIn,
+			BlockPos pos,
+			Player player,
+			InteractionHand handIn,
+			BlockHitResult hit
+	) {
+		if (player != null && AllItems.WRENCH.isIn(player.getItemInHand(handIn))) return InteractionResult.PASS;
+		DistExecutor.unsafeRunWhenOn(
+				Dist.CLIENT,
+				() -> () -> withBlockEntityDo(worldIn, pos, be -> this.displayScreen(be, player))
+		);
 		return InteractionResult.SUCCESS;
 	}
-
-	@OnlyIn(value = Dist.CLIENT)
-	protected void displayScreen(ThresholdSwitchBlockEntity be, Player player) {
-		if (player instanceof LocalPlayer)
-			ScreenOpener.open(new ThresholdSwitchScreen(be));
+	@OnlyIn(value = Dist.CLIENT) protected void displayScreen(ThresholdSwitchBlockEntity be, Player player) {
+		if (player instanceof LocalPlayer) ScreenOpener.open(new ThresholdSwitchScreen(be));
 	}
-
-	@Override
-	public BlockState getStateForPlacement(BlockPlaceContext context) {
+	@Override public BlockState getStateForPlacement(BlockPlaceContext context) {
 		BlockState state = defaultBlockState();
 		Capability<IItemHandler> itemCap = ForgeCapabilities.ITEM_HANDLER;
 		Capability<IFluidHandler> fluidCap = ForgeCapabilities.FLUID_HANDLER;
-
 		Direction preferredFacing = null;
 		for (Direction face : context.getNearestLookingDirections()) {
-			BlockEntity be = context.getLevel()
-				.getBlockEntity(context.getClickedPos()
-					.relative(face));
-			if (be != null && (be.getCapability(itemCap)
-				.isPresent()
-				|| be.getCapability(fluidCap)
-					.isPresent())) {
+			BlockEntity be = context.getLevel().getBlockEntity(context.getClickedPos().relative(face));
+			if (be != null && (
+					be.getCapability(itemCap).isPresent() || be.getCapability(fluidCap).isPresent()
+			)) {
 				preferredFacing = face;
 				break;
 			}
 		}
-
 		if (preferredFacing == null) {
 			Direction facing = context.getNearestLookingDirection();
-			preferredFacing = context.getPlayer() != null && context.getPlayer()
-				.isShiftKeyDown() ? facing : facing.getOpposite();
+			preferredFacing = context.getPlayer() != null && context.getPlayer().isShiftKeyDown()
+					? facing
+					: facing.getOpposite();
 		}
-
 		if (preferredFacing.getAxis() == Axis.Y) {
 			state = state.setValue(TARGET, preferredFacing == Direction.UP ? AttachFace.CEILING : AttachFace.FLOOR);
 			preferredFacing = context.getHorizontalDirection();
 		}
-
 		return state.setValue(FACING, preferredFacing);
 	}
-
-	@Override
-	public Class<ThresholdSwitchBlockEntity> getBlockEntityClass() {
+	@Override public Class<ThresholdSwitchBlockEntity> getBlockEntityClass() {
 		return ThresholdSwitchBlockEntity.class;
 	}
-
-	@Override
-	public BlockEntityType<? extends ThresholdSwitchBlockEntity> getBlockEntityType() {
+	@Override public BlockEntityType<? extends ThresholdSwitchBlockEntity> getBlockEntityType() {
 		return AllBlockEntityTypes.THRESHOLD_SWITCH.get();
 	}
-
 }

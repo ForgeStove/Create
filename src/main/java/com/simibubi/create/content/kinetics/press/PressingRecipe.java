@@ -1,5 +1,4 @@
 package com.simibubi.create.content.kinetics.press;
-
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -21,49 +20,30 @@ import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
-
-@ParametersAreNonnullByDefault
-public class PressingRecipe extends ProcessingRecipe<RecipeWrapper> implements IAssemblyRecipe {
-
+@ParametersAreNonnullByDefault public class PressingRecipe extends ProcessingRecipe<RecipeWrapper>
+		implements IAssemblyRecipe {
 	public PressingRecipe(ProcessingRecipeParams params) {
 		super(AllRecipeTypes.PRESSING, params);
 	}
-
-	@Override
-	public boolean matches(RecipeWrapper inv, Level worldIn) {
-		if (inv.isEmpty())
-			return false;
-		return ingredients.get(0)
-			.test(inv.getItem(0));
+	@Override public boolean matches(RecipeWrapper inv, Level worldIn) {
+		if (inv.isEmpty()) return false;
+		return ingredients.get(0).test(inv.getItem(0));
 	}
-
-	@Override
-	protected int getMaxInputCount() {
+	@Override protected int getMaxInputCount() {
 		return 1;
 	}
-
-	@Override
-	protected int getMaxOutputCount() {
+	@Override protected int getMaxOutputCount() {
 		return 2;
 	}
-
-	@Override
-	public void addAssemblyIngredients(List<Ingredient> list) {}
-
-	@Override
-	@OnlyIn(Dist.CLIENT)
-	public Component getDescriptionForAssembly() {
+	@Override public void addAssemblyIngredients(List<Ingredient> list) {
+	}
+	@Override @OnlyIn(Dist.CLIENT) public Component getDescriptionForAssembly() {
 		return Lang.translateDirect("recipe.assembly.pressing");
 	}
-	
-	@Override
-	public void addRequiredMachines(Set<ItemLike> list) {
+	@Override public void addRequiredMachines(Set<ItemLike> list) {
 		list.add(AllBlocks.MECHANICAL_PRESS.get());
 	}
-	
-	@Override
-	public Supplier<Supplier<SequencedAssemblySubCategory>> getJEISubCategory() {
+	@Override public Supplier<Supplier<SequencedAssemblySubCategory>> getJEISubCategory() {
 		return () -> SequencedAssemblySubCategory.AssemblyPressing::new;
 	}
-
 }

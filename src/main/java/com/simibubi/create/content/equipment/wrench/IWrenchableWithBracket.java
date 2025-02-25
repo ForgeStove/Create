@@ -1,5 +1,4 @@
 package com.simibubi.create.content.equipment.wrench;
-
 import java.util.Optional;
 
 import com.simibubi.create.AllBlocks;
@@ -16,18 +15,12 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-
 public interface IWrenchableWithBracket extends IWrenchable {
-
-	public Optional<ItemStack> removeBracket(BlockGetter world, BlockPos pos, boolean inOnReplacedContext);
-
-	@Override
-	default InteractionResult onWrenched(BlockState state, UseOnContext context) {
-		if (tryRemoveBracket(context))
-			return InteractionResult.SUCCESS;
+	Optional<ItemStack> removeBracket(BlockGetter world, BlockPos pos, boolean inOnReplacedContext);
+	@Override default InteractionResult onWrenched(BlockState state, UseOnContext context) {
+		if (tryRemoveBracket(context)) return InteractionResult.SUCCESS;
 		return IWrenchable.super.onWrenched(state, context);
 	}
-
 	default boolean tryRemoveBracket(UseOnContext context) {
 		Level world = context.getLevel();
 		BlockPos pos = context.getClickedPos();
@@ -39,16 +32,15 @@ public interface IWrenchableWithBracket extends IWrenchable {
 				player.getInventory().placeItemBackInInventory(bracket.get());
 			if (!world.isClientSide && AllBlocks.FLUID_PIPE.has(blockState)) {
 				Axis preferred = FluidPropagator.getStraightPipeAxis(blockState);
-				Direction preferredDirection =
-					preferred == null ? Direction.UP : Direction.get(AxisDirection.POSITIVE, preferred);
+				Direction preferredDirection = preferred == null
+						? Direction.UP
+						: Direction.get(AxisDirection.POSITIVE, preferred);
 				BlockState updated = AllBlocks.FLUID_PIPE.get()
-					.updateBlockState(blockState, preferredDirection, null, world, pos);
-				if (updated != blockState)
-					world.setBlockAndUpdate(pos, updated);
+						.updateBlockState(blockState, preferredDirection, null, world, pos);
+				if (updated != blockState) world.setBlockAndUpdate(pos, updated);
 			}
 			return true;
 		}
 		return false;
 	}
-
 }

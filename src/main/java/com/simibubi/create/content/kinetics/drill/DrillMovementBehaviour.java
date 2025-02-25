@@ -1,5 +1,4 @@
 package com.simibubi.create.content.kinetics.drill;
-
 import javax.annotation.Nullable;
 
 import com.jozufozu.flywheel.api.MaterialManager;
@@ -21,50 +20,42 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
 public class DrillMovementBehaviour extends BlockBreakingMovementBehaviour {
-
-	@Override
-	public boolean isActive(MovementContext context) {
-		return super.isActive(context)
-			&& !VecHelper.isVecPointingTowards(context.relativeMotion, context.state.getValue(DrillBlock.FACING)
-				.getOpposite());
+	@Override public boolean isActive(MovementContext context) {
+		return super.isActive(context) && !VecHelper.isVecPointingTowards(
+				context.relativeMotion,
+				context.state.getValue(DrillBlock.FACING).getOpposite()
+		);
 	}
-
-	@Override
-	public Vec3 getActiveAreaOffset(MovementContext context) {
-		return Vec3.atLowerCornerOf(context.state.getValue(DrillBlock.FACING)
-			.getNormal()).scale(.65f);
+	@Override public Vec3 getActiveAreaOffset(MovementContext context) {
+		return Vec3.atLowerCornerOf(context.state.getValue(DrillBlock.FACING).getNormal()).scale(.65f);
 	}
-
-	@Override
-	@OnlyIn(value = Dist.CLIENT)
-	public void renderInContraption(MovementContext context, VirtualRenderWorld renderWorld,
-		ContraptionMatrices matrices, MultiBufferSource buffer) {
-        if (!ContraptionRenderDispatcher.canInstance())
+	@Override @OnlyIn(value = Dist.CLIENT) public void renderInContraption(
+			MovementContext context,
+			VirtualRenderWorld renderWorld,
+			ContraptionMatrices matrices,
+			MultiBufferSource buffer
+	) {
+		if (!ContraptionRenderDispatcher.canInstance())
 			DrillRenderer.renderInContraption(context, renderWorld, matrices, buffer);
 	}
-
-	@Override
-	public boolean hasSpecialInstancedRendering() {
+	@Override public boolean hasSpecialInstancedRendering() {
 		return true;
 	}
-
-	@Nullable
-	@Override
-	public ActorInstance createInstance(MaterialManager materialManager, VirtualRenderWorld simulationWorld, MovementContext context) {
+	@Nullable @Override
+	public ActorInstance createInstance(
+			MaterialManager materialManager,
+			VirtualRenderWorld simulationWorld,
+			MovementContext context
+	) {
 		return new DrillActorInstance(materialManager, simulationWorld, context);
 	}
-
-	@Override
-	protected DamageSource getDamageSource(Level level) {
+	@Override protected DamageSource getDamageSource(Level level) {
 		return CreateDamageSources.drill(level);
 	}
-
-	@Override
-	public boolean canBreak(Level world, BlockPos breakingPos, BlockState state) {
-		return super.canBreak(world, breakingPos, state) && !state.getCollisionShape(world, breakingPos)
-			.isEmpty() && !AllTags.AllBlockTags.TRACKS.matches(state);
+	@Override public boolean canBreak(Level world, BlockPos breakingPos, BlockState state) {
+		return super.canBreak(world, breakingPos, state)
+				&& !state.getCollisionShape(world, breakingPos).isEmpty()
+				&& !AllTags.AllBlockTags.TRACKS.matches(state);
 	}
-
 }

@@ -1,5 +1,4 @@
 package com.simibubi.create.compat.jei.category;
-
 import java.util.List;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -18,13 +17,10 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 @ParametersAreNonnullByDefault public class DeployingCategory extends CreateRecipeCategory<DeployerApplicationRecipe> {
-
 	private final AnimatedDeployer deployer = new AnimatedDeployer();
-
 	public DeployingCategory(Info<DeployerApplicationRecipe> info) {
 		super(info);
 	}
-
 	@Override
 	public void setRecipe(IRecipeLayoutBuilder builder, DeployerApplicationRecipe recipe, IFocusGroup focuses) {
 		builder.addSlot(RecipeIngredientRole.INPUT, 27, 51)
@@ -48,10 +44,8 @@ import net.minecraft.client.gui.GuiGraphics;
 				1,
 				Lang.translateDirect("recipe.deploying.not_consumed").withStyle(ChatFormatting.GOLD)
 		));
-
 	}
-	@Override
-	public void draw(
+	@Override public void draw(
 			DeployerApplicationRecipe recipe,
 			IRecipeSlotsView recipeSlotsView,
 			GuiGraphics graphics,

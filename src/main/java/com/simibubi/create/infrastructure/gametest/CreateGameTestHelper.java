@@ -1,5 +1,4 @@
 package com.simibubi.create.infrastructure.gametest;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -57,7 +56,6 @@ import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.registries.ForgeRegistries;
-
 /**
  * A helper class expanding the functionality of {@link GameTestHelper}.
  * This class may replace the default helper parameter if a test is registered through {@link CreateTestFunction}.
@@ -67,11 +65,9 @@ public class CreateGameTestHelper extends GameTestHelper {
 	public static final int TEN_SECONDS = 10 * TICKS_PER_SECOND;
 	public static final int FIFTEEN_SECONDS = 15 * TICKS_PER_SECOND;
 	public static final int TWENTY_SECONDS = 20 * TICKS_PER_SECOND;
-
 	private CreateGameTestHelper(GameTestInfo testInfo) {
 		super(testInfo);
 	}
-
 	public static CreateGameTestHelper of(GameTestHelper original) {
 		GameTestHelperAccessor access = (GameTestHelperAccessor) original;
 		CreateGameTestHelper helper = new CreateGameTestHelper(access.getTestInfo());
@@ -80,9 +76,7 @@ public class CreateGameTestHelper extends GameTestHelper {
 		newAccess.setFinalCheckAdded(access.getFinalCheckAdded());
 		return helper;
 	}
-
 	// blocks
-
 	/**
 	 * Flip the direction of any block with the {@link BlockStateProperties#FACING} property.
 	 */
@@ -94,14 +88,12 @@ public class CreateGameTestHelper extends GameTestHelper {
 		BlockState reversed = original.setValue(BlockStateProperties.FACING, facing.getOpposite());
 		setBlock(pos, reversed);
 	}
-
 	public void assertNixiePower(BlockPos pos, int strength) {
 		NixieTubeBlockEntity nixie = getBlockEntity(AllBlockEntityTypes.NIXIE_TUBE.get(), pos);
 		int actualStrength = nixie.getRedstoneStrength();
 		if (actualStrength != strength)
 			fail("Expected nixie tube at %s to have power of %s, got %s".formatted(pos, strength, actualStrength));
 	}
-
 	/**
 	 * Turn off a lever.
 	 */
@@ -111,7 +103,6 @@ public class CreateGameTestHelper extends GameTestHelper {
 			pullLever(pos);
 		}
 	}
-
 	/**
 	 * Turn on a lever.
 	 */
@@ -121,9 +112,9 @@ public class CreateGameTestHelper extends GameTestHelper {
 			pullLever(pos);
 		}
 	}
-
 	/**
 	 * Set the {@link SelectionMode} of a belt tunnel at the given position.
+	 *
 	 * @param pos
 	 * @param mode
 	 */
@@ -131,37 +122,33 @@ public class CreateGameTestHelper extends GameTestHelper {
 		ScrollValueBehaviour behavior = getBehavior(pos, ScrollOptionBehaviour.TYPE);
 		behavior.setValue(mode.ordinal());
 	}
-
 	public void assertSpeedometerSpeed(BlockPos speedometer, float value) {
 		SpeedGaugeBlockEntity be = getBlockEntity(AllBlockEntityTypes.SPEEDOMETER.get(), speedometer);
 		assertInRange(be.getSpeed(), value - 0.01, value + 0.01);
 	}
-
 	public void assertStressometerCapacity(BlockPos stressometer, float value) {
 		StressGaugeBlockEntity be = getBlockEntity(AllBlockEntityTypes.STRESSOMETER.get(), stressometer);
 		assertInRange(be.getNetworkCapacity(), value - 0.01, value + 0.01);
 	}
-
 	public void toggleActorsOfType(Contraption contraption, ItemLike item) {
 		AtomicBoolean toggled = new AtomicBoolean(false);
 		contraption.getInteractors().forEach((localPos, behavior) -> {
-			if (toggled.get() || !(behavior instanceof ContraptionControlsMovingInteraction controls))
-				return;
+			if (toggled.get() || !(behavior instanceof ContraptionControlsMovingInteraction controls)) return;
 			MutablePair<StructureBlockInfo, MovementContext> actor = contraption.getActorAt(localPos);
-			if (actor == null)
-				return;
+			if (actor == null) return;
 			ItemStack filter = ContraptionControlsMovement.getFilter(actor.right);
 			if (filter != null && filter.is(item.asItem())) {
 				controls.handlePlayerInteraction(
-						makeMockPlayer(), InteractionHand.MAIN_HAND, localPos, contraption.entity
+						makeMockPlayer(),
+						InteractionHand.MAIN_HAND,
+						localPos,
+						contraption.entity
 				);
 				toggled.set(true);
 			}
 		});
 	}
-
 	// block entities
-
 	/**
 	 * Get the block entity of the expected type. If the type does not match, this fails the test.
 	 */
@@ -171,35 +158,38 @@ public class CreateGameTestHelper extends GameTestHelper {
 		if (actualType != type) {
 			String actualId = actualType == null ? "null" : RegisteredObjects.getKeyOrThrow(actualType).toString();
 			String error = "Expected block entity at pos [%s] with type [%s], got [%s]".formatted(
-					pos, RegisteredObjects.getKeyOrThrow(type), actualId
+					pos,
+					RegisteredObjects.getKeyOrThrow(type),
+					actualId
 			);
 			fail(error);
 		}
 		return (T) be;
 	}
-
 	/**
 	 * Given any segment of an {@link IMultiBlockEntityContainer}, get the controller for it.
 	 */
-	public <T extends BlockEntity & IMultiBlockEntityContainer> T getControllerBlockEntity(BlockEntityType<T> type, BlockPos anySegment) {
+	public <T extends BlockEntity & IMultiBlockEntityContainer> T getControllerBlockEntity(
+			BlockEntityType<T> type,
+			BlockPos anySegment
+	) {
 		T be = getBlockEntity(type, anySegment).getControllerBE();
 		if (be == null)
-			fail("Could not get block entity controller with type [%s] from pos [%s]".formatted(RegisteredObjects.getKeyOrThrow(type), anySegment));
+			fail("Could not get block entity controller with type [%s] from pos [%s]".formatted(
+					RegisteredObjects.getKeyOrThrow(
+							type), anySegment
+			));
 		return be;
 	}
-
 	/**
 	 * Get the expected {@link BlockEntityBehaviour} from the given position, failing if not present.
 	 */
 	public <T extends BlockEntityBehaviour> T getBehavior(BlockPos pos, BehaviourType<T> type) {
 		T behavior = BlockEntityBehaviour.get(getLevel(), absolutePos(pos), type);
-		if (behavior == null)
-			fail("Behavior at " + pos + " missing, expected " + type.getName());
+		if (behavior == null) fail("Behavior at " + pos + " missing, expected " + type.getName());
 		return behavior;
 	}
-
 	// entities
-
 	/**
 	 * Spawn an item entity at the given position with no velocity.
 	 */
@@ -210,7 +200,6 @@ public class CreateGameTestHelper extends GameTestHelper {
 		level.addFreshEntity(item);
 		return item;
 	}
-
 	/**
 	 * Spawn item entities given an item and amount. The amount will be split into multiple entities if
 	 * larger than the item's max stack size.
@@ -223,17 +212,14 @@ public class CreateGameTestHelper extends GameTestHelper {
 			spawnItem(pos, stack);
 		}
 	}
-
 	/**
 	 * Get the first entity found at the given position.
 	 */
 	public <T extends Entity> T getFirstEntity(EntityType<T> type, BlockPos pos) {
 		List<T> list = getEntitiesBetween(type, pos.north().east().above(), pos.south().west().below());
-		if (list.isEmpty())
-			fail("No entities at pos: " + pos);
+		if (list.isEmpty()) fail("No entities at pos: " + pos);
 		return list.get(0);
 	}
-
 	/**
 	 * Get a list of all entities between two positions, inclusive.
 	 */
@@ -242,20 +228,14 @@ public class CreateGameTestHelper extends GameTestHelper {
 		List<? extends T> entities = getLevel().getEntities(type, e -> box.isInside(e.blockPosition()));
 		return (List<T>) entities;
 	}
-
-
 	// transfer - fluids
-
 	public IFluidHandler fluidStorageAt(BlockPos pos) {
 		BlockEntity be = getBlockEntity(pos);
-		if (be == null)
-			fail("BlockEntity not present");
+		if (be == null) fail("BlockEntity not present");
 		Optional<IFluidHandler> handler = be.getCapability(ForgeCapabilities.FLUID_HANDLER).resolve();
-		if (handler.isEmpty())
-			fail("handler not present");
+		if (handler.isEmpty()) fail("handler not present");
 		return handler.get();
 	}
-
 	/**
 	 * Get the content of the tank at the pos.
 	 * content is determined by what the tank allows to be extracted.
@@ -264,7 +244,6 @@ public class CreateGameTestHelper extends GameTestHelper {
 		IFluidHandler handler = fluidStorageAt(tank);
 		return handler.drain(Integer.MAX_VALUE, FluidAction.SIMULATE);
 	}
-
 	/**
 	 * Get the total capacity of a tank at the given position.
 	 */
@@ -276,7 +255,6 @@ public class CreateGameTestHelper extends GameTestHelper {
 		}
 		return total;
 	}
-
 	/**
 	 * Get the total fluid amount across all fluid tanks at the given positions.
 	 */
@@ -287,43 +265,33 @@ public class CreateGameTestHelper extends GameTestHelper {
 		}
 		return total;
 	}
-
 	/**
 	 * Assert that the given fluid stack is present in the given tank. The tank might also hold more than the fluid.
 	 */
 	public void assertFluidPresent(FluidStack fluid, BlockPos pos) {
 		FluidStack contained = getTankContents(pos);
-		if (!fluid.isFluidEqual(contained))
-			fail("Different fluids");
-		if (fluid.getAmount() != contained.getAmount())
-			fail("Different amounts");
+		if (!fluid.isFluidEqual(contained)) fail("Different fluids");
+		if (fluid.getAmount() != contained.getAmount()) fail("Different amounts");
 	}
-
 	/**
 	 * Assert that the given tank holds no fluid.
 	 */
 	public void assertTankEmpty(BlockPos pos) {
 		assertFluidPresent(FluidStack.EMPTY, pos);
 	}
-
 	public void assertTanksEmpty(BlockPos... tanks) {
 		for (BlockPos tank : tanks) {
 			assertTankEmpty(tank);
 		}
 	}
-
 	// transfer - items
-
 	public IItemHandler itemStorageAt(BlockPos pos) {
 		BlockEntity be = getBlockEntity(pos);
-		if (be == null)
-			fail("BlockEntity not present");
+		if (be == null) fail("BlockEntity not present");
 		Optional<IItemHandler> handler = be.getCapability(ForgeCapabilities.ITEM_HANDLER).resolve();
-		if (handler.isEmpty())
-			fail("handler not present");
+		if (handler.isEmpty()) fail("handler not present");
 		return handler.get();
 	}
-
 	/**
 	 * Get a map of contained items to their amounts. This is not safe for NBT!
 	 */
@@ -332,8 +300,7 @@ public class CreateGameTestHelper extends GameTestHelper {
 		Object2LongMap<Item> map = new Object2LongArrayMap<>();
 		for (int i = 0; i < handler.getSlots(); i++) {
 			ItemStack stack = handler.getStackInSlot(i);
-			if (stack.isEmpty())
-				continue;
+			if (stack.isEmpty()) continue;
 			Item item = stack.getItem();
 			long amount = map.getLong(item);
 			amount += stack.getCount();
@@ -341,7 +308,6 @@ public class CreateGameTestHelper extends GameTestHelper {
 		}
 		return map;
 	}
-
 	/**
 	 * Get the combined total of all ItemStacks inside the inventory.
 	 */
@@ -353,7 +319,6 @@ public class CreateGameTestHelper extends GameTestHelper {
 		}
 		return total;
 	}
-
 	/**
 	 * Of the provided items, assert that at least one is present in the given inventory.
 	 */
@@ -368,10 +333,8 @@ public class CreateGameTestHelper extends GameTestHelper {
 				}
 			}
 		}
-		if (noneFound)
-			fail("No matching items " + Arrays.toString(items) + " found in handler at pos: " + pos);
+		if (noneFound) fail("No matching items " + Arrays.toString(items) + " found in handler at pos: " + pos);
 	}
-
 	/**
 	 * Assert that the inventory contains all the provided content.
 	 */
@@ -380,19 +343,15 @@ public class CreateGameTestHelper extends GameTestHelper {
 		Object2LongMap<Item> map = new Object2LongArrayMap<>(content);
 		for (int i = 0; i < handler.getSlots(); i++) {
 			ItemStack stack = handler.getStackInSlot(i);
-			if (stack.isEmpty())
-				continue;
+			if (stack.isEmpty()) continue;
 			Item item = stack.getItem();
 			long amount = map.getLong(item);
 			amount -= stack.getCount();
-			if (amount == 0)
-				map.removeLong(item);
+			if (amount == 0) map.removeLong(item);
 			else map.put(item, amount);
 		}
-		if (!map.isEmpty())
-			fail("Storage missing content: " + map);
+		if (!map.isEmpty()) fail("Storage missing content: " + map);
 	}
-
 	/**
 	 * Assert that all the given inventories hold no items.
 	 */
@@ -401,85 +360,69 @@ public class CreateGameTestHelper extends GameTestHelper {
 			assertContainerEmpty(pos);
 		}
 	}
-
 	/**
 	 * Assert that the given inventory holds no items.
 	 */
-	@Override
-	public void assertContainerEmpty(@NotNull BlockPos pos) {
+	@Override public void assertContainerEmpty(@NotNull BlockPos pos) {
 		IItemHandler storage = itemStorageAt(pos);
 		for (int i = 0; i < storage.getSlots(); i++) {
-			if (!storage.getStackInSlot(i).isEmpty())
-				fail("Storage not empty");
+			if (!storage.getStackInSlot(i).isEmpty()) fail("Storage not empty");
 		}
 	}
-
 	/** @see CreateGameTestHelper#assertContainerContains(BlockPos, ItemStack) */
 	public void assertContainerContains(BlockPos pos, ItemLike item) {
 		assertContainerContains(pos, item.asItem());
 	}
-
 	/** @see CreateGameTestHelper#assertContainerContains(BlockPos, ItemStack) */
-	@Override
-	public void assertContainerContains(@NotNull BlockPos pos, @NotNull Item item) {
+	@Override public void assertContainerContains(@NotNull BlockPos pos, @NotNull Item item) {
 		assertContainerContains(pos, new ItemStack(item));
 	}
-
 	/**
 	 * Assert that the inventory holds at least the given ItemStack. It may also hold more than the stack.
 	 */
 	public void assertContainerContains(BlockPos pos, ItemStack item) {
 		IItemHandler storage = itemStorageAt(pos);
-		ItemStack extracted = ItemHelper.extract(storage, stack -> ItemHandlerHelper.canItemStacksStack(stack, item), item.getCount(), true);
-		if (extracted.isEmpty())
-			fail("item not present: " + item);
+		ItemStack extracted = ItemHelper.extract(
+				storage,
+				stack -> ItemHandlerHelper.canItemStacksStack(stack, item),
+				item.getCount(),
+				true
+		);
+		if (extracted.isEmpty()) fail("item not present: " + item);
 	}
-
 	// time
-
 	/**
 	 * Fail unless the desired number seconds have passed since test start.
 	 */
 	public void assertSecondsPassed(int seconds) {
-		if (getTick() < (long) seconds * TICKS_PER_SECOND)
-			fail("Waiting for %s seconds to pass".formatted(seconds));
+		if (getTick() < (long) seconds * TICKS_PER_SECOND) fail("Waiting for %s seconds to pass".formatted(seconds));
 	}
-
 	/**
 	 * Get the total number of seconds that have passed since test start.
 	 */
 	public long secondsPassed() {
 		return getTick() % 20;
 	}
-
 	/**
 	 * Run an action later, once enough time has passed.
 	 */
 	public void whenSecondsPassed(int seconds, Runnable run) {
 		runAfterDelay((long) seconds * TICKS_PER_SECOND, run);
 	}
-
 	// numbers
-
 	/**
 	 * Assert that a number is less than 1 away from its expected value
 	 */
 	public void assertCloseEnoughTo(double value, double expected) {
 		assertInRange(value, expected - 1, expected + 1);
 	}
-
 	public void assertInRange(double value, double min, double max) {
-		if (value < min)
-			fail("Value %s below expected min of %s".formatted(value, min));
-		if (value > max)
-			fail("Value %s greater than expected max of %s".formatted(value, max));
+		if (value < min) fail("Value %s below expected min of %s".formatted(value, min));
+		if (value > max) fail("Value %s greater than expected max of %s".formatted(value, max));
 	}
-
 	// misc
-
 	@Contract("_->fail") // make IDEA happier
-	@Override
-	public void fail(@NotNull String exceptionMessage) {
+	@Override public void fail(@NotNull String exceptionMessage) {
 		super.fail(exceptionMessage);
 	}
 }

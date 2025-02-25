@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.data;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -11,8 +10,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+
+import com.google.gson.JsonElement;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableObject;
@@ -32,23 +34,21 @@ import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
-
 /**
  * @deprecated Use {@link AbstractRegistrate#addRawLang} or {@link AbstractRegistrate#addDataGenerator} with
- * {@link ProviderType#LANG} instead.
+ *        {@link ProviderType#LANG} instead.
  */
 @Deprecated(forRemoval = true) public class LangMerger implements DataProvider {
 	static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
 	private static final String
 			CATEGORY_HEADER
 			= "\t\"_\": \"->------------------------]  %s  [------------------------<-\",";
-
 	private final String modid;
 	private final String displayName;
 	private final LangPartial[] langPartials;
-	private List<Object> mergedLangData;
-	private List<String> langIgnore;
-	private PackOutput output;
+	private final List<Object> mergedLangData;
+	private final List<String> langIgnore;
+	private final PackOutput output;
 	public <T extends LangPartial> LangMerger(
 			PackOutput output,
 			String modid,
@@ -63,13 +63,11 @@ import net.minecraft.util.GsonHelper;
 		this.langIgnore = new ArrayList<>();
 		populateLangIgnore();
 	}
-
 	protected void populateLangIgnore() {
 		// Key prefixes added here will NOT be transferred to lang templates
 		langIgnore.add("create.ponder.debug_"); // Ponder debug scene text
 		langIgnore.add("create.gui.chromatic_projector");
 	}
-
 	private boolean shouldIgnore(String key) {
 		for (String string : langIgnore)
 			if (key.startsWith(string)) return true;
@@ -94,13 +92,11 @@ import net.minecraft.util.GsonHelper;
 				}, Util.backgroundExecutor()
 		);
 	}
-
 	private void collectExistingEntries(Path path) throws IOException {
 		if (!Files.exists(path)) {
 			Create.LOGGER.warn("Nothing to merge! It appears no lang was generated before me.");
 			return;
 		}
-
 		try (BufferedReader reader = Files.newBufferedReader(path)) {
 			JsonObject jsonobject = GsonHelper.fromJson(GSON, reader, JsonObject.class);
 
@@ -111,16 +107,15 @@ import net.minecraft.util.GsonHelper;
 			 */
 			Set<String> keysToRemove = new HashSet<>();
 			MutableBoolean startErasing = new MutableBoolean();
-			jsonobject.entrySet().stream().forEachOrdered(entry -> {
+			for (Map.Entry<String, JsonElement> entry : jsonobject.entrySet()) {
 				String key = entry.getKey();
 				if (key.startsWith("advancement")) startErasing.setTrue();
-				if (startErasing.isFalse()) return;
+				if (startErasing.isFalse()) continue;
 				keysToRemove.add(key);
-			});
+			}
 			jsonobject.remove("_");
 			keysToRemove.forEach(jsonobject::remove);
 			addAll("Game Elements", jsonobject);
-			reader.close();
 		}
 	}
 	protected void addAll(String header, JsonObject jsonobject) {
@@ -130,15 +125,14 @@ import net.minecraft.util.GsonHelper;
 		writeData(header);
 		writeData("\n\n");
 		MutableObject<String> previousKey = new MutableObject<>("");
-		jsonobject.entrySet().stream().forEachOrdered(entry -> {
+		for (Map.Entry<String, JsonElement> entry : jsonobject.entrySet()) {
 			String key = entry.getKey();
-			if (shouldIgnore(key)) return;
+			if (shouldIgnore(key)) continue;
 			String value = entry.getValue().getAsString();
 			if (!previousKey.getValue().isEmpty() && shouldAddLineBreak(key, previousKey.getValue())) writeData("\n");
 			writeEntry(key, value);
 			previousKey.setValue(key);
-		});
-
+		}
 		writeData("\n");
 	}
 	private void writeData(String data) {
@@ -151,13 +145,11 @@ import net.minecraft.util.GsonHelper;
 		// Always put tooltips and ponder scenes in their own paragraphs
 		if (key.endsWith(".tooltip")) return true;
 		if (key.startsWith(modid + ".ponder") && key.endsWith(PonderScene.TITLE_KEY)) return true;
-
 		key = key.replaceFirst("\\.", "");
 		previousKey = previousKey.replaceFirst("\\.", "");
 		String[] split = key.split("\\.");
 		String[] split2 = previousKey.split("\\.");
 		if (split.length == 0 || split2.length == 0) return false;
-
 		// Start new paragraph if keys before second point do not match
 		return !split[0].equals(split2[0]);
 	}

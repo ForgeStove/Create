@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.render;
-
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 
@@ -16,30 +15,30 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
-
 /**
  * Taken from EntityRendererManager
  */
 public class ShadowRenderHelper {
-
-	private static final RenderType SHADOW_LAYER =
-		RenderType.entityNoOutline(new ResourceLocation("textures/misc/shadow.png"));
-
+	private static final RenderType SHADOW_LAYER = RenderType.entityNoOutline(new ResourceLocation(
+			"textures/misc/shadow.png"));
 	public static void renderShadow(PoseStack matrixStack, MultiBufferSource buffer, float opacity, float radius) {
 		PoseStack.Pose entry = matrixStack.last();
 		VertexConsumer builder = buffer.getBuffer(SHADOW_LAYER);
-
 		opacity /= 2;
 		shadowVertex(entry, builder, opacity, -1 * radius, 0, -1 * radius, 0, 0);
 		shadowVertex(entry, builder, opacity, -1 * radius, 0, 1 * radius, 0, 1);
 		shadowVertex(entry, builder, opacity, 1 * radius, 0, 1 * radius, 1, 1);
 		shadowVertex(entry, builder, opacity, 1 * radius, 0, -1 * radius, 1, 0);
 	}
-
-	public static void renderShadow(PoseStack matrixStack, MultiBufferSource buffer, LevelReader world,
-		Vec3 pos, float opacity, float radius) {
+	public static void renderShadow(
+			PoseStack matrixStack,
+			MultiBufferSource buffer,
+			LevelReader world,
+			Vec3 pos,
+			float opacity,
+			float radius
+	) {
 		float f = radius;
-
 		double d2 = pos.x();
 		double d0 = pos.y();
 		double d1 = pos.z();
@@ -51,29 +50,36 @@ public class ShadowRenderHelper {
 		int j1 = Mth.floor(d1 + (double) f);
 		PoseStack.Pose entry = matrixStack.last();
 		VertexConsumer builder = buffer.getBuffer(SHADOW_LAYER);
-
 		for (BlockPos blockpos : BlockPos.betweenClosed(new BlockPos(i, k, i1), new BlockPos(j, l, j1))) {
-			renderBlockShadow(entry, builder, world, blockpos, d2, d0, d1, f,
-				opacity);
+			renderBlockShadow(entry, builder, world, blockpos, d2, d0, d1, f, opacity);
 		}
 	}
-
-	private static void renderBlockShadow(PoseStack.Pose entry, VertexConsumer builder,
-		LevelReader world, BlockPos pos, double x, double y, double z,
-		float radius, float opacity) {
+	private static void renderBlockShadow(
+			PoseStack.Pose entry,
+			VertexConsumer builder,
+			LevelReader world,
+			BlockPos pos,
+			double x,
+			double y,
+			double z,
+			float radius,
+			float opacity
+	) {
 		BlockPos blockpos = pos.below();
 		BlockState blockstate = world.getBlockState(blockpos);
 		if (blockstate.getRenderShape() != RenderShape.INVISIBLE && world.getMaxLocalRawBrightness(pos) > 3) {
 			if (blockstate.isCollisionShapeFullBlock(world, blockpos)) {
 				VoxelShape voxelshape = blockstate.getShape(world, pos.below());
 				if (!voxelshape.isEmpty()) {
-					float brightness = LightTexture.getBrightness(world.dimensionType(), world.getMaxLocalRawBrightness(pos));
+					float brightness = LightTexture.getBrightness(
+							world.dimensionType(),
+							world.getMaxLocalRawBrightness(pos)
+					);
 					float f = (float) ((opacity - (y - pos.getY()) / 2.0D) * 0.5D * brightness);
 					if (f >= 0.0F) {
 						if (f > 1.0F) {
 							f = 1.0F;
 						}
-
 						AABB AABB = voxelshape.bounds();
 						double d0 = (double) pos.getX() + AABB.minX;
 						double d1 = (double) pos.getX() + AABB.maxX;
@@ -98,16 +104,22 @@ public class ShadowRenderHelper {
 			}
 		}
 	}
-
-	private static void shadowVertex(PoseStack.Pose entry, VertexConsumer builder, float alpha,
-		float x, float y, float z, float u, float v) {
+	private static void shadowVertex(
+			PoseStack.Pose entry,
+			VertexConsumer builder,
+			float alpha,
+			float x,
+			float y,
+			float z,
+			float u,
+			float v
+	) {
 		builder.vertex(entry.pose(), x, y, z)
-			.color(1.0F, 1.0F, 1.0F, alpha)
-			.uv(u, v)
-			.overlayCoords(OverlayTexture.NO_OVERLAY)
-			.uv2(LightTexture.FULL_BRIGHT)
-			.normal(entry.normal(), 0.0F, 1.0F, 0.0F)
-			.endVertex();
+				.color(1.0F, 1.0F, 1.0F, alpha)
+				.uv(u, v)
+				.overlayCoords(OverlayTexture.NO_OVERLAY)
+				.uv2(LightTexture.FULL_BRIGHT)
+				.normal(entry.normal(), 0.0F, 1.0F, 0.0F)
+				.endVertex();
 	}
-
 }

@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.utility;
-
 import java.util.Vector;
 
 import com.mojang.blaze3d.platform.InputConstants;
@@ -8,11 +7,8 @@ import com.simibubi.create.AllKeys;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
-
 public class ControlsUtil {
-
 	private static Vector<KeyMapping> standardControls;
-
 	public static Vector<KeyMapping> getControls() {
 		if (standardControls == null) {
 			Options gameSettings = Minecraft.getInstance().options;
@@ -26,7 +22,6 @@ public class ControlsUtil {
 		}
 		return standardControls;
 	}
-
 	public static boolean isActuallyPressed(KeyMapping kb) {
 		InputConstants.Key key = kb.getKey();
 		if (key.getType() == InputConstants.Type.MOUSE) {
@@ -35,5 +30,4 @@ public class ControlsUtil {
 			return AllKeys.isKeyDown(key.getValue());
 		}
 	}
-
 }

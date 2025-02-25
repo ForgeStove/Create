@@ -1,5 +1,4 @@
 package com.simibubi.create.infrastructure.gametest.tests;
-
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -25,9 +24,7 @@ import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.LeverBlock;
 import net.minecraft.world.level.block.RedstoneLampBlock;
 import net.minecraftforge.fluids.FluidStack;
-
-@GameTestGroup(path = "contraptions")
-public class TestContraptions {
+@GameTestGroup(path = "contraptions") public class TestContraptions {
 	@GameTest(template = "arrow_dispenser", timeoutTicks = CreateGameTestHelper.TEN_SECONDS)
 	public static void arrowDispenser(CreateGameTestHelper helper) {
 		BlockPos lever = new BlockPos(2, 3, 1);
@@ -37,15 +34,13 @@ public class TestContraptions {
 		helper.succeedWhen(() -> {
 			helper.assertSecondsPassed(7);
 			List<Arrow> arrows = helper.getEntitiesBetween(EntityType.ARROW, pos1, pos2);
-			if (arrows.size() != 4)
-				helper.fail("Expected 4 arrows");
+			if (arrows.size() != 4) helper.fail("Expected 4 arrows");
 			helper.powerLever(lever); // disassemble contraption
 			BlockPos dispenser = new BlockPos(2, 5, 2);
 			// there should be 1 left over
 			helper.assertContainerContains(dispenser, Items.ARROW);
 		});
 	}
-
 	@GameTest(template = "crop_farming", timeoutTicks = CreateGameTestHelper.TEN_SECONDS)
 	public static void cropFarming(CreateGameTestHelper helper) {
 		BlockPos lever = new BlockPos(4, 3, 1);
@@ -53,7 +48,6 @@ public class TestContraptions {
 		BlockPos output = new BlockPos(1, 3, 12);
 		helper.succeedWhen(() -> helper.assertAnyContained(output, Items.WHEAT, Items.POTATO, Items.CARROT));
 	}
-
 	@GameTest(template = "mounted_item_extract", timeoutTicks = CreateGameTestHelper.TWENTY_SECONDS)
 	public static void mountedItemExtract(CreateGameTestHelper helper) {
 		BlockPos barrel = new BlockPos(1, 3, 2);
@@ -67,13 +61,11 @@ public class TestContraptions {
 			helper.assertContainerEmpty(barrel); // verify nothing left
 		});
 	}
-
 	@GameTest(template = "mounted_fluid_drain", timeoutTicks = CreateGameTestHelper.TEN_SECONDS)
 	public static void mountedFluidDrain(CreateGameTestHelper helper) {
 		BlockPos tank = new BlockPos(1, 3, 2);
 		FluidStack fluid = helper.getTankContents(tank);
-		if (fluid.isEmpty())
-			helper.fail("Tank empty");
+		if (fluid.isEmpty()) helper.fail("Tank empty");
 		BlockPos lever = new BlockPos(1, 5, 1);
 		helper.pullLever(lever);
 		BlockPos output = new BlockPos(4, 2, 1);
@@ -83,42 +75,36 @@ public class TestContraptions {
 			helper.assertTankEmpty(tank); // verify nothing left
 		});
 	}
-
-	@GameTest(template = "ploughing")
-	public static void ploughing(CreateGameTestHelper helper) {
+	@GameTest(template = "ploughing") public static void ploughing(CreateGameTestHelper helper) {
 		BlockPos dirt = new BlockPos(4, 2, 1);
 		BlockPos lever = new BlockPos(3, 3, 2);
 		helper.pullLever(lever);
 		helper.succeedWhen(() -> helper.assertBlockPresent(Blocks.FARMLAND, dirt));
 	}
-
-	@GameTest(template = "redstone_contacts")
-	public static void redstoneContacts(CreateGameTestHelper helper) {
+	@GameTest(template = "redstone_contacts") public static void redstoneContacts(CreateGameTestHelper helper) {
 		BlockPos end = new BlockPos(5, 10, 1);
 		BlockPos lever = new BlockPos(1, 3, 2);
 		helper.pullLever(lever);
 		helper.succeedWhen(() -> helper.assertBlockPresent(Blocks.DIAMOND_BLOCK, end));
 	}
-
 	@GameTest(template = "controls", timeoutTicks = CreateGameTestHelper.TEN_SECONDS)
 	public static void controls(CreateGameTestHelper helper) {
 		BlockPos button = new BlockPos(5, 5, 4);
 		BlockPos gearshift = new BlockPos(4, 5, 4);
 		BlockPos bearingPos = new BlockPos(4, 4, 4);
 		AtomicInteger step = new AtomicInteger(1);
-
 		List<BlockPos> dirt = List.of(new BlockPos(4, 2, 6), new BlockPos(2, 2, 4), new BlockPos(4, 2, 2));
 		List<BlockPos> wheat = List.of(new BlockPos(4, 3, 7), new BlockPos(1, 3, 4), new BlockPos(4, 3, 1));
-
 		helper.pressButton(button);
 		helper.succeedWhen(() -> {
 			// wait for gearshift to reset
 			helper.assertBlockProperty(gearshift, SequencedGearshiftBlock.STATE, 0);
-			if (step.get() == 4)
-				return; // step 4: all done!
-			MechanicalBearingBlockEntity bearing = helper.getBlockEntity(AllBlockEntityTypes.MECHANICAL_BEARING.get(), bearingPos);
-			if (bearing.getMovedContraption() == null)
-				helper.fail("Contraption not assembled");
+			if (step.get() == 4) return; // step 4: all done!
+			MechanicalBearingBlockEntity bearing = helper.getBlockEntity(
+					AllBlockEntityTypes.MECHANICAL_BEARING.get(),
+					bearingPos
+			);
+			if (bearing.getMovedContraption() == null) helper.fail("Contraption not assembled");
 			Contraption contraption = bearing.getMovedContraption().getContraption();
 			switch (step.get()) {
 				case 1 -> { // step 1: both should be active
@@ -150,9 +136,7 @@ public class TestContraptions {
 			}
 		});
 	}
-
-	@GameTest(template = "elevator")
-	public static void elevator(CreateGameTestHelper helper) {
+	@GameTest(template = "elevator") public static void elevator(CreateGameTestHelper helper) {
 		BlockPos pulley = new BlockPos(5, 12, 3);
 		BlockPos secondaryPulley = new BlockPos(5, 12, 1);
 		BlockPos bottomLamp = new BlockPos(2, 3, 2);
@@ -161,23 +145,26 @@ public class TestContraptions {
 		BlockPos elevatorStart = new BlockPos(4, 2, 2);
 		BlockPos cowSpawn = new BlockPos(4, 4, 2);
 		BlockPos cowEnd = new BlockPos(4, 13, 2);
-
 		helper.runAtTickTime(1, () -> helper.spawn(EntityType.COW, cowSpawn));
 		helper.runAtTickTime(
-				15, () -> helper.getBlockEntity(AllBlockEntityTypes.ELEVATOR_PULLEY.get(), pulley).clicked()
+				15,
+				() -> helper.getBlockEntity(AllBlockEntityTypes.ELEVATOR_PULLEY.get(), pulley).clicked()
 		);
 		helper.succeedWhen(() -> {
 			helper.assertSecondsPassed(1);
-			if (!helper.getBlockState(lever).getValue(LeverBlock.POWERED)) { // step 1: check entity, lamps, and secondary, then move up
-				helper.getFirstEntity(AllEntityTypes.CONTROLLED_CONTRAPTION.get(), elevatorStart); // make sure entity exists
-
+			if (!helper.getBlockState(lever)
+					.getValue(LeverBlock.POWERED)) { // step 1: check entity, lamps, and secondary, then move up
+				helper.getFirstEntity(
+						AllEntityTypes.CONTROLLED_CONTRAPTION.get(),
+						elevatorStart
+				); // make sure entity exists
 				helper.assertBlockProperty(topLamp, RedstoneLampBlock.LIT, false);
 				helper.assertBlockProperty(bottomLamp, RedstoneLampBlock.LIT, true);
-
-				ElevatorPulleyBlockEntity secondary = helper.getBlockEntity(AllBlockEntityTypes.ELEVATOR_PULLEY.get(), secondaryPulley);
-				if (secondary.getMirrorParent() == null)
-					helper.fail("Secondary pulley has no parent");
-
+				ElevatorPulleyBlockEntity secondary = helper.getBlockEntity(
+						AllBlockEntityTypes.ELEVATOR_PULLEY.get(),
+						secondaryPulley
+				);
+				if (secondary.getMirrorParent() == null) helper.fail("Secondary pulley has no parent");
 				helper.pullLever(lever);
 				helper.fail("Entering step 2");
 			} else { // step 2: wait for top lamp and cow passenger
@@ -189,14 +176,13 @@ public class TestContraptions {
 			}
 		});
 	}
-
-	@GameTest(template = "roller_filling")
-	public static void rollerFilling(CreateGameTestHelper helper) {
+	@GameTest(template = "roller_filling") public static void rollerFilling(CreateGameTestHelper helper) {
 		BlockPos lever = new BlockPos(7, 6, 1);
 		BlockPos barrelEnd = new BlockPos(2, 5, 2);
 		List<BlockPos> existing = BlockPos.betweenClosedStream(new BlockPos(1, 3, 2), new BlockPos(4, 2, 2)).toList();
 		List<BlockPos> filled = BlockPos.betweenClosedStream(new BlockPos(1, 2, 1), new BlockPos(4, 3, 3))
-				.filter(pos -> !existing.contains(pos)).toList();
+				.filter(pos -> !existing.contains(pos))
+				.toList();
 		List<BlockPos> tracks = BlockPos.betweenClosedStream(new BlockPos(1, 4, 2), new BlockPos(4, 4, 2)).toList();
 		helper.pullLever(lever);
 		helper.succeedWhen(() -> {
@@ -207,7 +193,6 @@ public class TestContraptions {
 			helper.assertContainerEmpty(barrelEnd);
 		});
 	}
-
 	@GameTest(template = "roller_paving_and_clearing", timeoutTicks = CreateGameTestHelper.TEN_SECONDS)
 	public static void rollerPavingAndClearing(CreateGameTestHelper helper) {
 		BlockPos lever = new BlockPos(8, 5, 1);
@@ -221,11 +206,10 @@ public class TestContraptions {
 			helper.assertBlockPresent(Blocks.AIR, cleared);
 		});
 	}
-
 	// FIXME: trains do not enjoy being loaded in structures
 	// https://gist.github.com/TropheusJ/f2d0a7df48360d2e078d0987c115c6ef
-//	@GameTest(template = "train_observer")
-//	public static void trainObserver(CreateGameTestHelper helper) {
-//		helper.fail("NYI");
-//	}
+	//	@GameTest(template = "train_observer")
+	//	public static void trainObserver(CreateGameTestHelper helper) {
+	//		helper.fail("NYI");
+	//	}
 }

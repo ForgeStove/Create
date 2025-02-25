@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.utility;
-
 import static com.simibubi.create.AllBlocks.ADJUSTABLE_CHAIN_GEARSHIFT;
 import static com.simibubi.create.AllBlocks.ANDESITE_ENCASED_SHAFT;
 import static com.simibubi.create.AllBlocks.BRASS_BELT_FUNNEL;
@@ -70,11 +69,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.MissingMappingsEvent;
 import net.minecraftforge.registries.MissingMappingsEvent.Mapping;
-
-@Mod.EventBusSubscriber
-public class RemapHelper {
+@Mod.EventBusSubscriber public class RemapHelper {
 	private static final Map<String, ResourceLocation> reMap = new HashMap<>();
-
 	static {
 		reMap.put("toggle_latch", POWERED_TOGGLE_LATCH.getId());
 		reMap.put("encased_shaft", ANDESITE_ENCASED_SHAFT.getId());
@@ -101,10 +97,8 @@ public class RemapHelper {
 		reMap.put("piston_pole", PISTON_EXTENSION_POLE.getId());
 		reMap.put("adjustable_pulse_repeater", PULSE_REPEATER.getId());
 		reMap.put("adjustable_repeater", PULSE_REPEATER.getId());
-
 		reMap.put("copper_block", RegisteredObjects.getKeyOrThrow(Blocks.COPPER_BLOCK));
 		reMap.put("copper_ore", RegisteredObjects.getKeyOrThrow(Blocks.COPPER_ORE));
-
 		reMap.put("acacia_glass", ACACIA_WINDOW.getId());
 		reMap.put("acacia_glass_pane", ACACIA_WINDOW_PANE.getId());
 		reMap.put("birch_glass", BIRCH_WINDOW.getId());
@@ -119,7 +113,6 @@ public class RemapHelper {
 		reMap.put("iron_glass_pane", ORNATE_IRON_WINDOW_PANE.getId());
 		reMap.put("spruce_glass", SPRUCE_WINDOW.getId());
 		reMap.put("spruce_glass_pane", SPRUCE_WINDOW_PANE.getId());
-
 		// 1.14 palettes
 		reMap.put("limestone_stairs", asResource("cut_limestone_stairs"));
 		reMap.put("weathered_limestone_layers", asResource("layered_tuff"));
@@ -152,7 +145,6 @@ public class RemapHelper {
 		reMap.put("weathered_limestone_slab", asResource("polished_cut_tuff_slab"));
 		reMap.put("gabbro_stairs", asResource("polished_cut_dripstone_stairs"));
 		reMap.put("limestone_layers", asResource("layered_limestone"));
-		
 		reMap.put("gabbro", new ResourceLocation("minecraft:dripstone_block"));
 		reMap.put("dolomite", new ResourceLocation("minecraft:calcite"));
 		reMap.put("weathered_limestone", new ResourceLocation("minecraft:tuff"));
@@ -161,7 +153,6 @@ public class RemapHelper {
 		reMap.put("diorite_cobblestone", new ResourceLocation("minecraft:diorite"));
 		reMap.put("granite_cobblestone", new ResourceLocation("minecraft:granite"));
 		reMap.put("dark_scoria", asResource("scorchia"));
-
 		// 1.15 palettes
 		remapPaletteBlock("andesite", "andesite", true);
 		remapPaletteBlock("diorite", "diorite", true);
@@ -172,9 +163,7 @@ public class RemapHelper {
 		remapPaletteBlock("dark_scoria", "scorchia", false);
 		remapPaletteBlock("dolomite", "calcite", false);
 		remapPaletteBlock("weathered_limestone", "tuff", false);
-
 		reMap.put("natural_scoria", asResource("scoria"));
-		
 		reMap.put("empty_blueprint", SCHEMATIC.getId());
 		reMap.put("gold_sheet", GOLDEN_SHEET.getId());
 		reMap.put("flour", WHEAT_FLOUR.getId());
@@ -187,58 +176,47 @@ public class RemapHelper {
 		reMap.put("obsidian_dust", POWDERED_OBSIDIAN.getId());
 		reMap.put("diving_helmet", COPPER_DIVING_HELMET.getId());
 		reMap.put("diving_boots", COPPER_DIVING_BOOTS.getId());
-
 		// 1.18 crushed ores
-		for (String metal : new String[] { "iron", "gold", "copper", "zinc" })
+		for (String metal : new String[]{"iron", "gold", "copper", "zinc"})
 			reMap.put("crushed_" + metal + "_ore", Create.asResource("crushed_raw_" + metal));
 		for (CompatMetals compatMetal : CompatMetals.values())
-			reMap.put("crushed_" + compatMetal.getName() + "_ore",
-				Create.asResource("crushed_raw_" + compatMetal.getName()));
+			reMap.put(
+					"crushed_" + compatMetal.getName() + "_ore",
+					Create.asResource("crushed_raw_" + compatMetal.getName())
+			);
 	}
-
 	private static void remapPaletteBlock(String type, String newType, boolean vanilla) {
 		reMap.put("%s_cobblestone_stairs".formatted(type), asResource("cut_%s_stairs".formatted(newType)));
 		reMap.put("%s_cobblestone_slab".formatted(type), asResource("cut_%s_slab".formatted(newType)));
 		reMap.put("%s_cobblestone_wall".formatted(type), asResource("cut_%s_wall".formatted(newType)));
-
 		if (!vanilla) {
-			if (type != "gabbro")
-				reMap.put("%s_cobblestone".formatted(type), asResource("%s".formatted(newType)));
+			if (type != "gabbro") reMap.put("%s_cobblestone".formatted(type), asResource("%s".formatted(newType)));
 			reMap.put("polished_%s".formatted(type), asResource("polished_cut_%s".formatted(newType)));
-			reMap.put("polished_%s_stairs".formatted(type),
-				asResource("polished_cut_%s_stairs".formatted(newType)));
+			reMap.put("polished_%s_stairs".formatted(type), asResource("polished_cut_%s_stairs".formatted(newType)));
 			reMap.put("polished_%s_slab".formatted(type), asResource("polished_cut_%s_slab".formatted(newType)));
 			reMap.put("polished_%s_wall".formatted(type), asResource("polished_cut_%s_wall".formatted(newType)));
 		}
-
 		reMap.put("%s_bricks".formatted(type), asResource("cut_%s_bricks".formatted(newType)));
 		reMap.put("%s_bricks_stairs".formatted(type), asResource("cut_%s_brick_stairs".formatted(newType)));
 		reMap.put("%s_bricks_slab".formatted(type), asResource("cut_%s_brick_slab".formatted(newType)));
 		reMap.put("%s_bricks_wall".formatted(type), asResource("cut_%s_brick_wall".formatted(newType)));
 		reMap.put("fancy_%s_bricks".formatted(type), asResource("small_%s_bricks".formatted(newType)));
-		reMap.put("fancy_%s_bricks_stairs".formatted(type),
-			asResource("small_%s_brick_stairs".formatted(newType)));
+		reMap.put("fancy_%s_bricks_stairs".formatted(type), asResource("small_%s_brick_stairs".formatted(newType)));
 		reMap.put("fancy_%s_bricks_slab".formatted(type), asResource("small_%s_brick_slab".formatted(newType)));
 		reMap.put("fancy_%s_bricks_wall".formatted(type), asResource("small_%s_brick_wall".formatted(newType)));
 		reMap.put("paved_%s".formatted(type), asResource("small_%s_bricks".formatted(newType)));
 		reMap.put("paved_%s_stairs".formatted(type), asResource("small_%s_brick_stairs".formatted(newType)));
 		reMap.put("paved_%s_slab".formatted(type), asResource("small_%s_brick_slab".formatted(newType)));
 		reMap.put("paved_%s_wall".formatted(type), asResource("small_%s_brick_wall".formatted(newType)));
-
-		if (!vanilla)
-			reMap.put("chiseled_%s".formatted(type), asResource("polished_cut_%s".formatted(newType)));
-
+		if (!vanilla) reMap.put("chiseled_%s".formatted(type), asResource("polished_cut_%s".formatted(newType)));
 		reMap.put("mossy_%s".formatted(type), asResource("cut_%s_bricks".formatted(newType)));
 		reMap.put("overgrown_%s".formatted(type), asResource("cut_%s_bricks".formatted(newType)));
-
 		if (!type.equals(newType)) {
 			reMap.put("layered_%s".formatted(type), asResource("layered_%s".formatted(newType)));
 			reMap.put("%s_pillar".formatted(type), asResource("%s_pillar".formatted(newType)));
 		}
 	}
-
-	@SubscribeEvent
-	public static void remapBlocks(MissingMappingsEvent event) {
+	@SubscribeEvent public static void remapBlocks(MissingMappingsEvent event) {
 		for (Mapping<Block> mapping : event.getMappings(Registries.BLOCK, Create.ID)) {
 			ResourceLocation key = mapping.getKey();
 			String path = key.getPath();
@@ -256,9 +234,7 @@ public class RemapHelper {
 			}
 		}
 	}
-
-	@SubscribeEvent
-	public static void remapItems(MissingMappingsEvent event) {
+	@SubscribeEvent public static void remapItems(MissingMappingsEvent event) {
 		for (Mapping<Item> mapping : event.getMappings(Registries.ITEM, Create.ID)) {
 			ResourceLocation key = mapping.getKey();
 			String path = key.getPath();
@@ -276,25 +252,18 @@ public class RemapHelper {
 			}
 		}
 	}
-
-	@SubscribeEvent
-	public static void remapFluids(MissingMappingsEvent event) {
+	@SubscribeEvent public static void remapFluids(MissingMappingsEvent event) {
 		for (Mapping<Fluid> mapping : event.getMappings(Registries.FLUID, Create.ID)) {
 			ResourceLocation key = mapping.getKey();
 			String path = key.getPath();
-			if (path.equals("milk"))
-				mapping.remap(ForgeMod.MILK.get());
-			else if (path.equals("flowing_milk"))
-				mapping.remap(ForgeMod.FLOWING_MILK.get());
+			if (path.equals("milk")) mapping.remap(ForgeMod.MILK.get());
+			else if (path.equals("flowing_milk")) mapping.remap(ForgeMod.FLOWING_MILK.get());
 		}
 	}
-
-	@SubscribeEvent
-	public static void remapBlockEntities(MissingMappingsEvent event) {
+	@SubscribeEvent public static void remapBlockEntities(MissingMappingsEvent event) {
 		for (Mapping<BlockEntityType<?>> mapping : event.getMappings(Registries.BLOCK_ENTITY_TYPE, Create.ID)) {
 			ResourceLocation key = mapping.getKey();
 			String path = key.getPath();
-
 			if (path.equals("copper_backtank")) {
 				mapping.remap(AllBlockEntityTypes.BACKTANK.get());
 			} else if (path.equals("adjustable_pulley")) {
@@ -302,5 +271,4 @@ public class RemapHelper {
 			}
 		}
 	}
-
 }

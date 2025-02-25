@@ -1,5 +1,4 @@
 package com.simibubi.create.compat.jei.category;
-
 import java.util.Collection;
 import java.util.function.Consumer;
 
@@ -27,7 +26,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.PotionItem;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.LazyOptional;
@@ -35,13 +33,10 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 @ParametersAreNonnullByDefault public class SpoutCategory extends CreateRecipeCategory<FillingRecipe> {
-
 	private final AnimatedSpout spout = new AnimatedSpout();
-
 	public SpoutCategory(Info<FillingRecipe> info) {
 		super(info);
 	}
-
 	public static void consumeRecipes(Consumer<FillingRecipe> consumer, IIngredientManager ingredientManager) {
 		Collection<FluidStack> fluidStacks = ingredientManager.getAllIngredients(ForgeTypes.FLUID_STACK);
 		for (ItemStack stack : ingredientManager.getAllIngredients(VanillaTypes.ITEM_STACK)) {
@@ -59,11 +54,9 @@ import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 			}
 			LazyOptional<IFluidHandlerItem> capability = stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM);
 			if (!capability.isPresent()) continue;
-
 			var existingFluidHandler = capability.orElse(null);
 			int numTanks = existingFluidHandler.getTanks();
 			FluidStack existingFluid = numTanks == 1 ? existingFluidHandler.getFluidInTank(0) : FluidStack.EMPTY;
-
 			for (FluidStack fluidStack : fluidStacks) {
 				// Hoist the fluid equality check to avoid the work of copying the stack + populating capabilities
 				// when most fluids will not match
@@ -115,8 +108,7 @@ import net.minecraftforge.fluids.capability.IFluidHandlerItem;
 				.setBackground(getRenderedSlot(), -1, -1)
 				.addItemStack(getResultItem(recipe));
 	}
-	@Override
-	public void draw(
+	@Override public void draw(
 			FillingRecipe recipe,
 			IRecipeSlotsView iRecipeSlotsView,
 			GuiGraphics graphics,

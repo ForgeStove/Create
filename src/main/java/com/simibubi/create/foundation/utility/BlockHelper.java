@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.utility;
-
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -56,7 +55,6 @@ import net.minecraft.world.level.material.FluidState;
 import net.minecraftforge.common.IPlantable;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.level.BlockEvent;
-
 public class BlockHelper {
 	private static final List<IntegerProperty> COUNT_STATES = List.of(
 			BlockStateProperties.EGGS,
@@ -64,7 +62,6 @@ public class BlockHelper {
 			BlockStateProperties.CANDLES
 	);
 	private static final List<Block> VINELIKE_BLOCKS = List.of(Blocks.VINE, Blocks.GLOW_LICHEN);
-
 	private static final List<BooleanProperty> VINELIKE_STATES = List.of(
 			BlockStateProperties.UP,
 			BlockStateProperties.NORTH,
@@ -73,7 +70,6 @@ public class BlockHelper {
 			BlockStateProperties.WEST,
 			BlockStateProperties.DOWN
 	);
-
 	public static BlockState setZeroAge(BlockState blockState) {
 		if (blockState.hasProperty(BlockStateProperties.AGE_1))
 			return blockState.setValue(BlockStateProperties.AGE_1, 0);
@@ -102,30 +98,23 @@ public class BlockHelper {
 			return blockState.setValue(BlockStateProperties.EXTENDED, false);
 		return blockState;
 	}
-
 	public static int findAndRemoveInInventory(BlockState block, Player player, int amount) {
 		int amountFound = 0;
 		Item required = getRequiredItem(block).getItem();
-
 		boolean needsTwo = block.hasProperty(BlockStateProperties.SLAB_TYPE)
 				&& block.getValue(BlockStateProperties.SLAB_TYPE) == SlabType.DOUBLE;
 		if (needsTwo) amount *= 2;
-
 		for (IntegerProperty property : COUNT_STATES)
 			if (block.hasProperty(property)) amount *= block.getValue(property);
-
 		if (VINELIKE_BLOCKS.contains(block.getBlock())) {
 			int vineCount = 0;
-
 			for (BooleanProperty vineState : VINELIKE_STATES) {
 				if (block.hasProperty(vineState) && block.getValue(vineState)) {
 					vineCount++;
 				}
 			}
-
 			amount += vineCount - 1;
 		}
-
 		{
 			// Try held Item first
 			int preferredSlot = player.getInventory().selected;
@@ -137,7 +126,6 @@ public class BlockHelper {
 				amountFound += taken;
 			}
 		}
-
 		// Search inventory
 		for (
 				int i = 0; i < player.getInventory().getContainerSize(); ++i
@@ -151,23 +139,19 @@ public class BlockHelper {
 				amountFound += taken;
 			}
 		}
-
 		if (needsTwo) {
 			// Give back 1 if uneven amount was removed
 			if (amountFound % 2 != 0) player.getInventory().add(new ItemStack(required));
 			amountFound /= 2;
 		}
-
 		return amountFound;
 	}
-
 	public static ItemStack getRequiredItem(BlockState state) {
 		ItemStack itemStack = new ItemStack(state.getBlock());
 		Item item = itemStack.getItem();
 		if (item == Items.FARMLAND || item == Items.DIRT_PATH) itemStack = new ItemStack(Items.DIRT);
 		return itemStack;
 	}
-
 	public static void destroyBlock(Level world, BlockPos pos, float effectChance) {
 		destroyBlock(world, pos, effectChance, stack -> Block.popResource(world, pos, stack));
 	}
@@ -191,15 +175,12 @@ public class BlockHelper {
 		BlockState state = world.getBlockState(pos);
 		if (world.random.nextFloat() < effectChance) world.levelEvent(2001, pos, Block.getId(state));
 		BlockEntity blockEntity = state.hasBlockEntity() ? world.getBlockEntity(pos) : null;
-
 		if (player != null) {
 			BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(world, pos, state, player);
 			MinecraftForge.EVENT_BUS.post(event);
 			if (event.isCanceled()) return;
-
 			if (event.getExpToDrop() > 0 && world instanceof ServerLevel)
 				state.getBlock().popExperience((ServerLevel) world, pos, event.getExpToDrop());
-
 			usedTool.mineBlock(world, state, pos, player);
 			player.awardStat(Stats.BLOCK_MINED.get(state.getBlock()));
 		}
@@ -209,7 +190,6 @@ public class BlockHelper {
 				&& (player == null || !player.isCreative())) {
 			for (ItemStack itemStack : Block.getDrops(state, (ServerLevel) world, pos, blockEntity, player, usedTool))
 				droppedItemCallback.accept(itemStack);
-
 			// Simulating IceBlock#playerDestroy. Not calling method directly as it would drop item
 			// entities as a side-effect
 			if (state.getBlock() instanceof IceBlock && usedTool.getEnchantmentLevel(Enchantments.SILK_TOUCH) == 0) {
@@ -219,7 +199,6 @@ public class BlockHelper {
 					world.setBlockAndUpdate(pos, Blocks.WATER.defaultBlockState());
 				return;
 			}
-
 			state.spawnAfterBreak((ServerLevel) world, pos, ItemStack.EMPTY, true);
 		}
 		world.setBlockAndUpdate(pos, fluidState.createLegacyBlock());
@@ -254,11 +233,9 @@ public class BlockHelper {
 		world.setBlock(target, state, 82);
 		world.neighborChanged(target, world.getBlockState(target.below()).getBlock(), target.below());
 	}
-
 	public static CompoundTag prepareBlockEntityData(BlockState blockState, BlockEntity blockEntity) {
 		CompoundTag data = null;
-		if (blockEntity == null) return data;
-
+		if (blockEntity == null) return null;
 		if (AllBlockTags.SAFE_NBT.matches(blockState)) {
 			data = blockEntity.saveWithFullMetadata();
 		} else if (blockEntity instanceof IPartialSafeNBT) {
@@ -297,7 +274,6 @@ public class BlockHelper {
 					0.5F,
 					2.6F + (world.random.nextFloat() - world.random.nextFloat()) * 0.8F
 			);
-
 			for (int l = 0; l < 8; ++l) {
 				world.addParticle(
 						ParticleTypes.LARGE_SMOKE,
@@ -342,7 +318,7 @@ public class BlockHelper {
 		}
 		try {
 			state.getBlock().setPlacedBy(world, target, state, null, stack);
-		} catch (Exception e) {
+		} catch (Exception ignored) {
 		}
 	}
 	public static double getBounceMultiplier(Block block) {

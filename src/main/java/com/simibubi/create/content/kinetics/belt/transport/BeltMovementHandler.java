@@ -1,5 +1,4 @@
 package com.simibubi.create.content.kinetics.belt.transport;
-
 import static net.minecraft.core.Direction.AxisDirection.NEGATIVE;
 import static net.minecraft.core.Direction.AxisDirection.POSITIVE;
 import static net.minecraft.world.entity.MoverType.SELF;
@@ -29,131 +28,109 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-
 public class BeltMovementHandler {
-
 	public static class TransportedEntityInfo {
 		int ticksSinceLastCollision;
 		BlockPos lastCollidedPos;
 		BlockState lastCollidedState;
-
 		public TransportedEntityInfo(BlockPos collision, BlockState belt) {
 			refresh(collision, belt);
 		}
-
 		public void refresh(BlockPos collision, BlockState belt) {
 			ticksSinceLastCollision = 0;
 			lastCollidedPos = new BlockPos(collision).immutable();
 			lastCollidedState = belt;
 		}
-
 		public TransportedEntityInfo tick() {
 			ticksSinceLastCollision++;
 			return this;
 		}
-
 		public int getTicksSinceLastCollision() {
 			return ticksSinceLastCollision;
 		}
 	}
-
 	public static boolean canBeTransported(Entity entity) {
-		if (!entity.isAlive())
-			return false;
-		if (entity instanceof Player && ((Player) entity).isShiftKeyDown())
-			return false;
-		return true;
+		if (!entity.isAlive()) return false;
+		return !(entity instanceof Player) || !entity.isShiftKeyDown();
 	}
-
 	public static void transportEntity(BeltBlockEntity beltBE, Entity entityIn, TransportedEntityInfo info) {
 		BlockPos pos = info.lastCollidedPos;
 		Level world = beltBE.getLevel();
 		BlockEntity be = world.getBlockEntity(pos);
 		BlockEntity blockEntityBelowPassenger = world.getBlockEntity(entityIn.blockPosition());
 		BlockState blockState = info.lastCollidedState;
-		Direction movementFacing =
-			Direction.fromAxisAndDirection(blockState.getValue(BlockStateProperties.HORIZONTAL_FACING)
-				.getAxis(), beltBE.getSpeed() < 0 ? POSITIVE : NEGATIVE);
-
+		Direction
+				movementFacing
+				= Direction.fromAxisAndDirection(
+				blockState.getValue(BlockStateProperties.HORIZONTAL_FACING).getAxis(),
+				beltBE.getSpeed() < 0 ? POSITIVE : NEGATIVE
+		);
 		boolean collidedWithBelt = be instanceof BeltBlockEntity;
 		boolean betweenBelts = blockEntityBelowPassenger instanceof BeltBlockEntity && blockEntityBelowPassenger != be;
-
 		// Don't fight other Belts
 		if (!collidedWithBelt || betweenBelts) {
 			return;
 		}
-
 		// Too slow
-		boolean notHorizontal = beltBE.getBlockState()
-			.getValue(BeltBlock.SLOPE) != BeltSlope.HORIZONTAL;
-		if (Math.abs(beltBE.getSpeed()) < 1)
-			return;
-
+		boolean notHorizontal = beltBE.getBlockState().getValue(BeltBlock.SLOPE) != BeltSlope.HORIZONTAL;
+		if (Math.abs(beltBE.getSpeed()) < 1) return;
 		// Not on top
-		if (entityIn.getY() - .25f < pos.getY())
-			return;
-
+		if (entityIn.getY() - .25f < pos.getY()) return;
 		// Lock entities in place
 		boolean isPlayer = entityIn instanceof Player;
-		if (entityIn instanceof LivingEntity && !isPlayer) 
-			((LivingEntity) entityIn).addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 10, 1, false, false));
-
+		if (entityIn instanceof LivingEntity && !isPlayer) ((LivingEntity) entityIn).addEffect(new MobEffectInstance(
+				MobEffects.MOVEMENT_SLOWDOWN,
+				10,
+				1,
+				false,
+				false
+		));
 		final Direction beltFacing = blockState.getValue(BlockStateProperties.HORIZONTAL_FACING);
 		final BeltSlope slope = blockState.getValue(BeltBlock.SLOPE);
 		final Axis axis = beltFacing.getAxis();
 		float movementSpeed = beltBE.getBeltMovementSpeed();
 		final Direction movementDirection = Direction.get(axis == Axis.X ? NEGATIVE : POSITIVE, axis);
-
-		Vec3i centeringDirection = Direction.get(POSITIVE, beltFacing.getClockWise()
-			.getAxis())
-			.getNormal();
-		Vec3 movement = Vec3.atLowerCornerOf(movementDirection.getNormal())
-			.scale(movementSpeed);
-
-		double diffCenter =
-			axis == Axis.Z ? (pos.getX() + .5f - entityIn.getX()) : (pos.getZ() + .5f - entityIn.getZ());
-		if (Math.abs(diffCenter) > 48 / 64f)
-			return;
-
+		Vec3i centeringDirection = Direction.get(POSITIVE, beltFacing.getClockWise().getAxis()).getNormal();
+		Vec3 movement = Vec3.atLowerCornerOf(movementDirection.getNormal()).scale(movementSpeed);
+		double diffCenter = axis == Axis.Z
+				? (pos.getX() + .5f - entityIn.getX())
+				: (pos.getZ() + .5f - entityIn.getZ());
+		if (Math.abs(diffCenter) > 48 / 64f) return;
 		BeltPart part = blockState.getValue(BeltBlock.PART);
 		float top = 13 / 16f;
-		boolean onSlope = notHorizontal && (part == BeltPart.MIDDLE || part == BeltPart.PULLEY
-			|| part == (slope == BeltSlope.UPWARD ? BeltPart.END : BeltPart.START) && entityIn.getY() - pos.getY() < top
-			|| part == (slope == BeltSlope.UPWARD ? BeltPart.START : BeltPart.END)
-				&& entityIn.getY() - pos.getY() > top);
-
-		boolean movingDown = onSlope && slope == (movementFacing == beltFacing ? BeltSlope.DOWNWARD : BeltSlope.UPWARD);
+		boolean onSlope = notHorizontal && (
+				part == BeltPart.MIDDLE
+						|| part == BeltPart.PULLEY
+						|| part == (slope == BeltSlope.UPWARD ? BeltPart.END : BeltPart.START)
+						&& entityIn.getY() - pos.getY() < top
+						|| part == (slope == BeltSlope.UPWARD ? BeltPart.START : BeltPart.END)
+						&& entityIn.getY() - pos.getY() > top
+		);
+		boolean movingDown = onSlope && slope == (
+				movementFacing == beltFacing ? BeltSlope.DOWNWARD : BeltSlope.UPWARD
+		);
 		boolean movingUp = onSlope && slope == (movementFacing == beltFacing ? BeltSlope.UPWARD : BeltSlope.DOWNWARD);
-
 		if (beltFacing.getAxis() == Axis.Z) {
 			boolean b = movingDown;
 			movingDown = movingUp;
 			movingUp = b;
 		}
-
-		if (movingUp)
-			movement = movement.add(0, Math.abs(axis.choose(movement.x, movement.y, movement.z)), 0);
-		if (movingDown)
-			movement = movement.add(0, -Math.abs(axis.choose(movement.x, movement.y, movement.z)), 0);
-
-		Vec3 centering = Vec3.atLowerCornerOf(centeringDirection).scale(diffCenter * Math.min(Math.abs(movementSpeed), .1f) * 4);
-
+		if (movingUp) movement = movement.add(0, Math.abs(axis.choose(movement.x, movement.y, movement.z)), 0);
+		if (movingDown) movement = movement.add(0, -Math.abs(axis.choose(movement.x, movement.y, movement.z)), 0);
+		Vec3 centering = Vec3.atLowerCornerOf(centeringDirection)
+				.scale(diffCenter * Math.min(Math.abs(movementSpeed), .1f) * 4);
 		if (!(entityIn instanceof LivingEntity)
-			|| ((LivingEntity) entityIn).zza == 0 && ((LivingEntity) entityIn).xxa == 0)
+				|| ((LivingEntity) entityIn).zza == 0 && ((LivingEntity) entityIn).xxa == 0)
 			movement = movement.add(centering);
-
 		float step = entityIn.maxUpStep();
-		if (!isPlayer) 
-			entityIn.setMaxUpStep(1);
-
+		if (!isPlayer) entityIn.setMaxUpStep(1);
 		// Entity Collisions
 		if (Math.abs(movementSpeed) < .5f) {
-			Vec3 checkDistance = movement.normalize()
-				.scale(0.5);
+			Vec3 checkDistance = movement.normalize().scale(0.5);
 			AABB bb = entityIn.getBoundingBox();
 			AABB checkBB = new AABB(bb.minX, bb.minY, bb.minZ, bb.maxX, bb.maxY, bb.maxZ);
 			checkBB = checkBB.move(checkDistance)
-				.inflate(-Math.abs(checkDistance.x), -Math.abs(checkDistance.y), -Math.abs(checkDistance.z));
+					.inflate(-Math.abs(checkDistance.x), -Math.abs(checkDistance.y), -Math.abs(checkDistance.z));
 			List<Entity> list = world.getEntities(entityIn, checkBB);
 			list.removeIf(e -> shouldIgnoreBlocking(entityIn, e));
 			if (!list.isEmpty()) {
@@ -162,9 +139,7 @@ public class BeltMovementHandler {
 				return;
 			}
 		}
-
 		entityIn.fallDistance = 0;
-
 		if (movingUp) {
 			float minVelocity = .13f;
 			float yMovement = (float) -(Math.max(Math.abs(movement.y), minVelocity));
@@ -176,41 +151,29 @@ public class BeltMovementHandler {
 		} else {
 			entityIn.move(SELF, movement);
 		}
-		
 		entityIn.setOnGround(true);
-
-		if (!isPlayer)
-			entityIn.setMaxUpStep(step);
-
-		boolean movedPastEndingSlope = onSlope && (AllBlocks.BELT.has(world.getBlockState(entityIn.blockPosition()))
-			|| AllBlocks.BELT.has(world.getBlockState(entityIn.blockPosition()
-				.below())));
-
+		if (!isPlayer) entityIn.setMaxUpStep(step);
+		boolean movedPastEndingSlope = onSlope && (
+				AllBlocks.BELT.has(world.getBlockState(entityIn.blockPosition()))
+						|| AllBlocks.BELT.has(world.getBlockState(entityIn.blockPosition().below()))
+		);
 		if (movedPastEndingSlope && !movingDown && Math.abs(movementSpeed) > 0)
 			entityIn.setPos(entityIn.getX(), entityIn.getY() + movement.y, entityIn.getZ());
 		if (movedPastEndingSlope) {
 			entityIn.setDeltaMovement(movement);
 			entityIn.hurtMarked = true;
 		}
-		
 	}
-
 	public static boolean shouldIgnoreBlocking(Entity me, Entity other) {
-		if (other instanceof HangingEntity)
-			return true;
-		if (other.getPistonPushReaction() == PushReaction.IGNORE)
-			return true;
+		if (other instanceof HangingEntity) return true;
+		if (other.getPistonPushReaction() == PushReaction.IGNORE) return true;
 		return isRidingOrBeingRiddenBy(me, other);
 	}
-
 	public static boolean isRidingOrBeingRiddenBy(Entity me, Entity other) {
 		for (Entity entity : me.getPassengers()) {
-			if (entity.equals(other))
-				return true;
-			if (isRidingOrBeingRiddenBy(entity, other))
-				return true;
+			if (entity.equals(other)) return true;
+			if (isRidingOrBeingRiddenBy(entity, other)) return true;
 		}
 		return false;
 	}
-
 }

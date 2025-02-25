@@ -1,5 +1,4 @@
 package com.simibubi.create.infrastructure.gui;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,61 +25,45 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-
 public class OpenCreateMenuButton extends Button {
-
 	public static final ItemStack ICON = AllItems.GOGGLES.asStack();
-
 	public OpenCreateMenuButton(int x, int y) {
 		super(x, y, 20, 20, Components.immutableEmpty(), OpenCreateMenuButton::click, DEFAULT_NARRATION);
 	}
-
-	@Override
-	public void renderString(GuiGraphics graphics, Font pFont, int pColor) {
+	@Override public void renderString(GuiGraphics graphics, Font pFont, int pColor) {
 		graphics.renderItem(ICON, getX() + 2, getY() + 2);
 	}
-	
 	public static void click(Button b) {
 		ScreenOpener.open(new CreateMainMenuScreen(Minecraft.getInstance().screen));
 	}
-
 	public record SingleMenuRow(String leftTextKey, String rightTextKey) {
 		public SingleMenuRow(String centerTextKey) {
 			this(centerTextKey, centerTextKey);
 		}
 	}
-
 	public static class MenuRows {
 		public static final MenuRows MAIN_MENU = new MenuRows(Arrays.asList(
-			new SingleMenuRow("menu.singleplayer"),
-			new SingleMenuRow("menu.multiplayer"),
-			new SingleMenuRow("fml.menu.mods", "menu.online"),
-			new SingleMenuRow("narrator.button.language", "narrator.button.accessibility")
+				new SingleMenuRow("menu.singleplayer"),
+				new SingleMenuRow("menu.multiplayer"),
+				new SingleMenuRow("fml.menu.mods", "menu.online"),
+				new SingleMenuRow("narrator.button.language", "narrator.button.accessibility")
 		));
-
 		public static final MenuRows INGAME_MENU = new MenuRows(Arrays.asList(
-			new SingleMenuRow("menu.returnToGame"),
-			new SingleMenuRow("gui.advancements", "gui.stats"),
-			new SingleMenuRow("menu.sendFeedback", "menu.reportBugs"),
-			new SingleMenuRow("menu.options", "menu.shareToLan"),
-			new SingleMenuRow("menu.returnToMenu")
+				new SingleMenuRow("menu.returnToGame"),
+				new SingleMenuRow("gui.advancements", "gui.stats"),
+				new SingleMenuRow("menu.sendFeedback", "menu.reportBugs"),
+				new SingleMenuRow("menu.options", "menu.shareToLan"),
+				new SingleMenuRow("menu.returnToMenu")
 		));
-
 		protected final List<String> leftTextKeys, rightTextKeys;
-
 		public MenuRows(List<SingleMenuRow> rows) {
 			leftTextKeys = rows.stream().map(SingleMenuRow::leftTextKey).collect(Collectors.toList());
 			rightTextKeys = rows.stream().map(SingleMenuRow::rightTextKey).collect(Collectors.toList());
 		}
 	}
-
-	@EventBusSubscriber(value = Dist.CLIENT)
-	public static class OpenConfigButtonHandler {
-
-		@SubscribeEvent
-		public static void onGuiInit(ScreenEvent.Init event) {
+	@EventBusSubscriber(value = Dist.CLIENT) public static class OpenConfigButtonHandler {
+		@SubscribeEvent public static void onGuiInit(ScreenEvent.Init event) {
 			Screen screen = event.getScreen();
-
 			MenuRows menu;
 			int rowIdx;
 			int offsetX;
@@ -95,30 +78,25 @@ public class OpenCreateMenuButton extends Button {
 			} else {
 				return;
 			}
-
 			if (rowIdx == 0) {
 				return;
 			}
-
 			boolean onLeft = offsetX < 0;
 			String targetMessage = I18n.get((onLeft ? menu.leftTextKeys : menu.rightTextKeys).get(rowIdx - 1));
-
 			int offsetX_ = offsetX;
 			MutableObject<GuiEventListener> toAdd = new MutableObject<>(null);
 			event.getListenersList()
-				.stream()
-				.filter(w -> w instanceof AbstractWidget)
-				.map(w -> (AbstractWidget) w)
-				.filter(w -> w.getMessage()
-					.getString()
-					.equals(targetMessage))
-				.findFirst()
-				.ifPresent(w -> toAdd
-					.setValue(new OpenCreateMenuButton(w.getX() + offsetX_ + (onLeft ? -20 : w.getWidth()), w.getY())));
-			if (toAdd.getValue() != null)
-				event.addListener(toAdd.getValue());
+					.stream()
+					.filter(w -> w instanceof AbstractWidget)
+					.map(w -> (AbstractWidget) w)
+					.filter(w -> w.getMessage().getString().equals(targetMessage))
+					.findFirst()
+					.ifPresent(w -> toAdd.setValue(new OpenCreateMenuButton(
+							w.getX() + offsetX_ + (
+									onLeft ? -20 : w.getWidth()
+							), w.getY()
+					)));
+			if (toAdd.getValue() != null) event.addListener(toAdd.getValue());
 		}
-
 	}
-
 }

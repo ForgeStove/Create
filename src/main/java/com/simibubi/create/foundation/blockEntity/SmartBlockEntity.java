@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.blockEntity;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,30 +25,23 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
-
 public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 		implements IPartialSafeNBT, IInteractionChecker, ISpecialBlockEntityItemRequirement {
-
 	private final Map<BehaviourType<?>, BlockEntityBehaviour> behaviours = new HashMap<>();
 	private boolean initialized = false;
 	private boolean firstNbtRead = true;
 	protected int lazyTickRate;
 	protected int lazyTickCounter;
 	private boolean chunkUnloaded;
-
 	// Used for simulating this BE in a client-only setting
 	private boolean virtualMode;
-
 	public SmartBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
-
 		setLazyTickRate(10);
-
 		ArrayList<BlockEntityBehaviour> list = new ArrayList<>();
 		addBehaviours(list);
 		list.forEach(b -> behaviours.put(b.getType(), b));
 	}
-
 	public abstract void addBehaviours(List<BlockEntityBehaviour> behaviours);
 	/**
 	 * Gets called just before reading block entity data for behaviours. Register
@@ -57,28 +49,23 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 	 */
 	public void addBehavioursDeferred(List<BlockEntityBehaviour> behaviours) {
 	}
-
 	public void initialize() {
 		if (firstNbtRead) {
 			firstNbtRead = false;
 			MinecraftForge.EVENT_BUS.post(new BlockEntityBehaviourEvent<>(this, behaviours));
 		}
-
 		forEachBehaviour(BlockEntityBehaviour::initialize);
 		lazyTick();
 	}
-
 	public void tick() {
 		if (!initialized && hasLevel()) {
 			initialize();
 			initialized = true;
 		}
-
 		if (lazyTickCounter-- <= 0) {
 			lazyTickCounter = lazyTickRate;
 			lazyTick();
 		}
-
 		forEachBehaviour(BlockEntityBehaviour::tick);
 	}
 	public void lazyTick() {
@@ -96,7 +83,6 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 			if (tb.isSafeNBT()) tb.write(tag, false);
 		});
 	}
-
 	/**
 	 * Hook only these in future subclasses of STE
 	 */
@@ -134,7 +120,6 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 	 */
 	public void remove() {
 	}
-
 	/**
 	 * Block destroyed or replaced. Requires Block to call IBE::onRemove
 	 */
@@ -147,7 +132,7 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 	@Override public final void readClient(CompoundTag tag) {
 		read(tag, true);
 	}
-	@Override public final CompoundTag writeClient(CompoundTag tag) {
+	@Override public final CompoundTag writeClient(CompoundTag tag) throws CloneNotSupportedException {
 		write(tag, true);
 		return tag;
 	}
@@ -160,14 +145,13 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 	public Collection<BlockEntityBehaviour> getAllBehaviours() {
 		return behaviours.values();
 	}
-
 	protected void attachBehaviourLate(BlockEntityBehaviour behaviour) {
 		behaviours.put(behaviour.getType(), behaviour);
 		behaviour.initialize();
 	}
 	public ItemRequirement getRequiredItems(BlockState state) {
 		return getAllBehaviours().stream()
-				.reduce(ItemRequirement.NONE, (r, b) -> r.union(b.getRequiredItems()), (r, r1) -> r.union(r1));
+				.reduce(ItemRequirement.NONE, (r, b) -> r.union(b.getRequiredItems()), ItemRequirement::union);
 	}
 	protected void removeBehaviour(BehaviourType<?> type) {
 		BlockEntityBehaviour remove = behaviours.remove(type);
@@ -179,7 +163,6 @@ public abstract class SmartBlockEntity extends CachedRenderBBBlockEntity
 		this.lazyTickRate = slowTickRate;
 		this.lazyTickCounter = slowTickRate;
 	}
-
 	public void markVirtual() {
 		virtualMode = true;
 	}

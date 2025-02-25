@@ -1,5 +1,4 @@
 package com.simibubi.create.infrastructure.gametest.tests;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,9 +33,7 @@ import net.minecraftforge.fluids.capability.IFluidHandler.FluidAction;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.registries.ForgeRegistries;
-
-@GameTestGroup(path = "fluids")
-public class TestFluids {
+@GameTestGroup(path = "fluids") public class TestFluids {
 	@GameTest(template = "hose_pulley_transfer", timeoutTicks = CreateGameTestHelper.TWENTY_SECONDS)
 	public static void hosePulleyTransfer(CreateGameTestHelper helper) {
 		BlockPos lever = new BlockPos(7, 7, 5);
@@ -58,16 +55,13 @@ public class TestFluids {
 			IFluidHandler storage = helper.fluidStorageAt(pulleyPos);
 			if (storage instanceof HosePulleyFluidHandler hose) {
 				IFluidHandler internalTank = hose.getInternalTank();
-				if (!internalTank.drain(1, FluidAction.SIMULATE).isEmpty())
-					helper.fail("Pulley not empty");
+				if (!internalTank.drain(1, FluidAction.SIMULATE).isEmpty()) helper.fail("Pulley not empty");
 			} else {
 				helper.fail("Not a pulley");
 			}
 		});
 	}
-
-	@GameTest(template = "in_world_pumping_out")
-	public static void inWorldPumpingOut(CreateGameTestHelper helper) {
+	@GameTest(template = "in_world_pumping_out") public static void inWorldPumpingOut(CreateGameTestHelper helper) {
 		BlockPos lever = new BlockPos(4, 3, 3);
 		BlockPos basin = new BlockPos(5, 2, 2);
 		BlockPos output = new BlockPos(2, 2, 2);
@@ -77,9 +71,7 @@ public class TestFluids {
 			helper.assertTankEmpty(basin);
 		});
 	}
-
-	@GameTest(template = "in_world_pumping_in")
-	public static void inWorldPumpingIn(CreateGameTestHelper helper) {
+	@GameTest(template = "in_world_pumping_in") public static void inWorldPumpingIn(CreateGameTestHelper helper) {
 		BlockPos lever = new BlockPos(4, 3, 3);
 		BlockPos basin = new BlockPos(5, 2, 2);
 		BlockPos water = new BlockPos(2, 2, 2);
@@ -90,15 +82,14 @@ public class TestFluids {
 			helper.assertFluidPresent(expectedResult, basin);
 		});
 	}
-
-	@GameTest(template = "steam_engine")
-	public static void steamEngine(CreateGameTestHelper helper) {
+	@GameTest(template = "steam_engine") public static void steamEngine(CreateGameTestHelper helper) {
 		BlockPos lever = new BlockPos(4, 3, 3);
 		helper.pullLever(lever);
 		BlockPos stressometer = new BlockPos(5, 2, 5);
 		BlockPos speedometer = new BlockPos(4, 2, 5);
 		helper.succeedWhen(() -> {
-			StressGaugeBlockEntity stress = helper.getBlockEntity(AllBlockEntityTypes.STRESSOMETER.get(), stressometer);
+			StressGaugeBlockEntity stress = helper.getBlockEntity(AllBlockEntityTypes.STRESSOMETER.get(),
+					stressometer);
 			SpeedGaugeBlockEntity speed = helper.getBlockEntity(AllBlockEntityTypes.SPEEDOMETER.get(), speedometer);
 			float capacity = stress.getNetworkCapacity();
 			helper.assertCloseEnoughTo(capacity, 2048);
@@ -106,14 +97,12 @@ public class TestFluids {
 			helper.assertCloseEnoughTo(rotationSpeed, 16);
 		});
 	}
-
 	@GameTest(template = "3_pipe_combine", timeoutTicks = CreateGameTestHelper.TWENTY_SECONDS)
 	public static void threePipeCombine(CreateGameTestHelper helper) {
 		BlockPos tank1Pos = new BlockPos(5, 2, 1);
 		BlockPos tank2Pos = tank1Pos.south();
 		BlockPos tank3Pos = tank2Pos.south();
 		long initialContents = helper.getFluidInTanks(tank1Pos, tank2Pos, tank3Pos);
-
 		BlockPos pumpPos = new BlockPos(2, 2, 2);
 		helper.flipBlock(pumpPos);
 		helper.succeedWhen(() -> {
@@ -128,7 +117,6 @@ public class TestFluids {
 			// verify nothing was duped or deleted
 		});
 	}
-
 	@GameTest(template = "3_pipe_split", timeoutTicks = CreateGameTestHelper.TEN_SECONDS)
 	public static void threePipeSplit(CreateGameTestHelper helper) {
 		BlockPos pumpPos = new BlockPos(2, 2, 2);
@@ -136,10 +124,8 @@ public class TestFluids {
 		BlockPos tank2Pos = tank1Pos.south();
 		BlockPos tank3Pos = tank2Pos.south();
 		BlockPos outputTankPos = new BlockPos(1, 2, 2);
-
 		long totalContents = helper.getFluidInTanks(tank1Pos, tank2Pos, tank3Pos, outputTankPos);
 		helper.flipBlock(pumpPos);
-
 		helper.succeedWhen(() -> {
 			helper.assertSecondsPassed(7);
 			FluidStack contents = helper.getTankContents(outputTankPos);
@@ -148,11 +134,13 @@ public class TestFluids {
 			}
 			long newTotalContents = helper.getFluidInTanks(tank1Pos, tank2Pos, tank3Pos);
 			if (newTotalContents != totalContents) {
-				helper.fail("Wrong total fluid amount. expected [%s], got [%s]".formatted(totalContents, newTotalContents));
+				helper.fail("Wrong total fluid amount. expected [%s], got [%s]".formatted(
+						totalContents,
+						newTotalContents
+				));
 			}
 		});
 	}
-
 	@GameTest(template = "large_waterwheel", timeoutTicks = CreateGameTestHelper.TEN_SECONDS)
 	public static void largeWaterwheel(CreateGameTestHelper helper) {
 		BlockPos wheel = new BlockPos(4, 3, 2);
@@ -163,7 +151,6 @@ public class TestFluids {
 		BlockPos leftLever = new BlockPos(5, 7, 1);
 		waterwheel(helper, wheel, 4, 512, leftEnd, rightEnd, edges, openLever, leftLever);
 	}
-
 	@GameTest(template = "small_waterwheel", timeoutTicks = CreateGameTestHelper.TEN_SECONDS)
 	public static void smallWaterwheel(CreateGameTestHelper helper) {
 		BlockPos wheel = new BlockPos(3, 2, 2);
@@ -174,11 +161,17 @@ public class TestFluids {
 		BlockPos leftLever = new BlockPos(4, 5, 1);
 		waterwheel(helper, wheel, 8, 256, leftEnd, rightEnd, edges, openLever, leftLever);
 	}
-
-	private static void waterwheel(CreateGameTestHelper helper,
-								   BlockPos wheel, float expectedRpm, float expectedSU,
-								   BlockPos leftEnd, BlockPos rightEnd, List<BlockPos> edges,
-								   BlockPos openLever, BlockPos leftLever) {
+	private static void waterwheel(
+			CreateGameTestHelper helper,
+			BlockPos wheel,
+			float expectedRpm,
+			float expectedSU,
+			BlockPos leftEnd,
+			BlockPos rightEnd,
+			List<BlockPos> edges,
+			BlockPos openLever,
+			BlockPos leftLever
+	) {
 		BlockPos speedometer = wheel.north();
 		BlockPos stressometer = wheel.south();
 		helper.pullLever(openLever);
@@ -204,36 +197,43 @@ public class TestFluids {
 			}
 		});
 	}
-
 	@GameTest(template = "waterwheel_materials", timeoutTicks = CreateGameTestHelper.FIFTEEN_SECONDS)
 	public static void waterwheelMaterials(CreateGameTestHelper helper) {
-		List<Item> planks = ForgeRegistries.BLOCKS.tags().getTag(BlockTags.PLANKS).stream()
-				.map(ItemLike::asItem).collect(Collectors.toCollection(ArrayList::new));
+		List<Item> planks = ForgeRegistries.BLOCKS.tags()
+				.getTag(BlockTags.PLANKS)
+				.stream()
+				.map(ItemLike::asItem)
+				.collect(Collectors.toCollection(ArrayList::new));
 		List<BlockPos> chests = List.of(new BlockPos(6, 4, 2), new BlockPos(6, 4, 3));
 		List<BlockPos> deployers = chests.stream().map(pos -> pos.below(2)).toList();
-		helper.runAfterDelay(3, () -> chests.forEach(chest ->
-				planks.forEach(plank -> ItemHandlerHelper.insertItem(helper.itemStorageAt(chest), new ItemStack(plank), false))
-		));
-
+		helper.runAfterDelay(
+				3,
+				() -> chests.forEach(chest -> planks.forEach(plank -> ItemHandlerHelper.insertItem(
+						helper.itemStorageAt(
+								chest), new ItemStack(plank), false
+				)))
+		);
 		BlockPos smallWheel = new BlockPos(4, 2, 2);
 		BlockPos largeWheel = new BlockPos(3, 3, 3);
 		BlockPos lever = new BlockPos(5, 3, 1);
 		helper.pullLever(lever);
-
 		helper.succeedWhen(() -> {
 			Item plank = planks.get(0);
 			if (!(plank instanceof BlockItem blockItem))
 				throw new GameTestAssertException(ForgeRegistries.ITEMS.getKey(plank) + " is not a BlockItem");
 			Block block = blockItem.getBlock();
-
-			WaterWheelBlockEntity smallWheelBe = helper.getBlockEntity(AllBlockEntityTypes.WATER_WHEEL.get(), smallWheel);
+			WaterWheelBlockEntity smallWheelBe = helper.getBlockEntity(
+					AllBlockEntityTypes.WATER_WHEEL.get(),
+					smallWheel
+			);
 			if (!smallWheelBe.material.is(block))
 				helper.fail("Small waterwheel has not consumed " + ForgeRegistries.ITEMS.getKey(plank));
-
-			WaterWheelBlockEntity largeWheelBe = helper.getBlockEntity(AllBlockEntityTypes.LARGE_WATER_WHEEL.get(), largeWheel);
+			WaterWheelBlockEntity largeWheelBe = helper.getBlockEntity(
+					AllBlockEntityTypes.LARGE_WATER_WHEEL.get(),
+					largeWheel
+			);
 			if (!largeWheelBe.material.is(block))
 				helper.fail("Large waterwheel has not consumed " + ForgeRegistries.ITEMS.getKey(plank));
-
 			// next item
 			planks.remove(0);
 			deployers.forEach(pos -> {
@@ -242,13 +242,10 @@ public class TestFluids {
 					handler.extractItem(i, Integer.MAX_VALUE, false);
 				}
 			});
-			if (!planks.isEmpty())
-				helper.fail("Not all planks have been consumed");
+			if (!planks.isEmpty()) helper.fail("Not all planks have been consumed");
 		});
 	}
-
-	@GameTest(template = "smart_observer_pipes")
-	public static void smartObserverPipes(CreateGameTestHelper helper) {
+	@GameTest(template = "smart_observer_pipes") public static void smartObserverPipes(CreateGameTestHelper helper) {
 		BlockPos lever = new BlockPos(3, 3, 1);
 		BlockPos output = new BlockPos(3, 4, 4);
 		BlockPos tankOutput = new BlockPos(1, 2, 4);
@@ -259,17 +256,14 @@ public class TestFluids {
 			helper.assertBlockPresent(Blocks.DIAMOND_BLOCK, output);
 		});
 	}
-
 	@GameTest(template = "threshold_switch", timeoutTicks = CreateGameTestHelper.TWENTY_SECONDS)
 	public static void thresholdSwitch(CreateGameTestHelper helper) {
 		BlockPos leftHandle = new BlockPos(4, 2, 4);
 		BlockPos leftValve = new BlockPos(4, 2, 3);
 		BlockPos leftTank = new BlockPos(5, 2, 3);
-
 		BlockPos rightHandle = new BlockPos(2, 2, 4);
 		BlockPos rightValve = new BlockPos(2, 2, 3);
 		BlockPos rightTank = new BlockPos(1, 2, 3);
-
 		BlockPos drainHandle = new BlockPos(3, 3, 2);
 		BlockPos drainValve = new BlockPos(3, 3, 1);
 		BlockPos lamp = new BlockPos(1, 3, 1);

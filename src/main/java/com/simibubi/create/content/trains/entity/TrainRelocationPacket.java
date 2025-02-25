@@ -1,5 +1,4 @@
 package com.simibubi.create.content.trains.entity;
-
 import java.util.UUID;
 
 import com.simibubi.create.AllPackets;
@@ -19,28 +18,30 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkEvent.Context;
 import net.minecraftforge.network.PacketDistributor;
-
 public class TrainRelocationPacket extends SimplePacketBase {
-
 	UUID trainId;
 	BlockPos pos;
 	Vec3 lookAngle;
 	int entityId;
-	private boolean direction;
+	private final boolean direction;
 	private BezierTrackPointLocation hoveredBezier;
-
 	public TrainRelocationPacket(FriendlyByteBuf buffer) {
 		trainId = buffer.readUUID();
 		pos = buffer.readBlockPos();
 		lookAngle = VecHelper.read(buffer);
 		entityId = buffer.readInt();
 		direction = buffer.readBoolean();
-		if (buffer.readBoolean())
-			hoveredBezier = new BezierTrackPointLocation(buffer.readBlockPos(), buffer.readInt());
+		if (buffer.readBoolean()) hoveredBezier = new BezierTrackPointLocation(buffer.readBlockPos(),
+				buffer.readInt());
 	}
-
-	public TrainRelocationPacket(UUID trainId, BlockPos pos, BezierTrackPointLocation hoveredBezier, boolean direction,
-		Vec3 lookAngle, int entityId) {
+	public TrainRelocationPacket(
+			UUID trainId,
+			BlockPos pos,
+			BezierTrackPointLocation hoveredBezier,
+			boolean direction,
+			Vec3 lookAngle,
+			int entityId
+	) {
 		this.trainId = trainId;
 		this.pos = pos;
 		this.hoveredBezier = hoveredBezier;
@@ -48,9 +49,7 @@ public class TrainRelocationPacket extends SimplePacketBase {
 		this.lookAngle = lookAngle;
 		this.entityId = entityId;
 	}
-
-	@Override
-	public void write(FriendlyByteBuf buffer) {
+	@Override public void write(FriendlyByteBuf buffer) {
 		buffer.writeUUID(trainId);
 		buffer.writeBlockPos(pos);
 		VecHelper.write(lookAngle, buffer);
@@ -62,53 +61,42 @@ public class TrainRelocationPacket extends SimplePacketBase {
 			buffer.writeInt(hoveredBezier.segment());
 		}
 	}
-
-	@Override
-	public boolean handle(Context context) {
+	@Override public boolean handle(Context context) {
 		context.enqueueWork(() -> {
 			ServerPlayer sender = context.getSender();
 			Train train = Create.RAILWAYS.trains.get(trainId);
 			Entity entity = sender.level().getEntity(entityId);
-
-			String messagePrefix = sender.getName()
-				.getString() + " could not relocate Train ";
-
+			String messagePrefix = sender.getName().getString() + " could not relocate Train ";
 			if (train == null || !(entity instanceof CarriageContraptionEntity cce)) {
-				Create.LOGGER.warn(messagePrefix + train.id.toString()
-					.substring(0, 5) + ": not present on server");
+				Create.LOGGER.warn("{}{}: not present on server", messagePrefix, train.id.toString().substring(0, 5));
 				return;
 			}
-
-			if (!train.id.equals(cce.trainId))
-				return;
-
+			if (!train.id.equals(cce.trainId)) return;
 			int verifyDistance = AllConfigs.server().trains.maxTrackPlacementLength.get() * 2;
-			if (!sender.position()
-				.closerThan(Vec3.atCenterOf(pos), verifyDistance)) {
-				Create.LOGGER.warn(messagePrefix + train.name.getString() + ": player too far from clicked pos");
+			if (!sender.position().closerThan(Vec3.atCenterOf(pos), verifyDistance)) {
+				Create.LOGGER.warn("{}{}: player too far from clicked pos", messagePrefix, train.name.getString());
 				return;
 			}
-			if (!sender.position()
-				.closerThan(cce.position(), verifyDistance + cce.getBoundingBox()
-					.getXsize() / 2)) {
-				Create.LOGGER.warn(messagePrefix + train.name.getString() + ": player too far from carriage entity");
+			if (!sender.position().closerThan(cce.position(), verifyDistance + cce.getBoundingBox().getXsize() / 2)) {
+				Create.LOGGER.warn("{}{}: player too far from carriage entity", messagePrefix, train.name.getString());
 				return;
 			}
-
 			if (TrainRelocator.relocate(train, sender.level(), pos, hoveredBezier, direction, lookAngle, false)) {
-				sender.displayClientMessage(Lang.translateDirect("train.relocate.success")
-					.withStyle(ChatFormatting.GREEN), true);
+				sender.displayClientMessage(
+						Lang.translateDirect("train.relocate.success")
+								.withStyle(ChatFormatting.GREEN), true
+				);
 				train.carriages.forEach(c -> c.forEachPresentEntity(e -> {
 					e.nonDamageTicks = 10;
-					AllPackets.getChannel().send(PacketDistributor.TRACKING_ENTITY.with(() -> e),
-						new ContraptionRelocationPacket(e.getId()));
+					AllPackets.getChannel().send(
+							PacketDistributor.TRACKING_ENTITY.with(() -> e),
+							new ContraptionRelocationPacket(e.getId())
+					);
 				}));
 				return;
 			}
-
-			Create.LOGGER.warn(messagePrefix + train.name.getString() + ": relocation failed server-side");
+			Create.LOGGER.warn("{}{}: relocation failed server-side", messagePrefix, train.name.getString());
 		});
 		return true;
 	}
-
 }

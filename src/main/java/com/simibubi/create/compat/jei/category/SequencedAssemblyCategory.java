@@ -1,5 +1,4 @@
 package com.simibubi.create.compat.jei.category;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,9 +31,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 @ParametersAreNonnullByDefault public class SequencedAssemblyCategory
 		extends CreateRecipeCategory<SequencedAssemblyRecipe> {
-
 	Map<ResourceLocation, SequencedAssemblySubCategory> subCategories = new HashMap<>();
-
 	public SequencedAssemblyCategory(Info<SequencedAssemblyRecipe> info) {
 		super(info);
 	}
@@ -50,35 +47,30 @@ import net.minecraft.resources.ResourceLocation;
 				.addItemStack(getResultItem(recipe))
 				.addTooltipCallback((recipeSlotView, tooltip) -> {
 					if (noRandomOutput) return;
-
 					float chance = recipe.getOutputChance();
 					tooltip.add(1, chanceComponent(chance));
 				});
-
 		int width = 0;
 		int margin = 3;
 		for (SequencedRecipe<?> sequencedRecipe : recipe.getSequence())
 			width += getSubCategory(sequencedRecipe).getWidth() + margin;
 		width -= margin;
 		int x = width / -2 + getBackground().getWidth() / 2;
-
 		for (SequencedRecipe<?> sequencedRecipe : recipe.getSequence()) {
 			SequencedAssemblySubCategory subCategory = getSubCategory(sequencedRecipe);
 			subCategory.setRecipe(builder, sequencedRecipe, focuses, x);
 			x += subCategory.getWidth() + margin;
 		}
 	}
-
 	private SequencedAssemblySubCategory getSubCategory(SequencedRecipe<?> sequencedRecipe) {
 		return subCategories.computeIfAbsent(
-				RegisteredObjects.getKeyOrThrow(sequencedRecipe.getRecipe().getSerializer()),
+				RegisteredObjects.getKeyOrThrow(sequencedRecipe.getRecipe()
+						.getSerializer()),
 				rl -> sequencedRecipe.getAsAssemblyRecipe().getJEISubCategory().get().get()
 		);
-
 	}
 	final String[] romans = {"I", "II", "III", "IV", "V", "VI", "-"};
-	@Override
-	public void draw(
+	@Override public void draw(
 			SequencedAssemblyRecipe recipe,
 			IRecipeSlotsView iRecipeSlotsView,
 			GuiGraphics graphics,
@@ -119,7 +111,7 @@ import net.minecraft.resources.ResourceLocation;
 			SequencedRecipe<?> sequencedRecipe = sequence.get(i);
 			SequencedAssemblySubCategory subCategory = getSubCategory(sequencedRecipe);
 			int subWidth = subCategory.getWidth();
-			MutableComponent component = Components.literal("" + romans[Math.min(i, 6)]);
+			MutableComponent component = Components.literal(romans[Math.min(i, 6)]);
 			graphics.drawString(font, component, font.width(component) / -2 + subWidth / 2, 2, 0x888888, false);
 			subCategory.draw(sequencedRecipe, graphics, mouseX, mouseY, i);
 			matrixStack.translate(subWidth + margin, 0, 0);

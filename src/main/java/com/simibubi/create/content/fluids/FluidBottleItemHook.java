@@ -1,5 +1,4 @@
 package com.simibubi.create.content.fluids;
-
 import com.simibubi.create.Create;
 import com.simibubi.create.foundation.utility.RegisteredObjects;
 
@@ -18,41 +17,26 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-
-@EventBusSubscriber
-public class FluidBottleItemHook extends Item {
-
+@EventBusSubscriber public class FluidBottleItemHook extends Item {
 	private FluidBottleItemHook(Properties p) {
 		super(p);
 	}
-
-	@SubscribeEvent
-	public static void preventWaterBottlesFromCreatesFluids(PlayerInteractEvent.RightClickItem event) {
+	@SubscribeEvent public static void preventWaterBottlesFromCreatesFluids(PlayerInteractEvent.RightClickItem event) {
 		ItemStack itemStack = event.getItemStack();
-		if (itemStack.isEmpty())
-			return;
-		if (!(itemStack.getItem() instanceof BottleItem))
-			return;
-
+		if (itemStack.isEmpty()) return;
+		if (!(itemStack.getItem() instanceof BottleItem)) return;
 		Level world = event.getLevel();
 		Player player = event.getEntity();
-		HitResult raytraceresult = getPlayerPOVHitResult(world, player, ClipContext.Fluid.SOURCE_ONLY);
-		if (raytraceresult.getType() != HitResult.Type.BLOCK)
-			return;
-		BlockPos blockpos = ((BlockHitResult) raytraceresult).getBlockPos();
-		if (!world.mayInteract(player, blockpos))
-			return;
-
+		BlockHitResult raytraceresult = getPlayerPOVHitResult(world, player, ClipContext.Fluid.SOURCE_ONLY);
+		if (raytraceresult.getType() != HitResult.Type.BLOCK) return;
+		BlockPos blockpos = raytraceresult.getBlockPos();
+		if (!world.mayInteract(player, blockpos)) return;
 		FluidState fluidState = world.getFluidState(blockpos);
 		if (fluidState.is(FluidTags.WATER) && RegisteredObjects.getKeyOrThrow(fluidState.getType())
-			.getNamespace()
-			.equals(Create.ID)) {
+				.getNamespace()
+				.equals(Create.ID)) {
 			event.setCancellationResult(InteractionResult.PASS);
 			event.setCanceled(true);
-			return;
 		}
-
-		return;
 	}
-
 }

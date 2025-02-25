@@ -1,5 +1,4 @@
 package com.simibubi.create.content.trains.schedule.condition;
-
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
@@ -21,67 +20,64 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
 public class PlayerPassengerCondition extends ScheduleWaitCondition {
-
-	@Override
-	public Pair<ItemStack, Component> getSummary() {
+	@Override public Pair<ItemStack, Component> getSummary() {
 		int target = getTarget();
-		return Pair.of(AllBlocks.SEATS.get(DyeColor.YELLOW)
-			.asStack(),
-			Lang.translateDirect("schedule.condition.player_count." + (target == 1 ? "summary" : "summary_plural"), target));
+		return Pair.of(
+				AllBlocks.SEATS.get(DyeColor.YELLOW).asStack(),
+				Lang.translateDirect(
+						"schedule.condition.player_count." + (target == 1 ? "summary" : "summary_plural"),
+						target
+				)
+		);
 	}
-
-	@Override
-	public ResourceLocation getId() {
+	@Override public ResourceLocation getId() {
 		return Create.asResource("player_count");
 	}
-
 	public int getTarget() {
 		return intData("Count");
 	}
-
 	public boolean canOvershoot() {
 		return intData("Exact") != 0;
 	}
-
-	@Override
-	public List<Component> getTitleAs(String type) {
+	@Override public List<Component> getTitleAs(String type) {
 		int target = getTarget();
-		return ImmutableList.of(Lang.translateDirect("schedule.condition.player_count.seated",
-			Lang.translateDirect("schedule.condition.player_count." + (target == 1 ? "summary" : "summary_plural"),
-				Components.literal("" + target).withStyle(ChatFormatting.DARK_AQUA))));
+		return ImmutableList.of(Lang.translateDirect(
+				"schedule.condition.player_count.seated",
+				Lang.translateDirect(
+						"schedule.condition.player_count." + (target == 1 ? "summary" : "summary_plural"),
+						Components.literal("" + target).withStyle(ChatFormatting.DARK_AQUA)
+				)
+		));
 	}
-
-	@Override
-	@OnlyIn(Dist.CLIENT)
-	public void initConfigurationWidgets(ModularGuiLineBuilder builder) {
-		builder.addScrollInput(0, 31, (i, l) -> {
-			i.titled(Lang.translateDirect("schedule.condition.player_count.players"))
-				.withShiftStep(5)
-				.withRange(0, 21);
-		}, "Count");
-
-		builder.addSelectionScrollInput(36, 85, (i, l) -> {
-			i.forOptions(Lang.translatedOptions("schedule.condition.player_count", "exactly", "or_above"))
-				.titled(Lang.translateDirect("schedule.condition.player_count.condition"));
-		}, "Exact");
+	@Override @OnlyIn(Dist.CLIENT) public void initConfigurationWidgets(ModularGuiLineBuilder builder) {
+		builder.addScrollInput(
+				0, 31, (i, l) -> {
+					i.titled(Lang.translateDirect("schedule.condition.player_count.players"))
+							.withShiftStep(5)
+							.withRange(0, 21);
+				}, "Count"
+		);
+		builder.addSelectionScrollInput(
+				36, 85, (i, l) -> {
+					i.forOptions(Lang.translatedOptions("schedule.condition.player_count", "exactly", "or_above"))
+							.titled(Lang.translateDirect("schedule.condition.player_count.condition"));
+				}, "Exact"
+		);
 	}
-
-	@Override
-	public boolean tickCompletion(Level level, Train train, CompoundTag context) {
+	@Override public boolean tickCompletion(Level level, Train train, CompoundTag context) {
 		int prev = context.getInt("PrevPlayerCount");
 		int present = train.countPlayerPassengers();
 		int target = getTarget();
 		context.putInt("PrevPlayerCount", present);
-		if (prev != present)
-			requestStatusToUpdate(context);
+		if (prev != present) requestStatusToUpdate(context);
 		return canOvershoot() ? present >= target : present == target;
 	}
-
-	@Override
-	public MutableComponent getWaitingStatus(Level level, Train train, CompoundTag tag) {
-		return Lang.translateDirect("schedule.condition.player_count.status", train.countPlayerPassengers(), getTarget());
+	@Override public MutableComponent getWaitingStatus(Level level, Train train, CompoundTag tag) {
+		return Lang.translateDirect(
+				"schedule.condition.player_count.status",
+				train.countPlayerPassengers(),
+				getTarget()
+		);
 	}
-
 }

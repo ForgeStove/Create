@@ -1,5 +1,4 @@
 package com.simibubi.create.content.trains.bogey;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -70,7 +69,6 @@ public abstract class AbstractBogeyBlock<T extends AbstractBogeyBlockEntity> ext
 		registerDefaultState(defaultBlockState().setValue(WATERLOGGED, false));
 		this.size = size;
 	}
-
 	public boolean isOnIncompatibleTrack(Carriage carriage, boolean leading) {
 		TravellingPoint point = leading ? carriage.getLeadingPoint() : carriage.getTrailingPoint();
 		CarriageBogey bogey = leading ? carriage.leadingBogey() : carriage.trailingBogey();
@@ -78,7 +76,6 @@ public abstract class AbstractBogeyBlock<T extends AbstractBogeyBlockEntity> ext
 		if (currentEdge == null) return false;
 		return currentEdge.getTrackMaterial().trackType != getTrackType(bogey.getStyle());
 	}
-
 	public Set<TrackMaterial.TrackType> getValidPathfindingTypes(BogeyStyle style) {
 		return ImmutableSet.of(getTrackType(style));
 	}
@@ -98,8 +95,8 @@ public abstract class AbstractBogeyBlock<T extends AbstractBogeyBlockEntity> ext
 			Direction pDirection,
 			BlockState pNeighborState,
 			LevelAccessor pLevel,
-			BlockPos pCurrentPos,
-			BlockPos pNeighborPos) {
+			BlockPos pCurrentPos, BlockPos pNeighborPos
+	) {
 		updateWater(pLevel, pState, pCurrentPos);
 		return pState;
 	}
@@ -108,29 +105,22 @@ public abstract class AbstractBogeyBlock<T extends AbstractBogeyBlockEntity> ext
 	}
 	static final EnumSet<Direction> STICKY_X = EnumSet.of(Direction.EAST, Direction.WEST);
 	static final EnumSet<Direction> STICKY_Z = EnumSet.of(Direction.SOUTH, Direction.NORTH);
-
 	public EnumSet<Direction> getStickySurfaces(BlockGetter world, BlockPos pos, BlockState state) {
 		return state.getValue(BlockStateProperties.HORIZONTAL_AXIS) == Direction.Axis.X ? STICKY_X : STICKY_Z;
 	}
-
 	public abstract double getWheelPointSpacing();
-
 	public abstract double getWheelRadius();
-
 	public Vec3 getConnectorAnchorOffset(boolean upsideDown) {
 		return getConnectorAnchorOffset();
 	}
-
 	/**
 	 * This should be implemented, but not called directly
 	 */
 	protected abstract Vec3 getConnectorAnchorOffset();
-
 	public boolean allowsSingleBogeyCarriage() {
 		return true;
 	}
 	public abstract BogeyStyle getDefaultStyle();
-
 	/**
 	 * Legacy system doesn't capture bogey block entities when constructing a train
 	 */
@@ -162,7 +152,6 @@ public abstract class AbstractBogeyBlock<T extends AbstractBogeyBlockEntity> ext
 		CompoundTag finalBogeyData = bogeyData;
 		commonRenderer.ifPresent(common -> common.render(finalBogeyData, wheelAngle, ms, light, vb, state == null));
 	}
-
 	public BogeySizes.BogeySize getSize() {
 		return this.size;
 	}
@@ -176,7 +165,6 @@ public abstract class AbstractBogeyBlock<T extends AbstractBogeyBlockEntity> ext
 		if (upDirection != Direction.UP) return null;
 		return defaultBlockState().setValue(AXIS, axisAlongFirst ? Direction.Axis.X : Direction.Axis.Z);
 	}
-
 	@Override
 	public final InteractionResult use(
 			BlockState state,
@@ -190,27 +178,19 @@ public abstract class AbstractBogeyBlock<T extends AbstractBogeyBlockEntity> ext
 		ItemStack stack = player.getItemInHand(hand);
 		if (!player.isShiftKeyDown() && stack.is(AllItems.WRENCH.get()) && !player.getCooldowns()
 				.isOnCooldown(stack.getItem()) && AllBogeyStyles.BOGEY_STYLES.size() > 1) {
-
 			BlockEntity be = level.getBlockEntity(pos);
 			if (!(be instanceof AbstractBogeyBlockEntity sbbe)) return InteractionResult.FAIL;
-
 			player.getCooldowns().addCooldown(stack.getItem(), 20);
 			BogeyStyle currentStyle = sbbe.getStyle();
-
 			BogeySizes.BogeySize size = getSize();
-
 			BogeyStyle style = this.getNextStyle(currentStyle);
 			if (style == currentStyle) return InteractionResult.PASS;
-
 			Set<BogeySizes.BogeySize> validSizes = style.validSizes();
-
 			for (int i = 0; i < BogeySizes.count(); i++) {
 				if (validSizes.contains(size)) break;
 				size = size.increment();
 			}
-
 			sbbe.setBogeyStyle(style);
-
 			CompoundTag defaultData = style.defaultData;
 			sbbe.setBogeyData(sbbe.getBogeyData().merge(defaultData));
 			if (size == getSize()) {
@@ -318,7 +298,6 @@ public abstract class AbstractBogeyBlock<T extends AbstractBogeyBlockEntity> ext
 		BlockState state = style.getBlockOfSize(size).defaultBlockState();
 		return copyProperties(sbbe.getBlockState(), state);
 	}
-
 	public BogeyStyle getNextStyle(Level level, BlockPos pos) {
 		BlockEntity te = level.getBlockEntity(pos);
 		if (te instanceof AbstractBogeyBlockEntity sbbe) return this.getNextStyle(sbbe.getStyle());

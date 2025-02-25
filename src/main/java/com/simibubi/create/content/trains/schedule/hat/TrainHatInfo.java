@@ -1,5 +1,4 @@
 package com.simibubi.create.content.trains.schedule.hat;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +7,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.world.phys.Vec3;
-
 public record TrainHatInfo(String part, int cubeIndex, Vec3 offset, float scale) {
 	public static final Codec<TrainHatInfo> CODEC = RecordCodecBuilder.create(instance -> instance.group(
 			Codec.STRING.optionalFieldOf("model_part", "").forGetter(TrainHatInfo::part),
@@ -16,7 +14,6 @@ public record TrainHatInfo(String part, int cubeIndex, Vec3 offset, float scale)
 			Vec3.CODEC.fieldOf("offset").forGetter(TrainHatInfo::offset),
 			Codec.FLOAT.optionalFieldOf("scale", 1.0F).forGetter(TrainHatInfo::scale)
 	).apply(instance, TrainHatInfo::new));
-
 	public static List<ModelPart> getAdjustedPart(TrainHatInfo info, ModelPart root, String defaultPart) {
 		List<ModelPart> finalParts = new ArrayList<>();
 		finalParts.add(root);
@@ -34,7 +31,6 @@ public record TrainHatInfo(String part, int cubeIndex, Vec3 offset, float scale)
 				finalParts.add(parent.children.get(defaultPart));
 			}
 		}
-
 		return finalParts;
 	}
 }

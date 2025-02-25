@@ -1,4 +1,6 @@
 package com.simibubi.create.content.trains.schedule.hat;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.jozufozu.flywheel.util.transform.TransformStack;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -32,30 +34,29 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-
-import java.util.ArrayList;
-import java.util.List;
-
 public class TrainHatArmorLayer<T extends LivingEntity, M extends EntityModel<T>> extends RenderLayer<T, M> {
-
 	public TrainHatArmorLayer(RenderLayerParent<T, M> renderer) {
 		super(renderer);
 	}
-
-	@Override
-	public void render(PoseStack ms, MultiBufferSource buffer, int light, LivingEntity entity, float limbSwing, float limbSwingAmount,
-					   float partialTicks, float ageInTicks, float netHeadYaw, float headPitch) {
-		if (!shouldRenderOn(entity))
-			return;
-
+	@Override public void render(
+			PoseStack ms,
+			MultiBufferSource buffer,
+			int light,
+			LivingEntity entity,
+			float limbSwing,
+			float limbSwingAmount,
+			float partialTicks,
+			float ageInTicks,
+			float netHeadYaw,
+			float headPitch
+	) {
+		if (!shouldRenderOn(entity)) return;
 		M entityModel = getParentModel();
 		RenderType renderType = Sheets.cutoutBlockSheet();
 		ms.pushPose();
-
 		TransformStack msr = TransformStack.cast(ms);
 		TrainHatInfo info = TrainHatInfoReloadListener.getHatInfoFor(entity.getType());
 		List<ModelPart> partsToHead = new ArrayList<>();
-
 		if (entityModel instanceof AgeableListModel<?> model) {
 			if (model.young) {
 				if (model.scaleHead) {
@@ -64,7 +65,6 @@ public class TrainHatArmorLayer<T extends LivingEntity, M extends EntityModel<T>
 				}
 				ms.translate(0.0D, model.babyYHeadOffset / 16.0F, model.babyZHeadOffset / 16.0F);
 			}
-
 			ModelPart head = getHeadPart(model);
 			if (head != null) {
 				partsToHead.addAll(TrainHatInfo.getAdjustedPart(info, head, ""));
@@ -72,18 +72,19 @@ public class TrainHatArmorLayer<T extends LivingEntity, M extends EntityModel<T>
 		} else if (entityModel instanceof HierarchicalModel<?> model) {
 			partsToHead.addAll(TrainHatInfo.getAdjustedPart(info, model.root(), "head"));
 		}
-
 		if (!partsToHead.isEmpty()) {
 			partsToHead.forEach(part -> part.translateAndRotate(ms));
-
 			ModelPart lastChild = partsToHead.get(partsToHead.size() - 1);
 			if (!lastChild.isEmpty()) {
 				Cube cube = lastChild.cubes.get(Mth.clamp(info.cubeIndex(), 0, lastChild.cubes.size() - 1));
-				ms.translate(info.offset().x() / 16.0F, (cube.minY - cube.maxY + info.offset().y()) / 16.0F, info.offset().z() / 16.0F);
+				ms.translate(
+						info.offset().x() / 16.0F,
+						(cube.minY - cube.maxY + info.offset().y()) / 16.0F,
+						info.offset().z() / 16.0F
+				);
 				float max = Math.max(cube.maxX - cube.minX, cube.maxZ - cube.minZ) / 8.0F * info.scale();
 				ms.scale(max, max, max);
 			}
-
 			ms.scale(1, -1, -1);
 			ms.translate(0, -2.25F / 16.0F, 0);
 			msr.rotateX(-8.5F);
@@ -93,59 +94,38 @@ public class TrainHatArmorLayer<T extends LivingEntity, M extends EntityModel<T>
 					.light(light)
 					.renderInto(ms, buffer.getBuffer(renderType));
 		}
-
 		ms.popPose();
 	}
-
 	private boolean shouldRenderOn(LivingEntity entity) {
-		if (entity == null)
-			return false;
-		if (entity.getPersistentData()
-				.contains("TrainHat"))
-			return true;
-		if (!entity.isPassenger())
-			return false;
+		if (entity == null) return false;
+		if (entity.getPersistentData().contains("TrainHat")) return true;
+		if (!entity.isPassenger()) return false;
 		if (entity instanceof Player p) {
 			ItemStack headItem = p.getItemBySlot(EquipmentSlot.HEAD);
-			if (!headItem.isEmpty())
-				return false;
+			if (!headItem.isEmpty()) return false;
 		}
 		Entity vehicle = entity.getVehicle();
-		if (!(vehicle instanceof CarriageContraptionEntity cce))
-			return false;
-		if (!cce.hasSchedule() && !(entity instanceof Player))
-			return false;
+		if (!(vehicle instanceof CarriageContraptionEntity cce)) return false;
+		if (!cce.hasSchedule() && !(entity instanceof Player)) return false;
 		Contraption contraption = cce.getContraption();
-		if (!(contraption instanceof CarriageContraption cc))
-			return false;
+		if (!(contraption instanceof CarriageContraption cc)) return false;
 		BlockPos seatOf = cc.getSeatOf(entity.getUUID());
-		if (seatOf == null)
-			return false;
+		if (seatOf == null) return false;
 		Couple<Boolean> validSides = cc.conductorSeats.get(seatOf);
 		return validSides != null;
 	}
-
 	public static void registerOnAll(EntityRenderDispatcher renderManager) {
-		for (EntityRenderer<? extends Player> renderer : renderManager.getSkinMap()
-				.values())
+		for (EntityRenderer<? extends Player> renderer : renderManager.getSkinMap().values())
 			registerOn(renderer);
 		for (EntityRenderer<?> renderer : renderManager.renderers.values())
 			registerOn(renderer);
 	}
-
-	@SuppressWarnings({"rawtypes", "unchecked"})
-	public static void registerOn(EntityRenderer<?> entityRenderer) {
-		if (!(entityRenderer instanceof LivingEntityRenderer<?, ?> livingRenderer))
-			return;
-
+	@SuppressWarnings({"rawtypes", "unchecked"}) public static void registerOn(EntityRenderer<?> entityRenderer) {
+		if (!(entityRenderer instanceof LivingEntityRenderer<?, ?> livingRenderer)) return;
 		EntityModel<?> model = livingRenderer.getModel();
-
-		if (!(model instanceof HierarchicalModel) && !(model instanceof AgeableListModel))
-			return;
-
+		if (!(model instanceof HierarchicalModel) && !(model instanceof AgeableListModel)) return;
 		livingRenderer.addLayer((TrainHatArmorLayer) new TrainHatArmorLayer<>(livingRenderer));
 	}
-
 	private static ModelPart getHeadPart(AgeableListModel<?> model) {
 		for (ModelPart part : ((AgeableListModelAccessor) model).create$callHeadParts())
 			return part;
@@ -153,5 +133,4 @@ public class TrainHatArmorLayer<T extends LivingEntity, M extends EntityModel<T>
 			return part;
 		return null;
 	}
-
 }

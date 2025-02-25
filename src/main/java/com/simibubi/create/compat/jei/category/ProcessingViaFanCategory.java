@@ -1,5 +1,4 @@
 package com.simibubi.create.compat.jei.category;
-
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -24,13 +23,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 @ParametersAreNonnullByDefault public abstract class ProcessingViaFanCategory<T extends Recipe<?>>
 		extends CreateRecipeCategory<T> {
-
 	protected static final int SCALE = 24;
-
 	public ProcessingViaFanCategory(Info<T> info) {
 		super(info);
 	}
-
 	public static Supplier<ItemStack> getFan(String name) {
 		return () -> AllBlocks.ENCASED_FAN.asStack()
 				.setHoverName(Lang.translateDirect("recipe." + name + ".fan")
@@ -44,28 +40,23 @@ import net.minecraft.world.item.crafting.Recipe;
 				.setBackground(getRenderedSlot(), -1, -1)
 				.addItemStack(getResultItem(recipe));
 	}
-
 	@Override
 	public void draw(T recipe, IRecipeSlotsView iRecipeSlotsView, GuiGraphics graphics, double mouseX, double mouseY) {
 		renderWidgets(graphics, recipe, mouseX, mouseY);
 		PoseStack matrixStack = graphics.pose();
-
 		matrixStack.pushPose();
 		translateFan(matrixStack);
 		matrixStack.mulPose(Axis.XP.rotationDegrees(-12.5f));
 		matrixStack.mulPose(Axis.YP.rotationDegrees(22.5f));
-
 		AnimatedKinetics.defaultBlockElement(AllPartialModels.ENCASED_FAN_INNER)
 				.rotateBlock(180, 0, AnimatedKinetics.getCurrentAngle() * 16)
 				.scale(SCALE)
 				.render(graphics);
-
 		AnimatedKinetics.defaultBlockElement(AllBlocks.ENCASED_FAN.getDefaultState())
 				.rotateBlock(0, 180, 0)
 				.atLocal(0, 0, 0)
 				.scale(SCALE)
 				.render(graphics);
-
 		renderAttachedBlock(graphics);
 		matrixStack.popPose();
 	}
@@ -81,7 +72,6 @@ import net.minecraft.world.item.crafting.Recipe;
 		matrixStack.translate(56, 33, 0);
 	}
 	protected abstract void renderAttachedBlock(GuiGraphics graphics);
-
 	public static abstract class MultiOutput<T extends ProcessingRecipe<?>> extends ProcessingViaFanCategory<T> {
 		public MultiOutput(Info<T> info) {
 			super(info);

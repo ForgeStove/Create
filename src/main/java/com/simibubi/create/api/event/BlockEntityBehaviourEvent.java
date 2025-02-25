@@ -1,5 +1,4 @@
 package com.simibubi.create.api.event;
-
 import java.lang.reflect.Type;
 import java.util.Map;
 
@@ -9,7 +8,6 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.eventbus.api.GenericEvent;
-
 /**
  * Event that is fired just before a SmartBlockEntity is being deserialized<br>
  * Also if a new one is placed<br>
@@ -25,34 +23,25 @@ import net.minecraftforge.eventbus.api.GenericEvent;
  * allowing block entities to store and retrieve data for injected behaviours.
  */
 public class BlockEntityBehaviourEvent<T extends SmartBlockEntity> extends GenericEvent<T> {
-
-	private T smartBlockEntity;
-	private Map<BehaviourType<?>, BlockEntityBehaviour> behaviours;
-
+	private final T smartBlockEntity;
+	private final Map<BehaviourType<?>, BlockEntityBehaviour> behaviours;
 	public BlockEntityBehaviourEvent(T blockEntity, Map<BehaviourType<?>, BlockEntityBehaviour> behaviours) {
 		smartBlockEntity = blockEntity;
 		this.behaviours = behaviours;
 	}
-
-	@Override
-	public Type getGenericType() {
+	@Override public Type getGenericType() {
 		return smartBlockEntity.getClass();
 	}
-
 	public void attach(BlockEntityBehaviour behaviour) {
 		behaviours.put(behaviour.getType(), behaviour);
 	}
-
 	public BlockEntityBehaviour remove(BehaviourType<?> type) {
 		return behaviours.remove(type);
 	}
-
 	public T getBlockEntity() {
 		return smartBlockEntity;
 	}
-
 	public BlockState getBlockState() {
 		return smartBlockEntity.getBlockState();
 	}
-
 }

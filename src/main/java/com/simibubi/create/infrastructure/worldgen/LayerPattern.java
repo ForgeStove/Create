@@ -1,5 +1,4 @@
 package com.simibubi.create.infrastructure.worldgen;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,47 +20,31 @@ import net.minecraft.world.level.levelgen.feature.configurations.OreConfiguratio
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTest;
 import net.minecraft.world.level.levelgen.structure.templatesystem.TagMatchTest;
 import net.minecraftforge.common.util.NonNullConsumer;
-
-public class LayerPattern {
+public record LayerPattern(List<Layer> layers) {
 	public static final Codec<LayerPattern> CODEC = Codec.list(Layer.CODEC)
 			.xmap(LayerPattern::new, pattern -> pattern.layers);
-
-	public final List<Layer> layers;
-
-	public LayerPattern(List<Layer> layers) {
-		this.layers = layers;
-	}
-
 	public Layer rollNext(@Nullable Layer previous, RandomSource random) {
 		int totalWeight = 0;
 		for (Layer layer : layers)
-			if (layer != previous)
-				totalWeight += layer.weight;
+			if (layer != previous) totalWeight += layer.weight;
 		int rolled = random.nextInt(totalWeight);
-
 		for (Layer layer : layers) {
-			if (layer == previous)
-				continue;
+			if (layer == previous) continue;
 			rolled -= layer.weight;
-			if (rolled < 0)
-				return layer;
+			if (rolled < 0) return layer;
 		}
 		return null;
 	}
-
 	public static Builder builder() {
 		return new Builder();
 	}
-
 	public static class Builder {
 		private final List<Layer> layers = new ArrayList<>();
 		private boolean netherMode;
-
 		public Builder inNether() {
 			netherMode = true;
 			return this;
 		}
-
 		public Builder layer(NonNullConsumer<Layer.Builder> builder) {
 			Layer.Builder layerBuilder = new Layer.Builder();
 			layerBuilder.netherMode = netherMode;
@@ -69,107 +52,75 @@ public class LayerPattern {
 			layers.add(layerBuilder.build());
 			return this;
 		}
-
 		public LayerPattern build() {
 			return new LayerPattern(layers);
 		}
 	}
-
-	public static class Layer {
+	public record Layer(List<List<TargetBlockState>> targets, int minSize, int maxSize, int weight) {
 		public static final Codec<Layer> CODEC = RecordCodecBuilder.create(instance -> {
 			return instance.group(
-				Codec.list(Codec.list(TargetBlockState.CODEC))
-					.fieldOf("targets")
-					.forGetter(layer -> layer.targets),
-				Codec.intRange(0, Integer.MAX_VALUE)
-					.fieldOf("min_size")
-					.forGetter(layer -> layer.minSize),
-				Codec.intRange(0, Integer.MAX_VALUE)
-					.fieldOf("max_size")
-					.forGetter(layer -> layer.maxSize),
-				Codec.intRange(0, Integer.MAX_VALUE)
-					.fieldOf("weight")
-					.forGetter(layer -> layer.weight)
+					Codec.list(Codec.list(TargetBlockState.CODEC)).fieldOf("targets").forGetter(layer -> layer.targets),
+					Codec.intRange(0, Integer.MAX_VALUE).fieldOf("min_size").forGetter(layer -> layer.minSize),
+					Codec.intRange(0, Integer.MAX_VALUE).fieldOf("max_size").forGetter(layer -> layer.maxSize),
+					Codec.intRange(0, Integer.MAX_VALUE).fieldOf("weight").forGetter(layer -> layer.weight)
 			).apply(instance, Layer::new);
 		});
-
-		public final List<List<TargetBlockState>> targets;
-		public final int minSize;
-		public final int maxSize;
-		public final int weight;
-
-		public Layer(List<List<TargetBlockState>> targets, int minSize, int maxSize, int weight) {
-			this.targets = targets;
-			this.minSize = minSize;
-			this.maxSize = maxSize;
-			this.weight = weight;
-		}
-
 		public List<TargetBlockState> rollBlock(RandomSource random) {
-			if (targets.size() == 1)
-				return targets.get(0);
+			if (targets.size() == 1) return targets.get(0);
 			return targets.get(random.nextInt(targets.size()));
 		}
-
 		public static class Builder {
 			private static final RuleTest STONE_ORE_REPLACEABLES = new TagMatchTest(BlockTags.STONE_ORE_REPLACEABLES);
-			private static final RuleTest DEEPSLATE_ORE_REPLACEABLES = new TagMatchTest(BlockTags.DEEPSLATE_ORE_REPLACEABLES);
+			private static final RuleTest
+					DEEPSLATE_ORE_REPLACEABLES
+					= new TagMatchTest(BlockTags.DEEPSLATE_ORE_REPLACEABLES);
 			private static final RuleTest NETHER_ORE_REPLACEABLES = new TagMatchTest(BlockTags.BASE_STONE_NETHER);
-
 			private final List<List<TargetBlockState>> targets = new ArrayList<>();
 			private int minSize = 1;
 			private int maxSize = 1;
 			private int weight = 1;
 			private boolean netherMode;
-
 			public Builder block(NonNullSupplier<? extends Block> block) {
 				return block(block.get());
 			}
-
 			public Builder passiveBlock() {
 				return blocks(Blocks.STONE.defaultBlockState(), Blocks.DEEPSLATE.defaultBlockState());
 			}
-
 			public Builder block(Block block) {
 				if (netherMode) {
-					this.targets.add(ImmutableList.of(OreConfiguration
-						.target(NETHER_ORE_REPLACEABLES, block.defaultBlockState())));
+					this.targets.add(ImmutableList.of(OreConfiguration.target(
+							NETHER_ORE_REPLACEABLES,
+							block.defaultBlockState()
+					)));
 					return this;
 				}
 				return blocks(block.defaultBlockState(), block.defaultBlockState());
 			}
-			
 			public Builder blocks(Block block, Block deepblock) {
 				return blocks(block.defaultBlockState(), deepblock.defaultBlockState());
 			}
-
 			public Builder blocks(Couple<NonNullSupplier<? extends Block>> blocksByDepth) {
-				return blocks(blocksByDepth.getFirst()
-					.get()
-					.defaultBlockState(),
-					blocksByDepth.getSecond()
-						.get()
-						.defaultBlockState());
+				return blocks(
+						blocksByDepth.getFirst().get().defaultBlockState(),
+						blocksByDepth.getSecond().get().defaultBlockState()
+				);
 			}
-
 			private Builder blocks(BlockState stone, BlockState deepslate) {
-				this.targets.add(
-					ImmutableList.of(OreConfiguration.target(STONE_ORE_REPLACEABLES, stone),
-						OreConfiguration.target(DEEPSLATE_ORE_REPLACEABLES, deepslate)));
+				this.targets.add(ImmutableList.of(
+						OreConfiguration.target(STONE_ORE_REPLACEABLES, stone),
+						OreConfiguration.target(DEEPSLATE_ORE_REPLACEABLES, deepslate)
+				));
 				return this;
 			}
-
 			public Builder weight(int weight) {
 				this.weight = weight;
 				return this;
 			}
-
 			public Builder size(int min, int max) {
 				this.minSize = min;
 				this.maxSize = max;
 				return this;
 			}
-
 			public Layer build() {
 				return new Layer(targets, minSize, maxSize, weight);
 			}

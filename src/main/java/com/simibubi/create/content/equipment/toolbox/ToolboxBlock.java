@@ -1,5 +1,4 @@
 package com.simibubi.create.content.equipment.toolbox;
-
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.WATERLOGGED;
 
 import java.util.Optional;
@@ -38,14 +37,11 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.network.NetworkHooks;
 public class ToolboxBlock extends HorizontalDirectionalBlock
 		implements SimpleWaterloggedBlock, IBE<ToolboxBlockEntity> {
-
 	protected final DyeColor color;
-
 	public ToolboxBlock(Properties properties, DyeColor color) {
 		super(properties);
 		this.color = color;
@@ -75,7 +71,6 @@ public class ToolboxBlock extends HorizontalDirectionalBlock
 		if (state.hasBlockEntity() && (!newState.hasBlockEntity() || !(newState.getBlock() instanceof ToolboxBlock)))
 			world.removeBlockEntity(pos);
 	}
-
 	@Override public void attack(BlockState state, Level world, BlockPos pos, Player player) {
 		if (player instanceof FakePlayer) return;
 		if (world.isClientSide) return;
@@ -92,7 +87,7 @@ public class ToolboxBlock extends HorizontalDirectionalBlock
 		CompoundTag tag = item.getOrCreateTag();
 		CompoundTag inv = blockEntityOptional.map(tb -> tb.inventory.serializeNBT()).orElse(new CompoundTag());
 		tag.put("Inventory", inv);
-		blockEntityOptional.map(tb -> tb.getUniqueId()).ifPresent(uid -> tag.putUUID("UniqueId", uid));
+		blockEntityOptional.map(ToolboxBlockEntity::getUniqueId).ifPresent(uid -> tag.putUUID("UniqueId", uid));
 		blockEntityOptional.map(ToolboxBlockEntity::getCustomName).ifPresent(item::setHoverName);
 		return item;
 	}
@@ -107,7 +102,6 @@ public class ToolboxBlock extends HorizontalDirectionalBlock
 		if (state.getValue(WATERLOGGED)) world.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(world));
 		return state;
 	}
-
 	@Override public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
 		return AllShapes.TOOLBOX.get(state.getValue(FACING));
 	}
@@ -121,7 +115,6 @@ public class ToolboxBlock extends HorizontalDirectionalBlock
 			BlockHitResult ray
 	) {
 		if (player == null || player.isCrouching()) return InteractionResult.PASS;
-
 		ItemStack stack = player.getItemInHand(hand);
 		DyeColor color = DyeColor.getColor(stack);
 		if (color != null && color != this.color) {
@@ -143,7 +136,7 @@ public class ToolboxBlock extends HorizontalDirectionalBlock
 		FluidState ifluidstate = context.getLevel().getFluidState(context.getClickedPos());
 		return super.getStateForPlacement(context)
 				.setValue(FACING, context.getHorizontalDirection().getOpposite())
-				.setValue(WATERLOGGED, Boolean.valueOf(ifluidstate.getType() == Fluids.WATER));
+				.setValue(WATERLOGGED, ifluidstate.getType() == Fluids.WATER);
 	}
 	@Override public Class<ToolboxBlockEntity> getBlockEntityClass() {
 		return ToolboxBlockEntity.class;

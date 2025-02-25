@@ -1,18 +1,14 @@
 package com.simibubi.create.infrastructure.data;
-
 import com.simibubi.create.api.data.TrainHatInfoProvider;
 
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.Vec3;
-
 public class VanillaHatOffsetGenerator extends TrainHatInfoProvider {
 	public VanillaHatOffsetGenerator(PackOutput output) {
 		super(output);
 	}
-
-	@Override
-	protected void createOffsets() {
+	@Override protected void createOffsets() {
 		this.makeInfoFor(EntityType.AXOLOTL, new Vec3(0.0F, 1.0F, -2.0F), "head", 0.75F);
 		this.makeInfoFor(EntityType.BAT, new Vec3(0.0F, 3.0F, 0.0F));
 		this.makeInfoFor(EntityType.BEE, new Vec3(0.0F, 2.0F, -2.0F), "body", 0.5F);

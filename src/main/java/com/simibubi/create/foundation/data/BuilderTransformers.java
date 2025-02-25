@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.data;
-
 import static com.simibubi.create.AllInteractionBehaviours.interactionBehaviour;
 import static com.simibubi.create.AllMovementBehaviours.movementBehaviour;
 import static com.simibubi.create.foundation.data.BlockStateGen.axisBlock;
@@ -48,6 +47,7 @@ import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.core.Direction.AxisDirection;
@@ -70,7 +70,6 @@ import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.LootTable.Builder;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.functions.CopyNameFunction;
 import net.minecraft.world.level.storage.loot.functions.CopyNbtFunction;
 import net.minecraft.world.level.storage.loot.predicates.ExplosionCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -78,15 +77,13 @@ import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraftforge.client.model.generators.ConfiguredModel;
 import net.minecraftforge.client.model.generators.ModelFile;
-
 public class BuilderTransformers {
 	public static <B extends EncasedShaftBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> encasedShaft(
 			String casing,
 			Supplier<CTSpriteShiftEntry> casingShift
 	) {
 		return builder -> encasedBase(
-				builder,
-				() -> AllBlocks.SHAFT.get()
+				builder, AllBlocks.SHAFT::get
 		).onRegister(CreateRegistrate.connectedTextures(() -> new EncasedCTBehaviour(casingShift.get())))
 				.onRegister(CreateRegistrate.casingConnectivity((block, cc) -> cc.make(
 						block,
@@ -103,12 +100,10 @@ public class BuilderTransformers {
 				.model(AssetLookup.customBlockItemModel("encased_shaft", "item_" + casing))
 				.build();
 	}
-
 	@SuppressWarnings("deprecation")
 	public static <B extends StandardBogeyBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> bogey() {
 		return b -> b.initialProperties(SharedProperties::softMetal)
-				.properties(p -> p.sound(SoundType.NETHERITE_BLOCK))
-				.properties(p -> p.noOcclusion())
+				.properties(p -> p.sound(SoundType.NETHERITE_BLOCK)).properties(BlockBehaviour.Properties::noOcclusion)
 				.transform(pickaxeOnly())
 				.blockstate((c, p) -> BlockStateGen.horizontalAxisBlock(
 						c,
@@ -118,26 +113,24 @@ public class BuilderTransformers {
 				.loot((p, l) -> p.dropOther(l, AllBlocks.RAILWAY_CASING.get()))
 				.onRegister(block -> AbstractBogeyBlock.registerStandardBogey(RegisteredObjects.getKeyOrThrow(block)));
 	}
-
 	public static <B extends CopycatBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> copycat() {
 		return b -> b.initialProperties(SharedProperties::softMetal)
 				.blockstate((c, p) -> p.simpleBlock(c.get(), p.models().getExistingFile(p.mcLoc("air"))))
 				.initialProperties(SharedProperties::softMetal)
 				.properties(p -> p.noOcclusion().mapColor(MapColor.NONE))
-				.addLayer(() -> RenderType::solid)
-				.addLayer(() -> RenderType::cutout)
-				.addLayer(() -> RenderType::cutoutMipped)
-				.addLayer(() -> RenderType::translucent)
+				.onRegister(block -> ItemBlockRenderTypes.setRenderLayer(block, RenderType.solid()))
+				.onRegister(block -> ItemBlockRenderTypes.setRenderLayer(block, RenderType.cutout()))
+				.onRegister(block -> ItemBlockRenderTypes.setRenderLayer(block, RenderType.cutoutMipped()))
+				.onRegister(block -> ItemBlockRenderTypes.setRenderLayer(block, RenderType.translucent()))
 				.color(() -> CopycatBlock::wrappedColor)
 				.transform(TagGen.axeOrPickaxe());
 	}
-
 	public static <B extends TrapDoorBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> trapdoor(boolean orientable) {
 		return b -> b.blockstate((c, p) -> {
 					ModelFile bottom = AssetLookup.partialBaseModel(c, p, "bottom");
 					ModelFile top = AssetLookup.partialBaseModel(c, p, "top");
 					ModelFile open = AssetLookup.partialBaseModel(c, p, "open");
-					if (orientable) p.trapdoorBlock(c.get(), bottom, top, open, orientable);
+					if (orientable) p.trapdoorBlock(c.get(), bottom, top, open, true);
 					else BlockStateGen.uvLockedTrapdoorBlock(c.get(), bottom, top, open).accept(c, p);
 				})
 				.transform(pickaxeOnly())
@@ -147,7 +140,6 @@ public class BuilderTransformers {
 				.tag(ItemTags.TRAPDOORS)
 				.build();
 	}
-
 	public static <B extends SlidingDoorBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> slidingDoor(String type) {
 		return b -> b.initialProperties(() -> Blocks.IRON_DOOR)
 				.properties(p -> p.requiresCorrectToolForDrops().strength(3.0F, 6.0F))
@@ -155,8 +147,7 @@ public class BuilderTransformers {
 					ModelFile bottom = AssetLookup.partialBaseModel(c, p, "bottom");
 					ModelFile top = AssetLookup.partialBaseModel(c, p, "top");
 					p.doorBlock(c.get(), bottom, bottom, bottom, bottom, top, top, top, top);
-				})
-				.addLayer(() -> RenderType::cutoutMipped)
+				}).onRegister(block -> ItemBlockRenderTypes.setRenderLayer(block, RenderType.cutoutMipped()))
 				.transform(pickaxeOnly())
 				.onRegister(interactionBehaviour(new DoorMovingInteraction()))
 				.onRegister(movementBehaviour(new SlidingDoorMovementBehaviour()))
@@ -170,18 +161,17 @@ public class BuilderTransformers {
 				.model((c, p) -> p.blockSprite(c, p.modLoc("item/" + type + "_door")))
 				.build();
 	}
-
 	public static <B extends EncasedCogwheelBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> encasedCogwheel(
 			String casing,
 			Supplier<CTSpriteShiftEntry> casingShift
 	) {
-		return b -> encasedCogwheelBase(b, casing, casingShift, () -> AllBlocks.COGWHEEL.get(), false);
+		return b -> encasedCogwheelBase(b, casing, casingShift, AllBlocks.COGWHEEL::get, false);
 	}
 	public static <B extends EncasedCogwheelBlock, P> NonNullUnaryOperator<BlockBuilder<B, P>> encasedLargeCogwheel(
 			String casing,
 			Supplier<CTSpriteShiftEntry> casingShift
 	) {
-		return b -> encasedCogwheelBase(b, casing, casingShift, () -> AllBlocks.LARGE_COGWHEEL.get(), true).onRegister(
+		return b -> encasedCogwheelBase(b, casing, casingShift, AllBlocks.LARGE_COGWHEEL::get, true).onRegister(
 				CreateRegistrate.connectedTextures(() -> new EncasedCogCTBehaviour(casingShift.get())));
 	}
 	private static <B extends EncasedCogwheelBlock, P> BlockBuilder<B, P> encasedCogwheelBase(
@@ -195,7 +185,10 @@ public class BuilderTransformers {
 		String blockFolder = large ? "encased_large_cogwheel" : "encased_cogwheel";
 		String wood = casing.equals("brass") ? "dark_oak" : "spruce";
 		String gearbox = casing.equals("brass") ? "brass_gearbox" : "gearbox";
-		return encasedBase(b, drop).addLayer(() -> RenderType::cutoutMipped)
+		return encasedBase(b, drop).onRegister(block -> ItemBlockRenderTypes.setRenderLayer(
+						block,
+						RenderType.cutoutMipped()
+				))
 				.onRegister(CreateRegistrate.casingConnectivity((block, cc) -> cc.make(
 						block,
 						casingShift.get(),
@@ -207,9 +200,7 @@ public class BuilderTransformers {
 				.blockstate((c, p) -> axisBlock(
 						c, p, blockState -> {
 							String suffix = (blockState.getValue(EncasedCogwheelBlock.TOP_SHAFT) ? "_top" : "") + (
-									blockState.getValue(EncasedCogwheelBlock.BOTTOM_SHAFT)
-											? "_bottom"
-											: ""
+									blockState.getValue(EncasedCogwheelBlock.BOTTOM_SHAFT) ? "_bottom" : ""
 							);
 							String modelName = c.getName() + suffix;
 							return p.models()
@@ -239,14 +230,12 @@ public class BuilderTransformers {
 				.transform(BlockStressDefaults.setNoImpact())
 				.loot((p, lb) -> p.dropOther(lb, drop.get()));
 	}
-
 	public static <B extends Block, P> NonNullUnaryOperator<BlockBuilder<B, P>> cuckooClock() {
 		return b -> b.initialProperties(SharedProperties::wooden)
 				.blockstate((c, p) -> p.horizontalBlock(
 						c.get(),
 						p.models().getExistingFile(p.modLoc("block/cuckoo_clock/block"))
-				))
-				.addLayer(() -> RenderType::cutoutMipped)
+				)).onRegister(block -> ItemBlockRenderTypes.setRenderLayer(block, RenderType.cutoutMipped()))
 				.transform(BlockStressDefaults.setImpact(1.0))
 				.item()
 				.transform(ModelGen.customItemModel("cuckoo_clock", "item"));
@@ -258,7 +247,7 @@ public class BuilderTransformers {
 	) {
 		return b -> b.initialProperties(() -> Blocks.LADDER)
 				.properties(p -> p.mapColor(color))
-				.addLayer(() -> RenderType::cutout)
+				.onRegister(block -> ItemBlockRenderTypes.setRenderLayer(block, RenderType.cutout()))
 				.blockstate((c, p) -> p.horizontalBlock(
 						c.get(),
 						p.models()
@@ -271,7 +260,7 @@ public class BuilderTransformers {
 				.transform(pickaxeOnly())
 				.tag(BlockTags.CLIMBABLE)
 				.item()
-				.recipe((c, p) -> p.stonecutting(ingredient.get(), RecipeCategory.DECORATIONS, c::get, 2))
+				.recipe((c, p) -> p.stonecutting(ingredient.get(), RecipeCategory.DECORATIONS, c, 2))
 				.model((c, p) -> p.blockSprite(c::get, p.modLoc("block/ladder_" + name)))
 				.build();
 	}
@@ -285,22 +274,18 @@ public class BuilderTransformers {
 	) {
 		return b -> b.initialProperties(() -> Blocks.SCAFFOLDING)
 				.properties(p -> p.sound(SoundType.COPPER).mapColor(color))
-				.addLayer(() -> RenderType::cutout)
+				.onRegister(block -> ItemBlockRenderTypes.setRenderLayer(block, RenderType.cutout()))
 				.blockstate((c, p) -> p.getVariantBuilder(c.get()).forAllStatesExcept(
 						s -> {
 							String suffix = s.getValue(MetalScaffoldingBlock.BOTTOM) ? "_horizontal" : "";
-							return ConfiguredModel.builder()
-									.modelFile(p.models()
-											.withExistingParent(
-													c.getName() + suffix,
-													p.modLoc("block/scaffold/block" + suffix)
-											)
-											.texture("top", p.modLoc("block/funnel/" + name + "_funnel_frame"))
-											.texture("inside", p.modLoc("block/scaffold/" + name + "_scaffold_inside"))
-											.texture("side", p.modLoc("block/scaffold/" + name + "_scaffold"))
-											.texture("casing", p.modLoc("block/" + name + "_casing"))
-											.texture("particle", p.modLoc("block/scaffold/" + name + "_scaffold")))
-									.build();
+							return ConfiguredModel.builder().modelFile(p.models()
+									.withExistingParent(c.getName() + suffix,
+											p.modLoc("block/scaffold/block" + suffix))
+									.texture("top", p.modLoc("block/funnel/" + name + "_funnel_frame"))
+									.texture("inside", p.modLoc("block/scaffold/" + name + "_scaffold_inside"))
+									.texture("side", p.modLoc("block/scaffold/" + name + "_scaffold"))
+									.texture("casing", p.modLoc("block/" + name + "_casing"))
+									.texture("particle", p.modLoc("block/scaffold/" + name + "_scaffold"))).build();
 						}, MetalScaffoldingBlock.WATERLOGGED, MetalScaffoldingBlock.DISTANCE
 				))
 				.onRegister(connectedTextures(() -> new MetalScaffoldingCTBehaviour(
@@ -311,11 +296,10 @@ public class BuilderTransformers {
 				.transform(pickaxeOnly())
 				.tag(BlockTags.CLIMBABLE)
 				.item(MetalScaffoldingBlockItem::new)
-				.recipe((c, p) -> p.stonecutting(ingredient.get(), RecipeCategory.DECORATIONS, c::get, 2))
+				.recipe((c, p) -> p.stonecutting(ingredient.get(), RecipeCategory.DECORATIONS, c, 2))
 				.model((c, p) -> p.withExistingParent(c.getName(), p.modLoc("block/" + c.getName())))
 				.build();
 	}
-
 	public static <B extends ValveHandleBlock> NonNullUnaryOperator<BlockBuilder<B, CreateRegistrate>> valveHandle(
 			@Nullable DyeColor color
 	) {
@@ -336,7 +320,6 @@ public class BuilderTransformers {
 				.tag(AllItemTags.VALVE_HANDLES.tag)
 				.build();
 	}
-
 	public static <B extends CasingBlock> NonNullUnaryOperator<BlockBuilder<B, CreateRegistrate>> casing(
 			Supplier<CTSpriteShiftEntry> ct
 	) {
@@ -351,7 +334,6 @@ public class BuilderTransformers {
 				.tag(AllItemTags.CASING.tag)
 				.build();
 	}
-
 	public static <B extends CasingBlock> NonNullUnaryOperator<BlockBuilder<B, CreateRegistrate>> layeredCasing(
 			Supplier<CTSpriteShiftEntry> ct,
 			Supplier<CTSpriteShiftEntry> ct2
@@ -372,7 +354,6 @@ public class BuilderTransformers {
 				.tag(AllItemTags.CASING.tag)
 				.build();
 	}
-
 	public static <B extends BeltTunnelBlock> NonNullUnaryOperator<BlockBuilder<B, CreateRegistrate>> beltTunnel(
 			String type,
 			ResourceLocation particleTexture
@@ -380,7 +361,7 @@ public class BuilderTransformers {
 		String prefix = "block/tunnel/" + type + "_tunnel";
 		String funnel_prefix = "block/funnel/" + type + "_funnel";
 		return b -> b.initialProperties(SharedProperties::stone)
-				.addLayer(() -> RenderType::cutoutMipped)
+				.onRegister(block -> ItemBlockRenderTypes.setRenderLayer(block, RenderType.cutoutMipped()))
 				.properties(BlockBehaviour.Properties::noOcclusion)
 				.transform(pickaxeOnly())
 				.blockstate((c, p) -> p.getVariantBuilder(c.get()).forAllStates(state -> {
@@ -415,9 +396,9 @@ public class BuilderTransformers {
 	}
 	public static <B extends Block, P> NonNullUnaryOperator<BlockBuilder<B, P>> mechanicalPiston(PistonType type) {
 		return b -> b.initialProperties(SharedProperties::stone)
-				.properties(p -> p.noOcclusion())
+				.properties(BlockBehaviour.Properties::noOcclusion)
 				.blockstate(new MechanicalPistonGenerator(type)::generate)
-				.addLayer(() -> RenderType::cutoutMipped)
+				.onRegister(block -> ItemBlockRenderTypes.setRenderLayer(block, RenderType.cutoutMipped()))
 				.transform(BlockStressDefaults.setImpact(4.0))
 				.item()
 				.transform(ModelGen.customItemModel("mechanical_piston", type.getSerializedName(), "item"));
@@ -431,8 +412,7 @@ public class BuilderTransformers {
 		ResourceLocation topTextureLocation = Create.asResource("block/bearing_top");
 		ResourceLocation sideTextureLocation = Create.asResource("block/" + prefix + "_bearing_side");
 		ResourceLocation backTextureLocation = Create.asResource("block/" + backTexture);
-		return b -> b.initialProperties(SharedProperties::stone)
-				.properties(p -> p.noOcclusion())
+		return b -> b.initialProperties(SharedProperties::stone).properties(BlockBehaviour.Properties::noOcclusion)
 				.blockstate((c, p) -> p.directionalBlock(
 						c.get(),
 						p.models()
@@ -458,8 +438,7 @@ public class BuilderTransformers {
 					ResourceLocation casing = p.modLoc("block/" + type + "_casing");
 					for (String variant : variants)
 						models.put(
-								variant,
-								p.models()
+								variant, p.models()
 										.withExistingParent(
 												"block/crate/" + type + "/" + variant,
 												p.modLoc("block/crate/" + variant)
@@ -480,7 +459,7 @@ public class BuilderTransformers {
 	public static <B extends Block, P> NonNullUnaryOperator<BlockBuilder<B, P>> backtank(Supplier<ItemLike> drop) {
 		return b -> b.blockstate((c, p) -> p.horizontalBlock(c.getEntry(), AssetLookup.partialBaseModel(c, p)))
 				.transform(pickaxeOnly())
-				.addLayer(() -> RenderType::cutoutMipped)
+				.onRegister(block -> ItemBlockRenderTypes.setRenderLayer(block, RenderType.cutoutMipped()))
 				.transform(BlockStressDefaults.setImpact(4.0))
 				.loot((lt, block) -> {
 					Builder builder = LootTable.lootTable();
@@ -502,7 +481,7 @@ public class BuilderTransformers {
 		return b -> b.initialProperties(SharedProperties::softMetal)
 				.properties(p -> p.noOcclusion().sound(SoundType.ANVIL))
 				.transform(pickaxeOnly())
-				.addLayer(() -> RenderType::cutoutMipped)
+				.onRegister(block -> ItemBlockRenderTypes.setRenderLayer(block, RenderType.cutoutMipped()))
 				.tag(AllBlockTags.BRITTLE.tag)
 				.blockstate((c, p) -> p.horizontalBlock(
 						c.getEntry(), state -> {

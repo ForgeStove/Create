@@ -1,5 +1,4 @@
 package com.simibubi.create.content.trains;
-
 import java.util.Locale;
 
 import com.mojang.brigadier.StringReader;
@@ -15,22 +14,19 @@ import net.minecraft.core.particles.ParticleType;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
 public class CubeParticleData implements ParticleOptions, ICustomParticleData<CubeParticleData> {
-
-	public static final Codec<CubeParticleData> CODEC = RecordCodecBuilder.create(i -> 
-		i.group(
+	public static final Codec<CubeParticleData> CODEC = RecordCodecBuilder.create(i -> i.group(
 			Codec.FLOAT.fieldOf("r").forGetter(p -> p.r),
 			Codec.FLOAT.fieldOf("g").forGetter(p -> p.g),
 			Codec.FLOAT.fieldOf("b").forGetter(p -> p.b),
 			Codec.FLOAT.fieldOf("scale").forGetter(p -> p.scale),
-			Codec.INT.fieldOf("avgAge").forGetter(p -> p.avgAge),
-			Codec.BOOL.fieldOf("hot").forGetter(p -> p.hot))
-		.apply(i, CubeParticleData::new));
-
-	public static final ParticleOptions.Deserializer<CubeParticleData> DESERIALIZER = new ParticleOptions.Deserializer<CubeParticleData>() {
-		@Override
-		public CubeParticleData fromCommand(ParticleType<CubeParticleData> type, StringReader reader) throws CommandSyntaxException {
+			Codec.INT.fieldOf("avgAge").forGetter(p -> p.avgAge), Codec.BOOL.fieldOf("hot").forGetter(p -> p.hot)
+	).apply(i, CubeParticleData::new));
+	public static final ParticleOptions.Deserializer<CubeParticleData>
+			DESERIALIZER
+			= new ParticleOptions.Deserializer<>() {
+		@Override public CubeParticleData fromCommand(ParticleType<CubeParticleData> type, StringReader reader) throws
+				CommandSyntaxException {
 			reader.expect(' ');
 			float r = reader.readFloat();
 			reader.expect(' ');
@@ -45,20 +41,23 @@ public class CubeParticleData implements ParticleOptions, ICustomParticleData<Cu
 			boolean hot = reader.readBoolean();
 			return new CubeParticleData(r, g, b, scale, avgAge, hot);
 		}
-
-		@Override
-		public CubeParticleData fromNetwork(ParticleType<CubeParticleData> type, FriendlyByteBuf buffer) {
-			return new CubeParticleData(buffer.readFloat(), buffer.readFloat(), buffer.readFloat(), buffer.readFloat(), buffer.readInt(), buffer.readBoolean());
+		@Override public CubeParticleData fromNetwork(ParticleType<CubeParticleData> type, FriendlyByteBuf buffer) {
+			return new CubeParticleData(
+					buffer.readFloat(),
+					buffer.readFloat(),
+					buffer.readFloat(),
+					buffer.readFloat(),
+					buffer.readInt(),
+					buffer.readBoolean()
+			);
 		}
 	};
-
 	final float r;
 	final float g;
 	final float b;
 	final float scale;
 	final int avgAge;
 	final boolean hot;
-
 	public CubeParticleData(float r, float g, float b, float scale, int avgAge, boolean hot) {
 		this.r = r;
 		this.g = g;
@@ -67,34 +66,22 @@ public class CubeParticleData implements ParticleOptions, ICustomParticleData<Cu
 		this.avgAge = avgAge;
 		this.hot = hot;
 	}
-
 	public CubeParticleData() {
 		this(0, 0, 0, 0, 0, false);
 	}
-
-	@Override
-	public Deserializer<CubeParticleData> getDeserializer() {
+	@Override public Deserializer<CubeParticleData> getDeserializer() {
 		return DESERIALIZER;
 	}
-
-	@Override
-	public Codec<CubeParticleData> getCodec(ParticleType<CubeParticleData> type) {
+	@Override public Codec<CubeParticleData> getCodec(ParticleType<CubeParticleData> type) {
 		return CODEC;
 	}
-
-	@Override
-	@OnlyIn(Dist.CLIENT)
-	public ParticleProvider<CubeParticleData> getFactory() {
+	@Override @OnlyIn(Dist.CLIENT) public ParticleProvider<CubeParticleData> getFactory() {
 		return new CubeParticle.Factory();
 	}
-
-	@Override
-	public ParticleType<?> getType() {
+	@Override public ParticleType<?> getType() {
 		return AllParticleTypes.CUBE.get();
 	}
-
-	@Override
-	public void writeToNetwork(FriendlyByteBuf buffer) {
+	@Override public void writeToNetwork(FriendlyByteBuf buffer) {
 		buffer.writeFloat(r);
 		buffer.writeFloat(g);
 		buffer.writeFloat(b);
@@ -102,9 +89,17 @@ public class CubeParticleData implements ParticleOptions, ICustomParticleData<Cu
 		buffer.writeInt(avgAge);
 		buffer.writeBoolean(hot);
 	}
-
-	@Override
-	public String writeToString() {
-		return String.format(Locale.ROOT, "%s %f %f %f %f %d %s", AllParticleTypes.CUBE.parameter(), r, g, b, scale, avgAge, hot);
+	@Override public String writeToString() {
+		return String.format(
+				Locale.ROOT,
+				"%s %f %f %f %f %d %s",
+				AllParticleTypes.CUBE.parameter(),
+				r,
+				g,
+				b,
+				scale,
+				avgAge,
+				hot
+		);
 	}
 }

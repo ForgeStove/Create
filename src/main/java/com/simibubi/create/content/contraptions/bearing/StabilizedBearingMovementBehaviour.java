@@ -1,5 +1,4 @@
 package com.simibubi.create.content.contraptions.bearing;
-
 import javax.annotation.Nullable;
 
 import org.joml.Quaternionf;
@@ -28,85 +27,64 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
 public class StabilizedBearingMovementBehaviour implements MovementBehaviour {
-
-	@Override
-	public ItemStack canBeDisabledVia(MovementContext context) {
+	@Override public ItemStack canBeDisabledVia(MovementContext context) {
 		return null;
 	}
-	
-	@Override
-	@OnlyIn(Dist.CLIENT)
-	public void renderInContraption(MovementContext context, VirtualRenderWorld renderWorld,
-		ContraptionMatrices matrices, MultiBufferSource buffer) {
-		if (ContraptionRenderDispatcher.canInstance())
-			return;
-
+	@Override @OnlyIn(Dist.CLIENT) public void renderInContraption(
+			MovementContext context,
+			VirtualRenderWorld renderWorld,
+			ContraptionMatrices matrices,
+			MultiBufferSource buffer
+	) {
+		if (ContraptionRenderDispatcher.canInstance()) return;
 		Direction facing = context.state.getValue(BlockStateProperties.FACING);
 		PartialModel top = AllPartialModels.BEARING_TOP;
 		SuperByteBuffer superBuffer = CachedBufferer.partial(top, context.state);
 		float renderPartialTicks = AnimationTickHolder.getPartialTicks();
-
 		// rotate to match blockstate
 		Quaternionf orientation = BearingInstance.getBlockStateOrientation(facing);
-
 		// rotate against parent
 		float angle = getCounterRotationAngle(context, facing, renderPartialTicks) * facing.getAxisDirection()
-			.getStep();
-
-		Quaternionf rotation = Axis.of(facing.step())
-			.rotationDegrees(angle);
-
+				.getStep();
+		Quaternionf rotation = Axis.of(facing.step()).rotationDegrees(angle);
 		rotation.mul(orientation);
-
 		orientation = rotation;
-
 		superBuffer.transform(matrices.getModel());
 		superBuffer.rotateCentered(orientation);
-
 		// render
-		superBuffer
-			.light(matrices.getWorld(), ContraptionRenderDispatcher.getContraptionWorldLight(context, renderWorld))
-			.renderInto(matrices.getViewProjection(), buffer.getBuffer(RenderType.solid()));
+		superBuffer.light(
+						matrices.getWorld(),
+						ContraptionRenderDispatcher.getContraptionWorldLight(context, renderWorld)
+				)
+				.renderInto(matrices.getViewProjection(), buffer.getBuffer(RenderType.solid()));
 	}
-
-	@Override
-	public boolean hasSpecialInstancedRendering() {
+	@Override public boolean hasSpecialInstancedRendering() {
 		return true;
 	}
-
-	@Nullable
-	@Override
-	public ActorInstance createInstance(MaterialManager materialManager, VirtualRenderWorld simulationWorld,
-		MovementContext context) {
+	@Nullable @Override
+	public ActorInstance createInstance(
+			MaterialManager materialManager,
+			VirtualRenderWorld simulationWorld,
+			MovementContext context
+	) {
 		return new StabilizedBearingInstance(materialManager, simulationWorld, context);
 	}
-
 	static float getCounterRotationAngle(MovementContext context, Direction facing, float renderPartialTicks) {
-		if (!context.contraption.canBeStabilized(facing, context.localPos))
-			return 0;
-
+		if (!context.contraption.canBeStabilized(facing, context.localPos)) return 0;
 		float offset = 0;
 		Direction.Axis axis = facing.getAxis();
 		AbstractContraptionEntity entity = context.contraption.entity;
-
-		if (entity instanceof ControlledContraptionEntity) {
-			ControlledContraptionEntity controlledCE = (ControlledContraptionEntity) entity;
+		if (entity instanceof ControlledContraptionEntity controlledCE) {
 			if (context.contraption.canBeStabilized(facing, context.localPos))
 				offset = -controlledCE.getAngle(renderPartialTicks);
-
-		} else if (entity instanceof OrientedContraptionEntity) {
-			OrientedContraptionEntity orientedCE = (OrientedContraptionEntity) entity;
-			if (axis.isVertical())
-				offset = -orientedCE.getViewYRot(renderPartialTicks);
+		} else if (entity instanceof OrientedContraptionEntity orientedCE) {
+			if (axis.isVertical()) offset = -orientedCE.getViewYRot(renderPartialTicks);
 			else {
-				if (orientedCE.isInitialOrientationPresent() && orientedCE.getInitialOrientation()
-					.getAxis() == axis)
+				if (orientedCE.isInitialOrientationPresent() && orientedCE.getInitialOrientation().getAxis() == axis)
 					offset = -orientedCE.getViewXRot(renderPartialTicks);
 			}
 		}
 		return offset;
 	}
-
 }

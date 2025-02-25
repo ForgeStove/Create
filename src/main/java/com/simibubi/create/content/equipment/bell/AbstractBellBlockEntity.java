@@ -1,5 +1,4 @@
 package com.simibubi.create.content.equipment.bell;
-
 import java.util.List;
 
 import com.jozufozu.flywheel.core.PartialModel;
@@ -15,21 +14,16 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
 public abstract class AbstractBellBlockEntity extends SmartBlockEntity {
-
 	public static final int RING_DURATION = 74;
-
 	public boolean isRinging;
 	public int ringingTicks;
 	public Direction ringDirection;
-
 	public AbstractBellBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 	}
 	@Override public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 	}
-
 	public boolean ring(Level world, BlockPos pos, Direction direction) {
 		isRinging = true;
 		ringingTicks = 0;
@@ -37,7 +31,6 @@ public abstract class AbstractBellBlockEntity extends SmartBlockEntity {
 		sendData();
 		return true;
 	}
-	;
 	@Override public void tick() {
 		super.tick();
 		if (isRinging) {
@@ -61,5 +54,4 @@ public abstract class AbstractBellBlockEntity extends SmartBlockEntity {
 		isRinging = true;
 	}
 	@OnlyIn(Dist.CLIENT) public abstract PartialModel getBellModel();
-
 }

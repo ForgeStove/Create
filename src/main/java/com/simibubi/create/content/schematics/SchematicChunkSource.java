@@ -1,5 +1,4 @@
 package com.simibubi.create.content.schematics;
-
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -46,229 +45,220 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.BlackholeTickAccess;
 import net.minecraft.world.ticks.LevelTickAccess;
-
 public class SchematicChunkSource extends ChunkSource {
 	private final Level fallbackWorld;
-
 	public SchematicChunkSource(Level world) {
 		fallbackWorld = world;
 	}
-
-	@Nullable
-	@Override
-	public LightChunk getChunkForLighting(int x, int z) {
+	@Nullable @Override public LightChunk getChunkForLighting(int x, int z) {
 		return getChunk(x, z);
 	}
-
-	@Override
-	public Level getLevel() {
+	@Override public Level getLevel() {
 		return fallbackWorld;
 	}
-
-	@Nullable
-	@Override
-	public ChunkAccess getChunk(int x, int z, ChunkStatus status, boolean p_212849_4_) {
+	@Nullable @Override public ChunkAccess getChunk(int x, int z, ChunkStatus status, boolean p_212849_4_) {
 		return getChunk(x, z);
 	}
-
 	public ChunkAccess getChunk(int x, int z) {
 		return new EmptierChunk(fallbackWorld.registryAccess());
 	}
-
-	@Override
-	public String gatherStats() {
+	@Override public String gatherStats() {
 		return "WrappedChunkProvider";
 	}
-
-	@Override
-	public LevelLightEngine getLightEngine() {
+	@Override public LevelLightEngine getLightEngine() {
 		return fallbackWorld.getLightEngine();
 	}
-
-	@Override
-	public void tick(BooleanSupplier p_202162_, boolean p_202163_) {}
-
-	@Override
-	public int getLoadedChunksCount() {
+	@Override public void tick(BooleanSupplier p_202162_, boolean p_202163_) {
+	}
+	@Override public int getLoadedChunksCount() {
 		return 0;
 	}
-
 	public static class EmptierChunk extends LevelChunk {
-
 		private static final class DummyLevel extends Level {
-			
-			private DummyLevel(WritableLevelData pLevelData, ResourceKey<Level> pDimension,
-				RegistryAccess pRegistryAccess, Holder<DimensionType> pDimensionTypeRegistration,
-				Supplier<ProfilerFiller> pProfiler, boolean pIsClientSide, boolean pIsDebug, long pBiomeZoomSeed,
-				int pMaxChainedNeighborUpdates) {
-				super(pLevelData, pDimension, pRegistryAccess, pDimensionTypeRegistration, pProfiler, pIsClientSide, pIsDebug,
-					pBiomeZoomSeed, pMaxChainedNeighborUpdates);
+			private DummyLevel(
+					WritableLevelData pLevelData,
+					ResourceKey<Level> pDimension,
+					RegistryAccess pRegistryAccess,
+					Holder<DimensionType> pDimensionTypeRegistration,
+					Supplier<ProfilerFiller> pProfiler,
+					boolean pIsClientSide,
+					boolean pIsDebug,
+					long pBiomeZoomSeed,
+					int pMaxChainedNeighborUpdates
+			) {
+				super(
+						pLevelData,
+						pDimension,
+						pRegistryAccess,
+						pDimensionTypeRegistration,
+						pProfiler,
+						pIsClientSide,
+						pIsDebug,
+						pBiomeZoomSeed,
+						pMaxChainedNeighborUpdates
+				);
 				access = pRegistryAccess;
 			}
-
 			private final RegistryAccess access;
-			
 			private DummyLevel(RegistryAccess access) {
-				this(null, null, access, access.registryOrThrow(Registries.DIMENSION_TYPE)
-					.getHolderOrThrow(BuiltinDimensionTypes.OVERWORLD), null, false, false, 0, 0);
+				this(
+						null,
+						null,
+						access,
+						access.registryOrThrow(Registries.DIMENSION_TYPE)
+								.getHolderOrThrow(BuiltinDimensionTypes.OVERWORLD),
+						null,
+						false,
+						false,
+						0,
+						0
+				);
 			}
-
-			@Override
-			public ChunkSource getChunkSource() {
+			@Override public ChunkSource getChunkSource() {
 				return null;
 			}
-
-			@Override
-			public void levelEvent(Player pPlayer, int pType, BlockPos pPos, int pData) {}
-
-			@Override
-			public void gameEvent(Entity pEntity, GameEvent pEvent, BlockPos pPos) {}
-
-			@Override
-			public void gameEvent(GameEvent p_220404_, Vec3 p_220405_, Context p_220406_) {}
-
-			@Override
-			public RegistryAccess registryAccess() {
+			@Override public void levelEvent(Player pPlayer, int pType, BlockPos pPos, int pData) {
+			}
+			@Override public void gameEvent(Entity pEntity, GameEvent pEvent, BlockPos pPos) {
+			}
+			@Override public void gameEvent(GameEvent p_220404_, Vec3 p_220405_, Context p_220406_) {
+			}
+			@Override public RegistryAccess registryAccess() {
 				return access;
 			}
-
-			@Override
-			public List<? extends Player> players() {
+			@Override public List<? extends Player> players() {
 				return null;
 			}
-
-			@Override
-			public Holder<Biome> getUncachedNoiseBiome(int pX, int pY, int pZ) {
+			@Override public Holder<Biome> getUncachedNoiseBiome(int pX, int pY, int pZ) {
 				return null;
 			}
-
-			@Override
-			public float getShade(Direction pDirection, boolean pShade) {
+			@Override public float getShade(Direction pDirection, boolean pShade) {
 				return 0;
 			}
-
 			@Override
-			public void sendBlockUpdated(BlockPos pPos, BlockState pOldState, BlockState pNewState, int pFlags) {}
-
-			@Override
-			public void playSound(Player pPlayer, double pX, double pY, double pZ, SoundEvent pSound,
-				SoundSource pCategory, float pVolume, float pPitch) {}
-
-			@Override
-			public void playSound(Player pPlayer, Entity pEntity, SoundEvent pEvent, SoundSource pCategory,
-				float pVolume, float pPitch) {}
-
-			@Override
-			public void playSeededSound(Player p_220363_, double p_220364_, double p_220365_, double p_220366_,
-					SoundEvent p_220367_, SoundSource p_220368_, float p_220369_, float p_220370_, long p_220371_) {}
-
-			@Override
-			public void playSeededSound(Player p_220372_, Entity p_220373_, Holder<SoundEvent> p_220374_, SoundSource p_220375_,
-					float p_220376_, float p_220377_, long p_220378_) {}
-
-			@Override
-			public String gatherChunkSourceStats() {
+			public void sendBlockUpdated(BlockPos pPos, BlockState pOldState, BlockState pNewState, int pFlags) {
+			}
+			@Override public void playSound(
+					Player pPlayer,
+					double pX,
+					double pY,
+					double pZ,
+					SoundEvent pSound,
+					SoundSource pCategory,
+					float pVolume,
+					float pPitch
+			) {
+			}
+			@Override public void playSound(
+					Player pPlayer,
+					Entity pEntity,
+					SoundEvent pEvent,
+					SoundSource pCategory,
+					float pVolume,
+					float pPitch
+			) {
+			}
+			@Override public void playSeededSound(
+					Player p_220363_,
+					double p_220364_,
+					double p_220365_,
+					double p_220366_,
+					SoundEvent p_220367_,
+					SoundSource p_220368_,
+					float p_220369_,
+					float p_220370_,
+					long p_220371_
+			) {
+			}
+			@Override public void playSeededSound(
+					Player p_220372_,
+					Entity p_220373_,
+					Holder<SoundEvent> p_220374_,
+					SoundSource p_220375_,
+					float p_220376_,
+					float p_220377_,
+					long p_220378_
+			) {
+			}
+			@Override public String gatherChunkSourceStats() {
 				return null;
 			}
-
-			@Override
-			public Entity getEntity(int pId) {
+			@Override public Entity getEntity(int pId) {
 				return null;
 			}
-
-			@Override
-			public MapItemSavedData getMapData(String pMapName) {
+			@Override public MapItemSavedData getMapData(String pMapName) {
 				return null;
 			}
-
-			@Override
-			public void setMapData(String pMapId, MapItemSavedData pData) {}
-
-			@Override
-			public int getFreeMapId() {
+			@Override public void setMapData(String pMapId, MapItemSavedData pData) {
+			}
+			@Override public int getFreeMapId() {
 				return 0;
 			}
-
-			@Override
-			public void destroyBlockProgress(int pBreakerId, BlockPos pPos, int pProgress) {}
-
-			@Override
-			public Scoreboard getScoreboard() {
+			@Override public void destroyBlockProgress(int pBreakerId, BlockPos pPos, int pProgress) {
+			}
+			@Override public Scoreboard getScoreboard() {
 				return null;
 			}
-
-			@Override
-			public RecipeManager getRecipeManager() {
+			@Override public RecipeManager getRecipeManager() {
 				return null;
 			}
-
-			@Override
-			protected LevelEntityGetter<Entity> getEntities() {
+			@Override protected LevelEntityGetter<Entity> getEntities() {
 				return null;
 			}
-
-			@Override
-			public LevelTickAccess<Block> getBlockTicks() {
+			@Override public LevelTickAccess<Block> getBlockTicks() {
 				return BlackholeTickAccess.emptyLevelList();
 			}
-
-			@Override
-			public LevelTickAccess<Fluid> getFluidTicks() {
+			@Override public LevelTickAccess<Fluid> getFluidTicks() {
 				return BlackholeTickAccess.emptyLevelList();
 			}
-
-			@Override
-			public FeatureFlagSet enabledFeatures() {
+			@Override public FeatureFlagSet enabledFeatures() {
 				return FeatureFlagSet.of();
 			}
-
-			@Override
-			public void playSeededSound(Player pPlayer, double pX, double pY, double pZ, Holder<SoundEvent> pSound,
-				SoundSource pSource, float pVolume, float pPitch, long pSeed) {}
+			@Override public void playSeededSound(
+					Player pPlayer,
+					double pX,
+					double pY,
+					double pZ,
+					Holder<SoundEvent> pSound,
+					SoundSource pSource,
+					float pVolume,
+					float pPitch,
+					long pSeed
+			) {
+			}
 		}
-
 		public EmptierChunk(RegistryAccess registryAccess) {
 			super(new DummyLevel(registryAccess), null);
 		}
-
 		public BlockState getBlockState(BlockPos p_180495_1_) {
 			return Blocks.VOID_AIR.defaultBlockState();
 		}
-
-		@Nullable
-		public BlockState setBlockState(BlockPos p_177436_1_, BlockState p_177436_2_, boolean p_177436_3_) {
+		@Nullable public BlockState setBlockState(BlockPos p_177436_1_, BlockState p_177436_2_, boolean p_177436_3_) {
 			return null;
 		}
-
 		public FluidState getFluidState(BlockPos p_204610_1_) {
 			return Fluids.EMPTY.defaultFluidState();
 		}
-
 		public int getLightEmission(BlockPos p_217298_1_) {
 			return 0;
 		}
-
-		@Nullable
-		public BlockEntity getBlockEntity(BlockPos p_177424_1_, EntityCreationType p_177424_2_) {
+		@Nullable public BlockEntity getBlockEntity(BlockPos p_177424_1_, EntityCreationType p_177424_2_) {
 			return null;
 		}
-
-		public void addAndRegisterBlockEntity(BlockEntity p_150813_1_) {}
-
-		public void setBlockEntity(BlockEntity p_177426_2_) {}
-
-		public void removeBlockEntity(BlockPos p_177425_1_) {}
-
-		public void markUnsaved() {}
-
+		public void addAndRegisterBlockEntity(BlockEntity p_150813_1_) {
+		}
+		public void setBlockEntity(BlockEntity p_177426_2_) {
+		}
+		public void removeBlockEntity(BlockPos p_177425_1_) {
+		}
+		public void markUnsaved() {
+		}
 		public boolean isEmpty() {
 			return true;
 		}
-
 		public boolean isYSpaceEmpty(int p_76606_1_, int p_76606_2_) {
 			return true;
 		}
-
 		public FullChunkStatus getFullStatus() {
 			return FullChunkStatus.FULL;
 		}

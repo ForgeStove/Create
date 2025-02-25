@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.recipe;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,23 +23,16 @@ import net.minecraftforge.common.crafting.AbstractIngredient;
 import net.minecraftforge.common.crafting.CraftingHelper;
 import net.minecraftforge.common.crafting.IIngredientSerializer;
 import net.minecraftforge.registries.ForgeRegistries;
-
 public class BlockTagIngredient extends AbstractIngredient {
 	protected final TagKey<Block> tag;
-
-	@Nullable
-	protected ItemStack[] itemStacks;
-	@Nullable
-	protected IntList stackingIds;
-
+	@Nullable protected ItemStack[] itemStacks;
+	@Nullable protected IntList stackingIds;
 	protected BlockTagIngredient(TagKey<Block> tag) {
 		this.tag = tag;
 	}
-
 	public static BlockTagIngredient create(TagKey<Block> tag) {
 		return new BlockTagIngredient(tag);
 	}
-
 	protected void dissolve() {
 		if (itemStacks == null) {
 			List<ItemStack> list = new ArrayList<>();
@@ -53,97 +45,69 @@ public class BlockTagIngredient extends AbstractIngredient {
 			itemStacks = list.toArray(ItemStack[]::new);
 		}
 	}
-
-	@Override
-	public ItemStack[] getItems() {
+	@Override public ItemStack[] getItems() {
 		dissolve();
 		return itemStacks;
 	}
-
-	@Override
-	public boolean test(@Nullable ItemStack stack) {
+	@Override public boolean test(@Nullable ItemStack stack) {
 		if (stack == null) {
 			return false;
 		}
-
 		dissolve();
 		if (itemStacks.length == 0) {
 			return stack.isEmpty();
 		}
-
 		for (ItemStack itemStack : itemStacks) {
 			if (itemStack.is(stack.getItem())) {
 				return true;
 			}
 		}
-
 		return false;
 	}
-
-	@Override
-	public IntList getStackingIds() {
+	@Override public IntList getStackingIds() {
 		if (stackingIds == null || checkInvalidation()) {
 			markValid();
 			dissolve();
 			stackingIds = new IntArrayList(itemStacks.length);
-
 			for (ItemStack stack : itemStacks) {
 				stackingIds.add(StackedContents.getStackingIndex(stack));
 			}
-
 			stackingIds.sort(IntComparators.NATURAL_COMPARATOR);
 		}
-
 		return stackingIds;
 	}
-
 	public TagKey<Block> getTag() {
 		return tag;
 	}
-
-	@Override
-	protected void invalidate() {
+	@Override protected void invalidate() {
 		itemStacks = null;
 		stackingIds = null;
 	}
-
-	@Override
-	public boolean isSimple() {
+	@Override public boolean isSimple() {
 		return true;
 	}
-
-	@Override
-	public IIngredientSerializer<? extends Ingredient> getSerializer() {
+	@Override public IIngredientSerializer<? extends Ingredient> getSerializer() {
 		return Serializer.INSTANCE;
 	}
-
-	@Override
-	public JsonElement toJson() {
+	@Override public JsonElement toJson() {
 		JsonObject json = new JsonObject();
 		json.addProperty("type", CraftingHelper.getID(Serializer.INSTANCE).toString());
 		json.addProperty("tag", tag.location().toString());
 		return json;
 	}
-
 	public static class Serializer implements IIngredientSerializer<BlockTagIngredient> {
 		public static final Serializer INSTANCE = new Serializer();
-
-		@Override
-		public BlockTagIngredient parse(JsonObject json) {
+		@Override public BlockTagIngredient parse(JsonObject json) {
 			ResourceLocation rl = new ResourceLocation(GsonHelper.getAsString(json, "tag"));
 			TagKey<Block> tag = TagKey.create(Registries.BLOCK, rl);
 			return new BlockTagIngredient(tag);
 		}
-
-		@Override
-		public BlockTagIngredient parse(FriendlyByteBuf buffer) {
+		@Override public BlockTagIngredient parse(FriendlyByteBuf buffer) {
 			ResourceLocation rl = buffer.readResourceLocation();
 			TagKey<Block> tag = TagKey.create(Registries.BLOCK, rl);
 			return new BlockTagIngredient(tag);
 		}
-
-		@Override
-		public void write(FriendlyByteBuf buffer, BlockTagIngredient ingredient) {
+		@Override public void write(FriendlyByteBuf buffer, BlockTagIngredient ingredient) {
 			TagKey<Block> tag = ingredient.getTag();
 			buffer.writeResourceLocation(tag.location());
 		}

@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.mixin.client;
-
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -23,18 +22,23 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.BlockDestructionProgress;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.extensions.common.IClientBlockExtensions;
-
-@Mixin(LevelRenderer.class)
-public class LevelRendererMixin {
-	@Shadow
-	private ClientLevel level;
-
-	@Shadow
-	@Final
-	private Long2ObjectMap<SortedSet<BlockDestructionProgress>> destructionProgress;
-
-	@Inject(method = "destroyBlockProgress(ILnet/minecraft/core/BlockPos;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/level/BlockDestructionProgress;updateTick(I)V", shift = Shift.AFTER), locals = LocalCapture.CAPTURE_FAILHARD)
-	private void create$onDestroyBlockProgress(int breakerId, BlockPos pos, int progress, CallbackInfo ci, BlockDestructionProgress progressObj) {
+@Mixin(LevelRenderer.class) public class LevelRendererMixin {
+	@Shadow private ClientLevel level;
+	@Shadow @Final private Long2ObjectMap<SortedSet<BlockDestructionProgress>> destructionProgress;
+	@Inject(
+			method = "destroyBlockProgress(ILnet/minecraft/core/BlockPos;I)V", at = @At(
+			value = "INVOKE",
+			target = "Lnet/minecraft/server/level/BlockDestructionProgress;updateTick(I)V",
+			shift = Shift.AFTER
+	), locals = LocalCapture.CAPTURE_FAILHARD
+	)
+	private void create$onDestroyBlockProgress(
+			int breakerId,
+			BlockPos pos,
+			int progress,
+			CallbackInfo ci,
+			BlockDestructionProgress progressObj
+	) {
 		BlockState state = level.getBlockState(pos);
 		IClientBlockExtensions properties = IClientBlockExtensions.of(state);
 		if (properties instanceof MultiPosDestructionHandler handler) {
@@ -48,7 +52,6 @@ public class LevelRendererMixin {
 			}
 		}
 	}
-
 	@Inject(method = "removeProgress(Lnet/minecraft/server/level/BlockDestructionProgress;)V", at = @At("RETURN"))
 	private void create$onRemoveProgress(BlockDestructionProgress progress, CallbackInfo ci) {
 		Set<BlockPos> extraPositions = ((BlockDestructionProgressExtension) progress).getExtraPositions();

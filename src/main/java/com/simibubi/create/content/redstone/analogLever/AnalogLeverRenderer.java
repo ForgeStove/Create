@@ -1,5 +1,4 @@
 package com.simibubi.create.content.redstone.analogLever;
-
 import com.jozufozu.flywheel.backend.Backend;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -16,40 +15,38 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
-
 public class AnalogLeverRenderer extends SafeBlockEntityRenderer<AnalogLeverBlockEntity> {
-
 	public AnalogLeverRenderer(BlockEntityRendererProvider.Context context) {
 	}
-
-	@Override
-	protected void renderSafe(AnalogLeverBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer,
-		int light, int overlay) {
-
+	@Override protected void renderSafe(
+			AnalogLeverBlockEntity be,
+			float partialTicks,
+			PoseStack ms,
+			MultiBufferSource buffer,
+			int light,
+			int overlay
+	) {
 		if (Backend.canUseInstancing(be.getLevel())) return;
-
 		BlockState leverState = be.getBlockState();
 		float state = be.clientState.getValue(partialTicks);
-
 		VertexConsumer vb = buffer.getBuffer(RenderType.solid());
-
 		// Handle
 		SuperByteBuffer handle = CachedBufferer.partial(AllPartialModels.ANALOG_LEVER_HANDLE, leverState);
 		float angle = (float) ((state / 15) * 90 / 180 * Math.PI);
 		transform(handle, leverState).translate(1 / 2f, 1 / 16f, 1 / 2f)
 				.rotate(Direction.EAST, angle)
 				.translate(-1 / 2f, -1 / 16f, -1 / 2f);
-		handle.light(light)
-				.renderInto(ms, vb);
-
+		handle.light(light).renderInto(ms, vb);
 		// Indicator
 		int color = Color.mixColors(0x2C0300, 0xCD0000, state / 15f);
-		SuperByteBuffer indicator = transform(CachedBufferer.partial(AllPartialModels.ANALOG_LEVER_INDICATOR, leverState), leverState);
-		indicator.light(light)
-				.color(color)
-				.renderInto(ms, vb);
+		SuperByteBuffer indicator = transform(
+				CachedBufferer.partial(
+						AllPartialModels.ANALOG_LEVER_INDICATOR,
+						leverState
+				), leverState
+		);
+		indicator.light(light).color(color).renderInto(ms, vb);
 	}
-
 	private SuperByteBuffer transform(SuperByteBuffer buffer, BlockState leverState) {
 		AttachFace face = leverState.getValue(AnalogLeverBlock.FACE);
 		float rX = face == AttachFace.FLOOR ? 0 : face == AttachFace.WALL ? 90 : 180;
@@ -58,5 +55,4 @@ public class AnalogLeverRenderer extends SafeBlockEntityRenderer<AnalogLeverBloc
 		buffer.rotateCentered(Direction.EAST, (float) (rX / 180 * Math.PI));
 		return buffer;
 	}
-
 }

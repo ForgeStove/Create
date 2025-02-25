@@ -1,5 +1,4 @@
 package com.simibubi.create.content.logistics.depot;
-
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.Create;
@@ -23,43 +22,42 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.items.ItemStackHandler;
-
 public class SharedDepotBlockMethods {
-
 	protected static DepotBehaviour get(BlockGetter worldIn, BlockPos pos) {
 		return BlockEntityBehaviour.get(worldIn, pos, DepotBehaviour.TYPE);
 	}
-
-	public static InteractionResult onUse(BlockState state, Level world, BlockPos pos, Player player,
-		InteractionHand hand, BlockHitResult ray) {
-		if (ray.getDirection() != Direction.UP)
-			return InteractionResult.PASS;
-		if (world.isClientSide)
-			return InteractionResult.SUCCESS;
-
+	public static InteractionResult onUse(
+			BlockState state,
+			Level world,
+			BlockPos pos,
+			Player player,
+			InteractionHand hand,
+			BlockHitResult ray
+	) {
+		if (ray.getDirection() != Direction.UP) return InteractionResult.PASS;
+		if (world.isClientSide) return InteractionResult.SUCCESS;
 		DepotBehaviour behaviour = get(world, pos);
-		if (behaviour == null)
-			return InteractionResult.PASS;
-		if (!behaviour.canAcceptItems.get())
-			return InteractionResult.SUCCESS;
-
+		if (behaviour == null) return InteractionResult.PASS;
+		if (!behaviour.canAcceptItems.get()) return InteractionResult.SUCCESS;
 		ItemStack heldItem = player.getItemInHand(hand);
 		boolean wasEmptyHanded = heldItem.isEmpty();
 		boolean shouldntPlaceItem = AllBlocks.MECHANICAL_ARM.isIn(heldItem);
-
 		ItemStack mainItemStack = behaviour.getHeldItemStack();
 		if (!mainItemStack.isEmpty()) {
-			player.getInventory()
-				.placeItemBackInInventory(mainItemStack);
+			player.getInventory().placeItemBackInInventory(mainItemStack);
 			behaviour.removeHeldItem();
-			world.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, .2f,
-				1f + Create.RANDOM.nextFloat());
+			world.playSound(
+					null,
+					pos,
+					SoundEvents.ITEM_PICKUP,
+					SoundSource.PLAYERS,
+					.2f,
+					1f + Create.RANDOM.nextFloat()
+			);
 		}
 		ItemStackHandler outputs = behaviour.processingOutputBuffer;
 		for (int i = 0; i < outputs.getSlots(); i++)
-			player.getInventory()
-				.placeItemBackInInventory(outputs.extractItem(i, 64, false));
-
+			player.getInventory().placeItemBackInInventory(outputs.extractItem(i, 64, false));
 		if (!wasEmptyHanded && !shouldntPlaceItem) {
 			TransportedItemStack transported = new TransportedItemStack(heldItem);
 			transported.insertedFrom = player.getDirection();
@@ -69,38 +67,29 @@ public class SharedDepotBlockMethods {
 			player.setItemInHand(hand, ItemStack.EMPTY);
 			AllSoundEvents.DEPOT_SLIDE.playOnServer(world, pos);
 		}
-
 		behaviour.blockEntity.notifyUpdate();
 		return InteractionResult.SUCCESS;
 	}
-
 	public static void onLanded(BlockGetter worldIn, Entity entityIn) {
-		if (!(entityIn instanceof ItemEntity))
-			return;
-		if (!entityIn.isAlive())
-			return;
-		if (entityIn.level().isClientSide)
-			return;
-
-		ItemEntity itemEntity = (ItemEntity) entityIn;
-		DirectBeltInputBehaviour inputBehaviour =
-			BlockEntityBehaviour.get(worldIn, entityIn.blockPosition(), DirectBeltInputBehaviour.TYPE);
-		if (inputBehaviour == null)
-			return;
+		if (!(entityIn instanceof ItemEntity itemEntity)) return;
+		if (!entityIn.isAlive()) return;
+		if (entityIn.level().isClientSide) return;
+		DirectBeltInputBehaviour inputBehaviour = BlockEntityBehaviour.get(
+				worldIn,
+				entityIn.blockPosition(),
+				DirectBeltInputBehaviour.TYPE
+		);
+		if (inputBehaviour == null) return;
 		ItemStack remainder = inputBehaviour.handleInsertion(itemEntity.getItem(), Direction.DOWN, false);
 		itemEntity.setItem(remainder);
-		if (remainder.isEmpty())
-			itemEntity.discard();
+		if (remainder.isEmpty()) itemEntity.discard();
 	}
-
 	public static int getComparatorInputOverride(BlockState blockState, Level worldIn, BlockPos pos) {
 		DepotBehaviour depotBehaviour = get(worldIn, pos);
-		if (depotBehaviour == null)
-			return 0;
+		if (depotBehaviour == null) return 0;
 		float f = depotBehaviour.getPresentStackSize();
 		Integer max = depotBehaviour.maxStackSize.get();
 		f = f / (max == 0 ? 64 : max);
 		return Mth.clamp(Mth.floor(f * 14.0F) + (f > 0 ? 1 : 0), 0, 15);
 	}
-
 }

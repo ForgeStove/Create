@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.block;
-
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -18,7 +17,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-
 public interface IBE<T extends BlockEntity> extends EntityBlock {
 	Class<T> getBlockEntityClass();
 	BlockEntityType<? extends T> getBlockEntityType();
@@ -29,12 +27,11 @@ public interface IBE<T extends BlockEntity> extends EntityBlock {
 			Function<T, InteractionResult> action) {
 		return getBlockEntityOptional(world, pos).map(action).orElse(InteractionResult.PASS);
 	}
-
 	/**
 	 * if the IBE is bound to a SmartBlockEntity, which implements destroy(),<br>
 	 * call this method in BlockBehaviour::onRemove (replace super call)
 	 */
-	public static void onRemove(BlockState blockState, Level level, BlockPos pos, BlockState newBlockState) {
+	static void onRemove(BlockState blockState, Level level, BlockPos pos, BlockState newBlockState) {
 		if (!blockState.hasBlockEntity()) return;
 		if (blockState.is(newBlockState.getBlock()) && newBlockState.hasBlockEntity()) return;
 		BlockEntity blockEntity = level.getBlockEntity(pos);

@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.data;
-
 import static com.simibubi.create.Create.REGISTRATE;
 import static com.simibubi.create.foundation.data.CreateRegistrate.connectedTextures;
 
@@ -19,12 +18,14 @@ import com.simibubi.create.foundation.block.connected.HorizontalCTBehaviour;
 import com.tterrag.registrate.providers.DataGenContext;
 import com.tterrag.registrate.providers.RegistrateBlockstateProvider;
 import com.tterrag.registrate.providers.RegistrateRecipeProvider;
+import com.tterrag.registrate.providers.loot.RegistrateBlockLootTables;
 import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 import com.tterrag.registrate.util.nullness.NonNullConsumer;
 import com.tterrag.registrate.util.nullness.NonNullFunction;
 
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.data.recipes.RecipeCategory;
@@ -42,7 +43,6 @@ import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraftforge.client.model.generators.ModelFile;
 import net.minecraftforge.common.Tags;
-
 public class WindowGen {
 	private static Properties glassProperties(Properties p) {
 		return p.isValidSpawn(WindowGen::never)
@@ -61,7 +61,6 @@ public class WindowGen {
 	) {
 		return false;
 	}
-
 	public static BlockEntry<WindowBlock> woodenWindowBlock(WoodType woodType, Block planksBlock) {
 		return woodenWindowBlock(woodType, planksBlock, () -> RenderType::cutoutMipped, false);
 	}
@@ -119,11 +118,11 @@ public class WindowGen {
 						.define('#', ingredient.get())
 						.define('X', DataIngredient.tag(Tags.Items.GLASS_COLORLESS))
 						.unlockedBy("has_ingredient", RegistrateRecipeProvider.has(ingredient.get()))
-						.save(p::accept))
+						.save(p))
 				.initialProperties(() -> Blocks.GLASS)
 				.properties(WindowGen::glassProperties)
 				.properties(p -> p.mapColor(color.get()))
-				.loot((t, g) -> t.dropWhenSilkTouch(g))
+				.loot(RegistrateBlockLootTables::dropWhenSilkTouch)
 				.blockstate((c, p) -> p.simpleBlock(
 						c.get(),
 						p.models()
@@ -139,14 +138,14 @@ public class WindowGen {
 	) {
 		return REGISTRATE.block(name, ConnectedGlassBlock::new)
 				.onRegister(connectedTextures(behaviour))
-				.addLayer(() -> RenderType::cutout)
+				.onRegister(block -> ItemBlockRenderTypes.setRenderLayer(block, RenderType.cutout()))
 				.initialProperties(() -> Blocks.GLASS)
 				.properties(WindowGen::glassProperties)
-				.loot((t, g) -> t.dropWhenSilkTouch(g))
+				.loot(RegistrateBlockLootTables::dropWhenSilkTouch)
 				.recipe((c, p) -> p.stonecutting(
 						DataIngredient.tag(Tags.Items.GLASS_COLORLESS),
 						RecipeCategory.BUILDING_BLOCKS,
-						c::get
+						c
 				))
 				.blockstate((c, p) -> BlockStateGen.cubeAll(c, p, "palettes/", "framed_glass"))
 				.tag(Tags.Blocks.GLASS_COLORLESS, BlockTags.IMPERMEABLE)
@@ -243,9 +242,13 @@ public class WindowGen {
 				topTexture
 		), side = getPaneModelProvider(CGPparents, prefix, "side", sideTexture, topTexture),
 				sideAlt
-						= getPaneModelProvider(CGPparents, prefix, "side_alt", sideTexture, topTexture),
-				noSide
-						= getPaneModelProvider(CGPparents, prefix, "noside", sideTexture, topTexture),
+						= getPaneModelProvider(
+						CGPparents,
+						prefix,
+						"side_alt",
+						sideTexture,
+						topTexture
+				), noSide = getPaneModelProvider(CGPparents, prefix, "noside", sideTexture, topTexture),
 				noSideAlt
 						= getPaneModelProvider(CGPparents, prefix, "noside_alt", sideTexture, topTexture);
 		NonNullBiConsumer<DataGenContext<Block, ConnectedGlassPaneBlock>, RegistrateBlockstateProvider>
@@ -303,9 +306,9 @@ public class WindowGen {
 						.pattern("###")
 						.define('#', parent.get())
 						.unlockedBy("has_ingredient", RegistrateRecipeProvider.has(parent.get()))
-						.save(p::accept))
+						.save(p))
 				.tag(Tags.Blocks.GLASS_PANES)
-				.loot((t, g) -> t.dropWhenSilkTouch(g))
+				.loot(RegistrateBlockLootTables::dropWhenSilkTouch)
 				.item()
 				.tag(Tags.Items.GLASS_PANES)
 				.model((c, p) -> p.withExistingParent(c.getName(), Create.asResource("item/pane"))

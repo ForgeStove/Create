@@ -1,18 +1,14 @@
 package com.simibubi.create.content.contraptions.actors.flwdata;
-
 import org.lwjgl.system.MemoryUtil;
 
 import com.jozufozu.flywheel.api.struct.StructType;
 import com.jozufozu.flywheel.backend.gl.buffer.VecBuffer;
 import com.jozufozu.flywheel.backend.struct.UnsafeBufferWriter;
-
 public class UnsafeActorWriter extends UnsafeBufferWriter<ActorData> {
 	public UnsafeActorWriter(VecBuffer backingBuffer, StructType<ActorData> vertexType) {
 		super(backingBuffer, vertexType);
 	}
-
-	@Override
-    protected void writeInternal(ActorData d) {
+	@Override protected void writeInternal(ActorData d) {
 		long addr = writePointer;
 		MemoryUtil.memPutFloat(addr, d.x);
 		MemoryUtil.memPutFloat(addr + 4, d.y);

@@ -1,5 +1,4 @@
 package com.simibubi.create.content.fluids.pipes;
-
 import java.util.Map;
 import java.util.Optional;
 
@@ -37,31 +36,29 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.ticks.TickPriority;
-
 public class AxisPipeBlock extends RotatedPillarBlock implements IWrenchableWithBracket, IAxisPipe {
-
 	public AxisPipeBlock(Properties p_i48339_1_) {
 		super(p_i48339_1_);
 	}
-
-	@Override
-	public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
+	@Override public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState,
+			boolean isMoving) {
 		boolean blockTypeChanged = state.getBlock() != newState.getBlock();
-		if (blockTypeChanged && !world.isClientSide)
-			FluidPropagator.propagateChangedPipe(world, pos, state);
+		if (blockTypeChanged && !world.isClientSide) FluidPropagator.propagateChangedPipe(world, pos, state);
 		if (state != newState && !isMoving)
 			removeBracket(world, pos, true).ifPresent(stack -> Block.popResource(world, pos, stack));
-		if (state.hasBlockEntity() && (blockTypeChanged || !newState.hasBlockEntity()))
-			world.removeBlockEntity(pos);
+		if (state.hasBlockEntity() && (blockTypeChanged || !newState.hasBlockEntity())) world.removeBlockEntity(pos);
 	}
-
 	@Override
-	public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand,
-		BlockHitResult hit) {
-		if (!AllBlocks.COPPER_CASING.isIn(player.getItemInHand(hand)))
-			return InteractionResult.PASS;
-		if (world.isClientSide)
-			return InteractionResult.SUCCESS;
+	public InteractionResult use(
+			BlockState state,
+			Level world,
+			BlockPos pos,
+			Player player,
+			InteractionHand hand,
+			BlockHitResult hit
+	) {
+		if (!AllBlocks.COPPER_CASING.isIn(player.getItemInHand(hand))) return InteractionResult.PASS;
+		if (world.isClientSide) return InteractionResult.SUCCESS;
 		BlockState newState = AllBlocks.ENCASED_FLUID_PIPE.getDefaultState();
 		for (Direction d : Iterate.directionsInAxis(getAxis(state)))
 			newState = newState.setValue(EncasedPipeBlock.FACING_TO_PROPERTY_MAP.get(d), true);
@@ -70,77 +67,76 @@ public class AxisPipeBlock extends RotatedPillarBlock implements IWrenchableWith
 		FluidTransportBehaviour.loadFlows(world, pos);
 		return InteractionResult.SUCCESS;
 	}
-
 	@Override
 	public void setPlacedBy(Level pLevel, BlockPos pPos, BlockState pState, LivingEntity pPlacer, ItemStack pStack) {
 		super.setPlacedBy(pLevel, pPos, pState, pPlacer, pStack);
 		AdvancementBehaviour.setPlacedBy(pLevel, pPos, pPlacer);
 	}
-	
-	@Override
-	public void onPlace(BlockState state, Level world, BlockPos pos, BlockState oldState, boolean isMoving) {
-		if (world.isClientSide)
-			return;
-		if (state != oldState)
-			world.scheduleTick(pos, this, 1, TickPriority.HIGH);
+	@Override public void onPlace(BlockState state, Level world, BlockPos pos, BlockState oldState, boolean isMoving) {
+		if (world.isClientSide) return;
+		if (state != oldState) world.scheduleTick(pos, this, 1, TickPriority.HIGH);
 	}
-
 	@Override
-	public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter world, BlockPos pos,
-		Player player) {
+	public ItemStack getCloneItemStack(
+			BlockState state,
+			HitResult target,
+			BlockGetter world,
+			BlockPos pos,
+			Player player
+	) {
 		return AllBlocks.FLUID_PIPE.asStack();
 	}
-
 	@Override
-	public void neighborChanged(BlockState state, Level world, BlockPos pos, Block otherBlock, BlockPos neighborPos,
-		boolean isMoving) {
+	public void neighborChanged(
+			BlockState state,
+			Level world,
+			BlockPos pos,
+			Block otherBlock,
+			BlockPos neighborPos,
+			boolean isMoving
+	) {
 		DebugPackets.sendNeighborsUpdatePacket(world, pos);
 		Direction d = FluidPropagator.validateNeighbourChange(state, world, pos, otherBlock, neighborPos, isMoving);
-		if (d == null)
-			return;
-		if (!isOpenAt(state, d))
-			return;
+		if (d == null) return;
+		if (!isOpenAt(state, d)) return;
 		world.scheduleTick(pos, this, 1, TickPriority.HIGH);
 	}
-
 	public static boolean isOpenAt(BlockState state, Direction d) {
 		return d.getAxis() == state.getValue(AXIS);
 	}
-
-	@Override
-	public void tick(BlockState state, ServerLevel world, BlockPos pos, RandomSource r) {
+	@Override public void tick(BlockState state, ServerLevel world, BlockPos pos, RandomSource r) {
 		FluidPropagator.propagateChangedPipe(world, pos, state);
 	}
-
 	@Override
-	public VoxelShape getShape(BlockState state, BlockGetter p_220053_2_, BlockPos p_220053_3_,
-		CollisionContext p_220053_4_) {
+	public VoxelShape getShape(
+			BlockState state,
+			BlockGetter p_220053_2_,
+			BlockPos p_220053_3_,
+			CollisionContext p_220053_4_
+	) {
 		return AllShapes.EIGHT_VOXEL_POLE.get(state.getValue(AXIS));
 	}
-
 	public BlockState toRegularPipe(LevelAccessor world, BlockPos pos, BlockState state) {
 		Direction side = Direction.get(AxisDirection.POSITIVE, state.getValue(AXIS));
 		Map<Direction, BooleanProperty> facingToPropertyMap = FluidPipeBlock.PROPERTY_BY_DIRECTION;
-		return AllBlocks.FLUID_PIPE.get()
-			.updateBlockState(AllBlocks.FLUID_PIPE.getDefaultState()
-				.setValue(facingToPropertyMap.get(side), true)
-				.setValue(facingToPropertyMap.get(side.getOpposite()), true), side, null, world, pos);
+		return AllBlocks.FLUID_PIPE.get().updateBlockState(
+				AllBlocks.FLUID_PIPE.getDefaultState()
+						.setValue(facingToPropertyMap.get(side), true)
+						.setValue(facingToPropertyMap.get(side.getOpposite()), true), side, null, world, pos
+		);
 	}
-
-	@Override
-	public Axis getAxis(BlockState state) {
+	@Override public Axis getAxis(BlockState state) {
 		return state.getValue(AXIS);
 	}
-
-	@Override
-	public Optional<ItemStack> removeBracket(BlockGetter world, BlockPos pos, boolean inOnReplacedContext) {
-		BracketedBlockEntityBehaviour behaviour = BlockEntityBehaviour.get(world, pos, BracketedBlockEntityBehaviour.TYPE);
-		if (behaviour == null)
-			return Optional.empty();
+	@Override public Optional<ItemStack> removeBracket(BlockGetter world, BlockPos pos, boolean inOnReplacedContext) {
+		BracketedBlockEntityBehaviour behaviour = BlockEntityBehaviour.get(
+				world,
+				pos,
+				BracketedBlockEntityBehaviour.TYPE
+		);
+		if (behaviour == null) return Optional.empty();
 		BlockState bracket = behaviour.removeBracket(inOnReplacedContext);
-		if (bracket == null)
-			return Optional.empty();
+		if (bracket == null) return Optional.empty();
 		return Optional.of(new ItemStack(bracket.getBlock()));
 	}
-
 }

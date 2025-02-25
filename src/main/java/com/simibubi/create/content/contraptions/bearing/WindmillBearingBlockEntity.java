@@ -1,5 +1,4 @@
 package com.simibubi.create.content.contraptions.bearing;
-
 import java.util.List;
 
 import com.simibubi.create.foundation.advancement.AllAdvancements;
@@ -15,134 +14,93 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-
 public class WindmillBearingBlockEntity extends MechanicalBearingBlockEntity {
-
 	protected ScrollOptionBehaviour<RotationDirection> movementDirection;
 	protected float lastGeneratedSpeed;
-
 	protected boolean queuedReassembly;
-
 	public WindmillBearingBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 	}
-
-	@Override
-	public void updateGeneratedRotation() {
+	@Override public void updateGeneratedRotation() {
 		super.updateGeneratedRotation();
 		lastGeneratedSpeed = getGeneratedSpeed();
 		queuedReassembly = false;
 	}
-
-	@Override
-	public void onSpeedChanged(float prevSpeed) {
+	@Override public void onSpeedChanged(float prevSpeed) {
 		boolean cancelAssembly = assembleNextTick;
 		super.onSpeedChanged(prevSpeed);
 		assembleNextTick = cancelAssembly;
 	}
-
-	@Override
-	public void tick() {
+	@Override public void tick() {
 		super.tick();
-		if (level.isClientSide())
-			return;
-		if (!queuedReassembly)
-			return;
+		if (level.isClientSide()) return;
+		if (!queuedReassembly) return;
 		queuedReassembly = false;
-		if (!running)
-			assembleNextTick = true;
+		if (!running) assembleNextTick = true;
 	}
-	
 	public void disassembleForMovement() {
-		if (!running)
-			return;
+		if (!running) return;
 		disassemble();
 		queuedReassembly = true;
 	}
-
-	@Override
-	public float getGeneratedSpeed() {
-		if (!running)
-			return 0;
-		if (movedContraption == null)
-			return lastGeneratedSpeed;
+	@Override public float getGeneratedSpeed() {
+		if (!running) return 0;
+		if (movedContraption == null) return lastGeneratedSpeed;
 		int sails = ((BearingContraption) movedContraption.getContraption()).getSailBlocks()
-			/ AllConfigs.server().kinetics.windmillSailsPerRPM.get();
+				/ AllConfigs.server().kinetics.windmillSailsPerRPM.get();
 		return Mth.clamp(sails, 1, 16) * getAngleSpeedDirection();
 	}
-
-	@Override
-	protected boolean isWindmill() {
+	@Override protected boolean isWindmill() {
 		return true;
 	}
-
 	protected float getAngleSpeedDirection() {
 		RotationDirection rotationDirection = RotationDirection.values()[movementDirection.getValue()];
 		return (rotationDirection == RotationDirection.CLOCKWISE ? 1 : -1);
 	}
-
-	@Override
-	public void write(CompoundTag compound, boolean clientPacket) {
+	@Override public void write(CompoundTag compound, boolean clientPacket) {
 		compound.putFloat("LastGenerated", lastGeneratedSpeed);
 		compound.putBoolean("QueueAssembly", queuedReassembly);
 		super.write(compound, clientPacket);
 	}
-
-	@Override
-	protected void read(CompoundTag compound, boolean clientPacket) {
-		if (!wasMoved)
-			lastGeneratedSpeed = compound.getFloat("LastGenerated");
+	@Override protected void read(CompoundTag compound, boolean clientPacket) {
+		if (!wasMoved) lastGeneratedSpeed = compound.getFloat("LastGenerated");
 		queuedReassembly = compound.getBoolean("QueueAssembly");
 		super.read(compound, clientPacket);
 	}
-
-	@Override
-	public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+	@Override public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
 		super.addBehaviours(behaviours);
 		behaviours.remove(movementMode);
-		movementDirection = new ScrollOptionBehaviour<>(RotationDirection.class,
-			Lang.translateDirect("contraptions.windmill.rotation_direction"), this, getMovementModeSlot());
+		movementDirection = new ScrollOptionBehaviour<>(
+				RotationDirection.class,
+				Lang.translateDirect("contraptions.windmill.rotation_direction"),
+				this,
+				getMovementModeSlot()
+		);
 		movementDirection.withCallback($ -> onDirectionChanged());
 		behaviours.add(movementDirection);
 		registerAwardables(behaviours, AllAdvancements.WINDMILL, AllAdvancements.WINDMILL_MAXED);
 	}
-
 	private void onDirectionChanged() {
-		if (!running)
-			return;
-		if (!level.isClientSide)
-			updateGeneratedRotation();
+		if (!running) return;
+		if (!level.isClientSide) updateGeneratedRotation();
 	}
-
-	@Override
-	public boolean isWoodenTop() {
+	@Override public boolean isWoodenTop() {
 		return true;
 	}
-
-	public static enum RotationDirection implements INamedIconOptions {
-
+	public enum RotationDirection implements INamedIconOptions {
 		CLOCKWISE(AllIcons.I_REFRESH), COUNTER_CLOCKWISE(AllIcons.I_ROTATE_CCW),
-
 		;
-
-		private String translationKey;
-		private AllIcons icon;
-
-		private RotationDirection(AllIcons icon) {
+		private final String translationKey;
+		private final AllIcons icon;
+		RotationDirection(AllIcons icon) {
 			this.icon = icon;
 			translationKey = "generic." + Lang.asId(name());
 		}
-
-		@Override
-		public AllIcons getIcon() {
+		@Override public AllIcons getIcon() {
 			return icon;
 		}
-
-		@Override
-		public String getTranslationKey() {
+		@Override public String getTranslationKey() {
 			return translationKey;
 		}
-
 	}
-
 }

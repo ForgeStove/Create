@@ -1,29 +1,22 @@
 package com.simibubi.create.foundation.collision;
-
 import org.joml.Matrix4f;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
 public class Matrix3d {
-
 	double m00, m01, m02;
 	double m10, m11, m12;
 	double m20, m21, m22;
-
 	public Matrix3d asIdentity() {
 		m00 = m11 = m22 = 1;
 		m01 = m02 = m10 = m12 = m20 = m21 = 0;
 		return this;
 	}
-
 	public Matrix3d asXRotation(float radians) {
 		asIdentity();
-		if (radians == 0)
-			return this;
-
+		if (radians == 0) return this;
 		double s = Mth.sin(radians);
 		double c = Mth.cos(radians);
 		m22 = m11 = c;
@@ -31,12 +24,9 @@ public class Matrix3d {
 		m12 = -s;
 		return this;
 	}
-
 	public Matrix3d asYRotation(float radians) {
 		asIdentity();
-		if (radians == 0)
-			return this;
-
+		if (radians == 0) return this;
 		double s = Mth.sin(radians);
 		double c = Mth.cos(radians);
 		m00 = m22 = c;
@@ -44,12 +34,9 @@ public class Matrix3d {
 		m20 = -s;
 		return this;
 	}
-
 	public Matrix3d asZRotation(float radians) {
 		asIdentity();
-		if (radians == 0)
-			return this;
-
+		if (radians == 0) return this;
 		double s = Mth.sin(radians);
 		double c = Mth.cos(radians);
 		m00 = m11 = c;
@@ -57,7 +44,6 @@ public class Matrix3d {
 		m10 = s;
 		return this;
 	}
-
 	public Matrix3d transpose() {
 		double d = m01;
 		m01 = m10;
@@ -70,14 +56,12 @@ public class Matrix3d {
 		m21 = d;
 		return this;
 	}
-
 	public Matrix3d scale(double d) {
 		m00 *= d;
 		m11 *= d;
 		m22 *= d;
 		return this;
 	}
-
 	public Matrix3d add(Matrix3d matrix) {
 		m00 += matrix.m00;
 		m01 += matrix.m01;
@@ -90,7 +74,6 @@ public class Matrix3d {
 		m22 += matrix.m22;
 		return this;
 	}
-
 	public Matrix3d multiply(Matrix3d m) {
 		double new00 = m00 * m.m00 + m01 * m.m10 + m02 * m.m20;
 		double new01 = m00 * m.m01 + m01 * m.m11 + m02 * m.m21;
@@ -112,26 +95,20 @@ public class Matrix3d {
 		m22 = new22;
 		return this;
 	}
-
 	public Vec3 transform(Vec3 vec) {
 		double x = vec.x * m00 + vec.y * m01 + vec.z * m02;
 		double y = vec.x * m10 + vec.y * m11 + vec.z * m12;
 		double z = vec.x * m20 + vec.y * m21 + vec.z * m22;
 		return new Vec3(x, y, z);
 	}
-
 	public Matrix3d copy() {
 		return new Matrix3d().add(this);
 	}
-
 	float[] conversionBuffer = new float[16];
-
-	@OnlyIn(Dist.CLIENT)
-	public Matrix4f getAsMatrix4f() {
+	@OnlyIn(Dist.CLIENT) public Matrix4f getAsMatrix4f() {
 		for (int i = 0; i < 4; i++)
 			for (int j = 0; j < 4; j++)
 				conversionBuffer[j * 4 + i] = i == j ? 1 : 0;
-
 		conversionBuffer[0] = (float) m00;
 		conversionBuffer[1] = (float) m01;
 		conversionBuffer[2] = (float) m02;
@@ -141,8 +118,6 @@ public class Matrix3d {
 		conversionBuffer[8] = (float) m20;
 		conversionBuffer[9] = (float) m21;
 		conversionBuffer[10] = (float) m22;
-
 		return new Matrix4f().setTransposed(conversionBuffer);
 	}
-
 }

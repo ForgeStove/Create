@@ -1,5 +1,4 @@
 package com.simibubi.create.content.trains.station;
-
 import java.util.UUID;
 
 import com.simibubi.create.AllPackets;
@@ -15,59 +14,44 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.network.NetworkEvent.Context;
 import net.minecraftforge.network.PacketDistributor;
-
 public class TrainEditPacket extends SimplePacketBase {
-
-	private String name;
-	private UUID id;
-	private ResourceLocation iconType;
-
+	private final String name;
+	private final UUID id;
+	private final ResourceLocation iconType;
 	public TrainEditPacket(UUID id, String name, ResourceLocation iconType) {
 		this.name = name;
 		this.id = id;
 		this.iconType = iconType;
 	}
-
 	public TrainEditPacket(FriendlyByteBuf buffer) {
 		id = buffer.readUUID();
 		name = buffer.readUtf(256);
 		iconType = buffer.readResourceLocation();
 	}
-
-	@Override
-	public void write(FriendlyByteBuf buffer) {
+	@Override public void write(FriendlyByteBuf buffer) {
 		buffer.writeUUID(id);
 		buffer.writeUtf(name);
 		buffer.writeResourceLocation(iconType);
 	}
-
-	@Override
-	public boolean handle(Context context) {
+	@Override public boolean handle(Context context) {
 		context.enqueueWork(() -> {
 			ServerPlayer sender = context.getSender();
 			Level level = sender == null ? null : sender.level();
 			Train train = Create.RAILWAYS.sided(level).trains.get(id);
-			if (train == null)
-				return;
-			if (!name.isBlank())
-				train.name = Components.literal(name);
+			if (train == null) return;
+			if (!name.isBlank()) train.name = Components.literal(name);
 			train.icon = TrainIconType.byId(iconType);
-			if (sender != null)
-				AllPackets.getChannel().send(PacketDistributor.ALL.noArg(), new TrainEditReturnPacket(id, name, iconType));
+			if (sender != null) AllPackets.getChannel()
+					.send(PacketDistributor.ALL.noArg(), new TrainEditReturnPacket(id, name, iconType));
 		});
 		return true;
 	}
-
 	public static class TrainEditReturnPacket extends TrainEditPacket {
-
 		public TrainEditReturnPacket(FriendlyByteBuf buffer) {
 			super(buffer);
 		}
-
 		public TrainEditReturnPacket(UUID id, String name, ResourceLocation iconType) {
 			super(id, name, iconType);
 		}
-
 	}
-
 }

@@ -1,5 +1,4 @@
 package com.simibubi.create.content.trains.bogey;
-
 import static com.simibubi.create.content.trains.entity.CarriageBogey.UPSIDE_DOWN_KEY;
 
 import org.jetbrains.annotations.NotNull;
@@ -16,13 +15,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-
 public abstract class AbstractBogeyBlockEntity extends CachedRenderBBBlockEntity {
 	public static final String BOGEY_STYLE_KEY = "BogeyStyle";
 	public static final String BOGEY_DATA_KEY = "BogeyData";
-
 	private CompoundTag bogeyData;
-
 	public AbstractBogeyBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
 	}
@@ -39,7 +35,6 @@ public abstract class AbstractBogeyBlockEntity extends CachedRenderBBBlockEntity
 		}
 		this.bogeyData = newData;
 	}
-
 	public void setBogeyStyle(@NotNull BogeyStyle style) {
 		ResourceLocation location = style.name;
 		CompoundTag data = this.getBogeyData();
@@ -63,11 +58,9 @@ public abstract class AbstractBogeyBlockEntity extends CachedRenderBBBlockEntity
 	}
 	@Override public void load(CompoundTag pTag) {
 		if (pTag.contains(BOGEY_DATA_KEY)) this.bogeyData = pTag.getCompound(BOGEY_DATA_KEY);
-		else
-			this.bogeyData = this.createBogeyData();
+		else this.bogeyData = this.createBogeyData();
 		super.load(pTag);
 	}
-
 	private CompoundTag createBogeyData() {
 		CompoundTag nbt = new CompoundTag();
 		NBTHelper.writeResourceLocation(nbt, BOGEY_STYLE_KEY, getDefaultStyle().name);
@@ -82,7 +75,6 @@ public abstract class AbstractBogeyBlockEntity extends CachedRenderBBBlockEntity
 	}
 	// Ponder
 	LerpedFloat virtualAnimation = LerpedFloat.angular();
-
 	public float getVirtualAngle(float partialTicks) {
 		return virtualAnimation.getValue(partialTicks);
 	}

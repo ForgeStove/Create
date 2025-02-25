@@ -1,5 +1,4 @@
 package com.simibubi.create.content.contraptions.actors.roller;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionResult;
@@ -8,15 +7,11 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-
 public class RollerBlockItem extends BlockItem {
-
 	public RollerBlockItem(Block pBlock, Properties pProperties) {
 		super(pBlock, pProperties);
 	}
-
-	@Override
-	public InteractionResult place(BlockPlaceContext ctx) {
+	@Override public InteractionResult place(BlockPlaceContext ctx) {
 		BlockPos clickedPos = ctx.getClickedPos();
 		Level level = ctx.getLevel();
 		BlockState blockStateBelow = level.getBlockState(clickedPos.below());
@@ -25,5 +20,4 @@ public class RollerBlockItem extends BlockItem {
 		Direction clickedFace = ctx.getClickedFace();
 		return super.place(BlockPlaceContext.at(ctx, clickedPos.relative(Direction.UP), clickedFace));
 	}
-
 }

@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.events;
-
 import com.simibubi.create.Create;
 import com.simibubi.create.content.contraptions.ContraptionHandler;
 import com.simibubi.create.content.contraptions.actors.trainControls.ControlsServerHandler;
@@ -55,44 +54,29 @@ import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.forgespi.language.IModFileInfo;
 import net.minecraftforge.forgespi.locating.IModFile;
-
-@EventBusSubscriber
-public class CommonEvents {
-
-	@SubscribeEvent
-	public static void onServerTick(ServerTickEvent event) {
-		if (event.phase == Phase.START)
-			return;
+@EventBusSubscriber public class CommonEvents {
+	@SubscribeEvent public static void onServerTick(ServerTickEvent event) {
+		if (event.phase == Phase.START) return;
 		Create.SCHEMATIC_RECEIVER.tick();
 		Create.LAGGER.tick();
 		ServerSpeedProvider.serverTick();
 		Create.RAILWAYS.sync.serverTick();
 	}
-
-	@SubscribeEvent
-	public static void onChunkUnloaded(ChunkEvent.Unload event) {
+	@SubscribeEvent public static void onChunkUnloaded(ChunkEvent.Unload event) {
 		CapabilityMinecartController.onChunkUnloaded(event);
 	}
-
-	@SubscribeEvent
-	public static void playerLoggedIn(PlayerLoggedInEvent event) {
+	@SubscribeEvent public static void playerLoggedIn(PlayerLoggedInEvent event) {
 		Player player = event.getEntity();
 		ToolboxHandler.playerLogin(player);
 		Create.RAILWAYS.playerLogin(player);
 	}
-
-	@SubscribeEvent
-	public static void playerLoggedOut(PlayerLoggedOutEvent event) {
+	@SubscribeEvent public static void playerLoggedOut(PlayerLoggedOutEvent event) {
 		Player player = event.getEntity();
 		Create.RAILWAYS.playerLogout(player);
 	}
-
-	@SubscribeEvent
-	public static void onServerWorldTick(LevelTickEvent event) {
-		if (event.phase == Phase.START)
-			return;
-		if (event.side == LogicalSide.CLIENT)
-			return;
+	@SubscribeEvent public static void onServerWorldTick(LevelTickEvent event) {
+		if (event.phase == Phase.START) return;
+		if (event.side == LogicalSide.CLIENT) return;
 		Level world = event.level;
 		ContraptionHandler.tick(world);
 		CapabilityMinecartController.tick(world);
@@ -101,48 +85,33 @@ public class CommonEvents {
 		ControlsServerHandler.tick(world);
 		Create.RAILWAYS.tick(world);
 	}
-
-	@SubscribeEvent
-	public static void onUpdateLivingEntity(LivingTickEvent event) {
+	@SubscribeEvent public static void onUpdateLivingEntity(LivingTickEvent event) {
 		LivingEntity entityLiving = event.getEntity();
 		Level world = entityLiving.level();
-		if (world == null)
-			return;
+		if (world == null) return;
 		ContraptionHandler.entitiesWhoJustDismountedGetSentToTheRightLocation(entityLiving, world);
 		ToolboxHandler.entityTick(entityLiving, world);
 	}
-
-	@SubscribeEvent
-	public static void onEntityAdded(EntityJoinLevelEvent event) {
+	@SubscribeEvent public static void onEntityAdded(EntityJoinLevelEvent event) {
 		Entity entity = event.getEntity();
 		Level world = event.getLevel();
 		ContraptionHandler.addSpawnedContraptionsToCollisionList(entity, world);
 	}
-
-	@SubscribeEvent
-	public static void onEntityAttackedByPlayer(AttackEntityEvent event) {
+	@SubscribeEvent public static void onEntityAttackedByPlayer(AttackEntityEvent event) {
 		WrenchItem.wrenchInstaKillsMinecarts(event);
 	}
-
-	@SubscribeEvent
-	public static void registerCommands(RegisterCommandsEvent event) {
+	@SubscribeEvent public static void registerCommands(RegisterCommandsEvent event) {
 		AllCommands.register(event.getDispatcher());
 	}
-
-	@SubscribeEvent
-	public static void onEntityEnterSection(EntityEvent.EnteringSection event) {
+	@SubscribeEvent public static void onEntityEnterSection(EntityEvent.EnteringSection event) {
 		CarriageEntityHandler.onEntityEnterSection(event);
 	}
-
-	@SubscribeEvent
-	public static void addReloadListeners(AddReloadListenerEvent event) {
+	@SubscribeEvent public static void addReloadListeners(AddReloadListenerEvent event) {
 		event.addListener(RecipeFinder.LISTENER);
 		event.addListener(PotatoProjectileTypeManager.ReloadListener.INSTANCE);
 		event.addListener(BeltHelper.LISTENER);
 	}
-
-	@SubscribeEvent
-	public static void onDatapackSync(OnDatapackSyncEvent event) {
+	@SubscribeEvent public static void onDatapackSync(OnDatapackSyncEvent event) {
 		ServerPlayer player = event.getPlayer();
 		if (player != null) {
 			PotatoProjectileTypeManager.syncTo(player);
@@ -150,64 +119,56 @@ public class CommonEvents {
 			PotatoProjectileTypeManager.syncToAll();
 		}
 	}
-
-	@SubscribeEvent
-	public static void serverStopping(ServerStoppingEvent event) {
+	@SubscribeEvent public static void serverStopping(ServerStoppingEvent event) {
 		Create.SCHEMATIC_RECEIVER.shutdown();
 	}
-
-	@SubscribeEvent
-	public static void onLoadWorld(LevelEvent.Load event) {
+	@SubscribeEvent public static void onLoadWorld(LevelEvent.Load event) {
 		LevelAccessor world = event.getLevel();
 		Create.REDSTONE_LINK_NETWORK_HANDLER.onLoadWorld(world);
 		Create.TORQUE_PROPAGATOR.onLoadWorld(world);
 		Create.RAILWAYS.levelLoaded(world);
 	}
-
-	@SubscribeEvent
-	public static void onUnloadWorld(LevelEvent.Unload event) {
+	@SubscribeEvent public static void onUnloadWorld(LevelEvent.Unload event) {
 		LevelAccessor world = event.getLevel();
 		Create.REDSTONE_LINK_NETWORK_HANDLER.onUnloadWorld(world);
 		Create.TORQUE_PROPAGATOR.onUnloadWorld(world);
 		WorldAttached.invalidateWorld(world);
 	}
-
-	@SubscribeEvent
-	public static void attachCapabilities(AttachCapabilitiesEvent<Entity> event) {
+	@SubscribeEvent public static void attachCapabilities(AttachCapabilitiesEvent<Entity> event) {
 		CapabilityMinecartController.attach(event);
 	}
-
-	@SubscribeEvent
-	public static void startTracking(PlayerEvent.StartTracking event) {
+	@SubscribeEvent public static void startTracking(PlayerEvent.StartTracking event) {
 		CapabilityMinecartController.startTracking(event);
 	}
-
 	public static void leftClickEmpty(ServerPlayer player) {
 		ItemStack stack = player.getMainHandItem();
 		if (stack.getItem() instanceof ZapperItem) {
 			ZapperInteractionHandler.trySelect(stack, player);
 		}
 	}
-
-	@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
-	public static class ModBusEvents {
-
-		@SubscribeEvent
-		public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+	@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD) public static class ModBusEvents {
+		@SubscribeEvent public static void registerCapabilities(RegisterCapabilitiesEvent event) {
 			event.register(CapabilityMinecartController.class);
 		}
-
-		@SubscribeEvent
-		public static void addPackFinders(AddPackFindersEvent event) {
+		@SubscribeEvent public static void addPackFinders(AddPackFindersEvent event) {
 			if (event.getPackType() == PackType.CLIENT_RESOURCES) {
 				IModFileInfo modFileInfo = ModList.get().getModFileById(Create.ID);
 				if (modFileInfo == null) {
-					Create.LOGGER.error("Could not find Create mod file info; built-in resource packs will be missing!");
+					Create.LOGGER.error("Could not find Create mod file info; built-in resource packs will be "
+							+ "missing!");
 					return;
 				}
 				IModFile modFile = modFileInfo.getFile();
 				event.addRepositorySource(consumer -> {
-					Pack pack = Pack.readMetaAndCreate(Create.asResource("legacy_copper").toString(), Components.literal("Create Legacy Copper"), false, id -> new ModFilePackResources(id, modFile, "resourcepacks/legacy_copper"), PackType.CLIENT_RESOURCES, Pack.Position.TOP, PackSource.BUILT_IN);
+					Pack pack = Pack.readMetaAndCreate(
+							Create.asResource("legacy_copper").toString(),
+							Components.literal("Create Legacy Copper"),
+							false,
+							id -> new ModFilePackResources(id, modFile, "resourcepacks/legacy_copper"),
+							PackType.CLIENT_RESOURCES,
+							Pack.Position.TOP,
+							PackSource.BUILT_IN
+					);
 					if (pack != null) {
 						consumer.accept(pack);
 					}

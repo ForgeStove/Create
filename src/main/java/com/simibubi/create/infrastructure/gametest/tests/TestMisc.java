@@ -1,5 +1,4 @@
 package com.simibubi.create.infrastructure.gametest.tests;
-
 import static com.simibubi.create.infrastructure.gametest.CreateGameTestHelper.FIFTEEN_SECONDS;
 
 import com.simibubi.create.AllBlockEntityTypes;
@@ -26,9 +25,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RedstoneLampBlock;
-
-@GameTestGroup(path = "misc")
-public class TestMisc {
+@GameTestGroup(path = "misc") public class TestMisc {
 	@GameTest(template = "schematicannon", timeoutTicks = FIFTEEN_SECONDS)
 	public static void schematicannon(CreateGameTestHelper helper) {
 		// load the structure
@@ -36,11 +33,18 @@ public class TestMisc {
 		BlockPos redEndTop = helper.absolutePos(new BlockPos(5, 4, 7));
 		ServerLevel level = helper.getLevel();
 		SchematicExport.saveSchematic(
-				SchematicExport.SCHEMATICS.resolve("uploaded/Deployer"), "schematicannon_gametest", true,
-				level, whiteEndBottom, redEndTop
+				SchematicExport.SCHEMATICS.resolve("uploaded/Deployer"),
+				"schematicannon_gametest",
+				true,
+				level,
+				whiteEndBottom,
+				redEndTop
 		);
-		ItemStack schematic =
-			SchematicItem.create(level.holderLookup(Registries.BLOCK), "schematicannon_gametest.nbt", "Deployer");
+		ItemStack schematic = SchematicItem.create(
+				level.holderLookup(Registries.BLOCK),
+				"schematicannon_gametest.nbt",
+				"Deployer"
+		);
 		// deploy to pos
 		BlockPos anchor = helper.absolutePos(new BlockPos(1, 2, 1));
 		schematic.getOrCreateTag().putBoolean("Deployed", true);
@@ -60,9 +64,7 @@ public class TestMisc {
 			helper.assertBlockPresent(Blocks.RED_WOOL, lastBlock);
 		});
 	}
-
-	@GameTest(template = "shearing")
-	public static void shearing(CreateGameTestHelper helper) {
+	@GameTest(template = "shearing") public static void shearing(CreateGameTestHelper helper) {
 		BlockPos sheepPos = new BlockPos(2, 1, 2);
 		Sheep sheep = helper.getFirstEntity(EntityType.SHEEP, sheepPos);
 		sheep.shear(SoundSource.NEUTRAL);
@@ -70,9 +72,7 @@ public class TestMisc {
 			helper.assertItemEntityPresent(Items.WHITE_WOOL, sheepPos, 2);
 		});
 	}
-
-	@GameTest(template = "smart_observer_blocks")
-	public static void smartObserverBlocks(CreateGameTestHelper helper) {
+	@GameTest(template = "smart_observer_blocks") public static void smartObserverBlocks(CreateGameTestHelper helper) {
 		BlockPos lever = new BlockPos(2, 2, 1);
 		BlockPos leftLamp = new BlockPos(3, 4, 3);
 		BlockPos rightLamp = new BlockPos(1, 4, 3);
@@ -82,32 +82,34 @@ public class TestMisc {
 			helper.assertBlockProperty(rightLamp, RedstoneLampBlock.LIT, false);
 		});
 	}
-
 	@GameTest(template = "threshold_switch_pulley")
 	public static void thresholdSwitchPulley(CreateGameTestHelper helper) {
 		BlockPos lever = new BlockPos(3, 7, 1);
 		BlockPos switchPos = new BlockPos(1, 6, 1);
 		helper.pullLever(lever);
 		helper.succeedWhen(() -> {
-			ThresholdSwitchBlockEntity switchBe = helper.getBlockEntity(AllBlockEntityTypes.THRESHOLD_SWITCH.get(), switchPos);
+			ThresholdSwitchBlockEntity switchBe = helper.getBlockEntity(
+					AllBlockEntityTypes.THRESHOLD_SWITCH.get(),
+					switchPos
+			);
 			float level = switchBe.getStockLevel();
-			if (level < 0 || level > 1)
-				helper.fail("Invalid level: " + level);
+			if (level < 0 || level > 1) helper.fail("Invalid level: " + level);
 		});
 	}
-
 	@GameTest(template = "netherite_backtank", timeoutTicks = CreateGameTestHelper.TEN_SECONDS)
 	public static void netheriteBacktank(CreateGameTestHelper helper) {
 		BlockPos lava = new BlockPos(2, 2, 3);
 		BlockPos zombieSpawn = lava.above(2);
 		BlockPos armorStandPos = new BlockPos(2, 2, 1);
-		helper.runAtTickTime(5, () -> {
-			Zombie zombie = helper.spawn(EntityType.ZOMBIE, zombieSpawn);
-			ArmorStand armorStand = helper.getFirstEntity(EntityType.ARMOR_STAND, armorStandPos);
-			for (EquipmentSlot slot : EquipmentSlot.values()) {
-				zombie.setItemSlot(slot, armorStand.getItemBySlot(slot).copy());
-			}
-		});
+		helper.runAtTickTime(
+				5, () -> {
+					Zombie zombie = helper.spawn(EntityType.ZOMBIE, zombieSpawn);
+					ArmorStand armorStand = helper.getFirstEntity(EntityType.ARMOR_STAND, armorStandPos);
+					for (EquipmentSlot slot : EquipmentSlot.values()) {
+						zombie.setItemSlot(slot, armorStand.getItemBySlot(slot).copy());
+					}
+				}
+		);
 		helper.succeedWhen(() -> {
 			helper.assertSecondsPassed(9);
 			helper.assertEntityPresent(EntityType.ZOMBIE, lava);

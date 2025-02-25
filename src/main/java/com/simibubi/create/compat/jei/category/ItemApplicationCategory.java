@@ -1,5 +1,4 @@
 package com.simibubi.create.compat.jei.category;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -27,7 +26,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 @ParametersAreNonnullByDefault public class ItemApplicationCategory
 		extends CreateRecipeCategory<ItemApplicationRecipe> {
-
 	public ItemApplicationCategory(Info<ItemApplicationRecipe> info) {
 		super(info);
 	}
@@ -35,7 +33,6 @@ import net.minecraft.world.level.block.state.BlockState;
 		builder.addSlot(RecipeIngredientRole.INPUT, 27, 38)
 				.setBackground(getRenderedSlot(), -1, -1)
 				.addIngredients(recipe.getProcessedItem());
-
 		builder.addSlot(RecipeIngredientRole.INPUT, 51, 5)
 				.setBackground(getRenderedSlot(), -1, -1)
 				.addIngredients(recipe.getRequiredHeldItem())
@@ -45,7 +42,6 @@ import net.minecraft.world.level.block.state.BlockState;
 				)
 						: (view, tooltip) -> {
 						});
-
 		List<ProcessingOutput> results = recipe.getRollableResults();
 		boolean single = results.size() == 1;
 		for (int i = 0; i < results.size(); i++) {
@@ -58,8 +54,7 @@ import net.minecraft.world.level.block.state.BlockState;
 					.addRichTooltipCallback(addStochasticTooltip(output));
 		}
 	}
-	@Override
-	public void draw(
+	@Override public void draw(
 			ItemApplicationRecipe recipe,
 			IRecipeSlotsView recipeSlotsView,
 			GuiGraphics graphics,
@@ -75,7 +70,6 @@ import net.minecraft.world.level.block.state.BlockState;
 		Item item = displayedIngredient.get().getItem();
 		if (!(item instanceof BlockItem blockItem)) return;
 		BlockState state = blockItem.getBlock().defaultBlockState();
-
 		PoseStack matrixStack = graphics.pose();
 		matrixStack.pushPose();
 		matrixStack.translate(74, 51, 100);
@@ -83,7 +77,6 @@ import net.minecraft.world.level.block.state.BlockState;
 		matrixStack.mulPose(Axis.YP.rotationDegrees(22.5f));
 		int scale = 20;
 		GuiGameElement.of(state).lighting(AnimatedKinetics.DEFAULT_LIGHTING).scale(scale).render(graphics);
-
 		matrixStack.popPose();
 	}
 }

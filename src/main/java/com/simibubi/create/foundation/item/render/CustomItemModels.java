@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.item.render;
-
 import java.util.IdentityHashMap;
 import java.util.Map;
 
@@ -12,29 +11,27 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.ForgeRegistries;
-
 public class CustomItemModels {
-
-	private final Multimap<ResourceLocation, NonNullFunction<BakedModel, ? extends BakedModel>> modelFuncs = MultimapBuilder.hashKeys().arrayListValues().build();
-	private final Map<Item, NonNullFunction<BakedModel, ? extends BakedModel>> finalModelFuncs = new IdentityHashMap<>();
+	private final Multimap<ResourceLocation, NonNullFunction<BakedModel, ? extends BakedModel>>
+			modelFuncs
+			= MultimapBuilder.hashKeys().arrayListValues().build();
+	private final Map<Item, NonNullFunction<BakedModel, ? extends BakedModel>>
+			finalModelFuncs
+			= new IdentityHashMap<>();
 	private boolean funcsLoaded = false;
-
 	public void register(ResourceLocation item, NonNullFunction<BakedModel, ? extends BakedModel> func) {
 		modelFuncs.put(item, func);
 	}
-
 	public void forEach(NonNullBiConsumer<Item, NonNullFunction<BakedModel, ? extends BakedModel>> consumer) {
 		loadEntriesIfMissing();
 		finalModelFuncs.forEach(consumer);
 	}
-
 	private void loadEntriesIfMissing() {
 		if (!funcsLoaded) {
 			loadEntries();
 			funcsLoaded = true;
 		}
 	}
-
 	private void loadEntries() {
 		finalModelFuncs.clear();
 		modelFuncs.asMap().forEach((location, funcList) -> {
@@ -42,7 +39,6 @@ public class CustomItemModels {
 			if (item == null) {
 				return;
 			}
-
 			NonNullFunction<BakedModel, ? extends BakedModel> finalFunc = null;
 			for (NonNullFunction<BakedModel, ? extends BakedModel> func : funcList) {
 				if (finalFunc == null) {
@@ -51,9 +47,7 @@ public class CustomItemModels {
 					finalFunc = finalFunc.andThen(func);
 				}
 			}
-
 			finalModelFuncs.put(item, finalFunc);
 		});
 	}
-
 }

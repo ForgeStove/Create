@@ -1,4 +1,5 @@
 package com.simibubi.create.content.kinetics.clock;
+import java.util.Objects;
 
 import com.simibubi.create.AllBlockEntityTypes;
 import com.simibubi.create.AllShapes;
@@ -17,66 +18,52 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-
 public class CuckooClockBlock extends HorizontalKineticBlock implements IBE<CuckooClockBlockEntity> {
-
-	private boolean mysterious;
-
+	private final boolean mysterious;
 	public static CuckooClockBlock regular(Properties properties) {
 		return new CuckooClockBlock(false, properties);
 	}
-	
 	public static CuckooClockBlock mysterious(Properties properties) {
 		return new CuckooClockBlock(true, properties);
 	}
-	
 	protected CuckooClockBlock(boolean mysterious, Properties properties) {
 		super(properties);
 		this.mysterious = mysterious;
 	}
-	
 	@Override
-	public VoxelShape getShape(BlockState p_220053_1_, BlockGetter p_220053_2_, BlockPos p_220053_3_,
-		CollisionContext p_220053_4_) {
+	public VoxelShape getShape(
+			BlockState p_220053_1_,
+			BlockGetter p_220053_2_,
+			BlockPos p_220053_3_,
+			CollisionContext p_220053_4_
+	) {
 		return AllShapes.CUCKOO_CLOCK;
 	}
-	
-	@Override
-	public BlockState getStateForPlacement(BlockPlaceContext context) {
+	@Override public BlockState getStateForPlacement(BlockPlaceContext context) {
 		Direction preferred = getPreferredHorizontalFacing(context);
-		if (preferred != null)
-			return defaultBlockState().setValue(HORIZONTAL_FACING, preferred.getOpposite());
-		return this.defaultBlockState().setValue(HORIZONTAL_FACING, context.getHorizontalDirection().getOpposite());
+		return defaultBlockState().setValue(
+				HORIZONTAL_FACING,
+				Objects.requireNonNullElseGet(preferred, context::getHorizontalDirection).getOpposite()
+		);
 	}
-
-	@Override
-	public boolean hasShaftTowards(LevelReader world, BlockPos pos, BlockState state, Direction face) {
+	@Override public boolean hasShaftTowards(LevelReader world, BlockPos pos, BlockState state, Direction face) {
 		return face == state.getValue(HORIZONTAL_FACING).getOpposite();
 	}
-
 	public static boolean containsSurprise(BlockState state) {
 		Block block = state.getBlock();
 		return block instanceof CuckooClockBlock && ((CuckooClockBlock) block).mysterious;
 	}
-
-	@Override
-	public Axis getRotationAxis(BlockState state) {
+	@Override public Axis getRotationAxis(BlockState state) {
 		return state.getValue(HORIZONTAL_FACING).getAxis();
 	}
-	
 	@Override
 	public boolean isPathfindable(BlockState state, BlockGetter reader, BlockPos pos, PathComputationType type) {
 		return false;
 	}
-
-	@Override
-	public Class<CuckooClockBlockEntity> getBlockEntityClass() {
+	@Override public Class<CuckooClockBlockEntity> getBlockEntityClass() {
 		return CuckooClockBlockEntity.class;
 	}
-
-	@Override
-	public BlockEntityType<? extends CuckooClockBlockEntity> getBlockEntityType() {
+	@Override public BlockEntityType<? extends CuckooClockBlockEntity> getBlockEntityType() {
 		return AllBlockEntityTypes.CUCKOO_CLOCK.get();
 	}
-
 }

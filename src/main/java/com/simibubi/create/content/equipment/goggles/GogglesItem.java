@@ -1,5 +1,4 @@
 package com.simibubi.create.content.equipment.goggles;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -17,24 +16,18 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
-
 public class GogglesItem extends Item {
-
 	private static final List<Predicate<Player>> IS_WEARING_PREDICATES = new ArrayList<>();
 	static {
 		addIsWearingPredicate(player -> AllItems.GOGGLES.isIn(player.getItemBySlot(EquipmentSlot.HEAD)));
 	}
-
 	public GogglesItem(Properties properties) {
 		super(properties);
 		DispenserBlock.registerBehavior(this, ArmorItem.DISPENSE_ITEM_BEHAVIOR);
 	}
-
-	@Override
-	public EquipmentSlot getEquipmentSlot(ItemStack stack) {
+	@Override public EquipmentSlot getEquipmentSlot(ItemStack stack) {
 		return EquipmentSlot.HEAD;
 	}
-
 	public InteractionResultHolder<ItemStack> use(Level worldIn, Player playerIn, InteractionHand handIn) {
 		ItemStack itemstack = playerIn.getItemInHand(handIn);
 		EquipmentSlot equipmentslottype = Mob.getEquipmentSlotForItem(itemstack);
@@ -47,7 +40,6 @@ public class GogglesItem extends Item {
 			return new InteractionResultHolder<>(InteractionResult.FAIL, itemstack);
 		}
 	}
-
 	public static boolean isWearingGoggles(Player player) {
 		for (Predicate<Player> predicate : IS_WEARING_PREDICATES) {
 			if (predicate.test(player)) {
@@ -56,7 +48,6 @@ public class GogglesItem extends Item {
 		}
 		return false;
 	}
-
 	/**
 	 * Use this method to add custom entry points to the goggles overlay, e.g. custom
 	 * armor, handheld alternatives, etc.
@@ -64,5 +55,4 @@ public class GogglesItem extends Item {
 	public static void addIsWearingPredicate(Predicate<Player> predicate) {
 		IS_WEARING_PREDICATES.add(predicate);
 	}
-
 }

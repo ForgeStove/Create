@@ -1,5 +1,4 @@
 package com.simibubi.create.content.redstone.displayLink.source;
-
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkBlock;
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkBlockEntity;
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
@@ -14,66 +13,43 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
 public class ItemThroughputDisplaySource extends AccumulatedItemCountDisplaySource {
-
 	static final int POOL_SIZE = 10;
-
-	@Override
-	protected MutableComponent provideLine(DisplayLinkContext context, DisplayTargetStats stats) {
+	@Override protected MutableComponent provideLine(DisplayLinkContext context, DisplayTargetStats stats) {
 		CompoundTag conf = context.sourceConfig();
-		if (conf.contains("Inactive"))
-			return ZERO.copy();
-
+		if (conf.contains("Inactive")) return ZERO.copy();
 		double interval = 20 * Math.pow(60, conf.getInt("Interval"));
 		double rate = conf.getFloat("Rate") * interval;
-
 		if (rate > 0) {
 			long previousTime = conf.getLong("LastReceived");
-			long gameTime = context.blockEntity()
-				.getLevel()
-				.getGameTime();
+			long gameTime = context.blockEntity().getLevel().getGameTime();
 			int diff = (int) (gameTime - previousTime);
 			if (diff > 0) {
 				// Too long since last item
 				int lastAmount = conf.getInt("LastReceivedAmount");
 				double timeBetweenStacks = lastAmount / rate;
-				if (diff > timeBetweenStacks * 2)
-					conf.putBoolean("Inactive", true);
+				if (diff > timeBetweenStacks * 2) conf.putBoolean("Inactive", true);
 			}
 		}
-
-		return Lang.number(rate)
-			.component();
+		return Lang.number(rate).component();
 	}
-
 	public void itemReceived(DisplayLinkBlockEntity be, int amount) {
-		if (be.getBlockState()
-			.getOptionalValue(DisplayLinkBlock.POWERED)
-			.orElse(true))
-			return;
-
+		if (be.getBlockState().getOptionalValue(DisplayLinkBlock.POWERED).orElse(true)) return;
 		CompoundTag conf = be.getSourceConfig();
-		long gameTime = be.getLevel()
-			.getGameTime();
-
+		long gameTime = be.getLevel().getGameTime();
 		if (!conf.contains("LastReceived")) {
 			conf.putLong("LastReceived", gameTime);
 			return;
 		}
-
 		long previousTime = conf.getLong("LastReceived");
 		ListTag rates = conf.getList("PrevRates", Tag.TAG_FLOAT);
-
 		if (rates.size() != POOL_SIZE) {
 			rates = new ListTag();
 			for (int i = 0; i < POOL_SIZE; i++)
 				rates.add(FloatTag.valueOf(-1));
 		}
-
 		int poolIndex = conf.getInt("Index") % POOL_SIZE;
 		rates.set(poolIndex, FloatTag.valueOf((float) (amount / (double) (gameTime - previousTime))));
-
 		float rate = 0;
 		int validIntervals = 0;
 		for (int i = 0; i < POOL_SIZE; i++) {
@@ -83,13 +59,11 @@ public class ItemThroughputDisplaySource extends AccumulatedItemCountDisplaySour
 				validIntervals++;
 			}
 		}
-
 		conf.remove("Rate");
 		if (validIntervals > 0) {
 			rate /= validIntervals;
 			conf.putFloat("Rate", rate);
 		}
-
 		conf.remove("Inactive");
 		conf.putInt("LastReceivedAmount", amount);
 		conf.putLong("LastReceived", gameTime);
@@ -97,24 +71,27 @@ public class ItemThroughputDisplaySource extends AccumulatedItemCountDisplaySour
 		conf.put("PrevRates", rates);
 		be.updateGatheredData();
 	}
-
-	@Override
-	@OnlyIn(Dist.CLIENT)
-	public void initConfigurationWidgets(DisplayLinkContext context, ModularGuiLineBuilder builder,
-		boolean isFirstLine) {
+	@Override @OnlyIn(Dist.CLIENT)
+	public void initConfigurationWidgets(
+			DisplayLinkContext context,
+			ModularGuiLineBuilder builder,
+			boolean isFirstLine
+	) {
 		super.initConfigurationWidgets(context, builder, isFirstLine);
-		if (isFirstLine)
-			return;
-
-		builder.addSelectionScrollInput(0, 80, (si, l) -> {
-			si.forOptions(Lang.translatedOptions("display_source.item_throughput.interval", "second", "minute", "hour"))
-				.titled(Lang.translateDirect("display_source.item_throughput.interval"));
-		}, "Interval");
+		if (isFirstLine) return;
+		builder.addSelectionScrollInput(
+				0, 80, (si, l) -> {
+					si.forOptions(Lang.translatedOptions(
+									"display_source.item_throughput.interval",
+									"second",
+									"minute",
+									"hour"
+							))
+							.titled(Lang.translateDirect("display_source.item_throughput.interval"));
+				}, "Interval"
+		);
 	}
-
-	@Override
-	protected String getTranslationKey() {
+	@Override protected String getTranslationKey() {
 		return "item_throughput";
 	}
-
 }

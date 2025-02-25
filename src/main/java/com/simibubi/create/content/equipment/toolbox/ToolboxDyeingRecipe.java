@@ -1,5 +1,4 @@
 package com.simibubi.create.content.equipment.toolbox;
-
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllRecipeTypes;
 
@@ -14,43 +13,32 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.common.Tags;
-
 public class ToolboxDyeingRecipe extends CustomRecipe {
-
 	public ToolboxDyeingRecipe(ResourceLocation rl, CraftingBookCategory category) {
 		super(rl, category);
 	}
-
-	@Override
-	public boolean matches(CraftingContainer inventory, Level world) {
+	@Override public boolean matches(CraftingContainer inventory, Level world) {
 		int toolboxes = 0;
 		int dyes = 0;
-
 		for (int i = 0; i < inventory.getContainerSize(); ++i) {
 			ItemStack stack = inventory.getItem(i);
 			if (!stack.isEmpty()) {
 				if (Block.byItem(stack.getItem()) instanceof ToolboxBlock) {
 					++toolboxes;
 				} else {
-					if (!stack.is(Tags.Items.DYES))
-						return false;
+					if (!stack.is(Tags.Items.DYES)) return false;
 					++dyes;
 				}
-
 				if (dyes > 1 || toolboxes > 1) {
 					return false;
 				}
 			}
 		}
-
 		return toolboxes == 1 && dyes == 1;
 	}
-
-	@Override
-	public ItemStack assemble(CraftingContainer inventory, RegistryAccess pRegistryAccess) {
+	@Override public ItemStack assemble(CraftingContainer inventory, RegistryAccess pRegistryAccess) {
 		ItemStack toolbox = ItemStack.EMPTY;
 		DyeColor color = DyeColor.BROWN;
-
 		for (int i = 0; i < inventory.getContainerSize(); ++i) {
 			ItemStack stack = inventory.getItem(i);
 			if (!stack.isEmpty()) {
@@ -64,25 +52,16 @@ public class ToolboxDyeingRecipe extends CustomRecipe {
 				}
 			}
 		}
-
-		ItemStack dyedToolbox = AllBlocks.TOOLBOXES.get(color)
-			.asStack();
+		ItemStack dyedToolbox = AllBlocks.TOOLBOXES.get(color).asStack();
 		if (toolbox.hasTag()) {
-			dyedToolbox.setTag(toolbox.getTag()
-				.copy());
+			dyedToolbox.setTag(toolbox.getTag().copy());
 		}
-
 		return dyedToolbox;
 	}
-
-	@Override
-	public boolean canCraftInDimensions(int width, int height) {
+	@Override public boolean canCraftInDimensions(int width, int height) {
 		return width * height >= 2;
 	}
-
-	@Override
-	public RecipeSerializer<?> getSerializer() {
+	@Override public RecipeSerializer<?> getSerializer() {
 		return AllRecipeTypes.TOOLBOX_DYEING.getSerializer();
 	}
-
 }

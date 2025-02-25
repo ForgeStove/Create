@@ -1,5 +1,4 @@
 package com.simibubi.create.content.equipment.wrench;
-
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.kinetics.base.DirectionalAxisKineticBlock;
@@ -24,24 +23,19 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.level.BlockEvent;
-
 public interface IWrenchable {
-
 	default InteractionResult onWrenched(BlockState state, UseOnContext context) {
 		Level world = context.getLevel();
 		BlockState rotated = getRotatedBlockState(state, context.getClickedFace());
 		if (!rotated.canSurvive(world, context.getClickedPos())) return InteractionResult.PASS;
-
 		KineticBlockEntity.switchToBlockState(world, context.getClickedPos(), updateAfterWrenched(rotated, context));
 		BlockEntity be = context.getLevel().getBlockEntity(context.getClickedPos());
 		if (be instanceof GeneratingKineticBlockEntity) {
 			((GeneratingKineticBlockEntity) be).reActivateSource = true;
 		}
 		if (world.getBlockState(context.getClickedPos()) != state) playRotateSound(world, context.getClickedPos());
-
 		return InteractionResult.SUCCESS;
 	}
-
 	default BlockState updateAfterWrenched(BlockState newState, UseOnContext context) {
 		//		return newState;
 		return Block.updateFromNeighbourShapes(newState, context.getLevel(), context.getClickedPos());
@@ -51,11 +45,9 @@ public interface IWrenchable {
 		BlockPos pos = context.getClickedPos();
 		Player player = context.getPlayer();
 		if (!(world instanceof ServerLevel serverLevel)) return InteractionResult.SUCCESS;
-
 		BlockEvent.BreakEvent event = new BlockEvent.BreakEvent(world, pos, world.getBlockState(pos), player);
 		MinecraftForge.EVENT_BUS.post(event);
 		if (event.isCanceled()) return InteractionResult.SUCCESS;
-
 		if (player != null && !player.isCreative()) {
 			Block.getDrops(state, serverLevel, pos, world.getBlockEntity(pos), player, context.getItemInHand())
 					.forEach(itemStack -> {

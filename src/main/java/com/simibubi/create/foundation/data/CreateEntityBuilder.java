@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.data;
-
 import java.util.function.BiFunction;
 
 import javax.annotation.Nullable;
@@ -22,53 +21,65 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.util.NonNullPredicate;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-
-@ParametersAreNonnullByDefault
-public class CreateEntityBuilder<T extends Entity, P> extends EntityBuilder<T, P> {
-
-	@Nullable
-	private NonNullSupplier<BiFunction<MaterialManager, T, EntityInstance<? super T>>> instanceFactory;
+@ParametersAreNonnullByDefault public class CreateEntityBuilder<T extends Entity, P> extends EntityBuilder<T, P> {
+	@Nullable private NonNullSupplier<BiFunction<MaterialManager, T, EntityInstance<? super T>>> instanceFactory;
 	private NonNullPredicate<T> renderNormally;
-
-	public static <T extends Entity, P> EntityBuilder<T, P> create(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.EntityFactory<T> factory, MobCategory classification) {
+	public static <T extends Entity, P> EntityBuilder<T, P> create(
+			AbstractRegistrate<?> owner,
+			P parent,
+			String name,
+			BuilderCallback callback,
+			EntityType.EntityFactory<T> factory,
+			MobCategory classification
+	) {
 		return (new CreateEntityBuilder<>(owner, parent, name, callback, factory, classification)).defaultLang();
 	}
-
-	public CreateEntityBuilder(AbstractRegistrate<?> owner, P parent, String name, BuilderCallback callback, EntityType.EntityFactory<T> factory, MobCategory classification) {
+	public CreateEntityBuilder(
+			AbstractRegistrate<?> owner,
+			P parent,
+			String name,
+			BuilderCallback callback,
+			EntityType.EntityFactory<T> factory,
+			MobCategory classification
+	) {
 		super(owner, parent, name, callback, factory, classification);
 	}
-
-	public CreateEntityBuilder<T, P> instance(NonNullSupplier<BiFunction<MaterialManager, T, EntityInstance<? super T>>> instanceFactory) {
+	public CreateEntityBuilder<T, P> instance(
+			NonNullSupplier<BiFunction<MaterialManager, T, EntityInstance<? super T>>> instanceFactory
+	) {
 		return instance(instanceFactory, true);
 	}
-
-	public CreateEntityBuilder<T, P> instance(NonNullSupplier<BiFunction<MaterialManager, T, EntityInstance<? super T>>> instanceFactory, boolean renderNormally) {
+	public CreateEntityBuilder<T, P> instance(
+			NonNullSupplier<BiFunction<MaterialManager, T, EntityInstance<? super T>>> instanceFactory,
+			boolean renderNormally
+	) {
 		return instance(instanceFactory, be -> renderNormally);
 	}
-
-	public CreateEntityBuilder<T, P> instance(NonNullSupplier<BiFunction<MaterialManager, T, EntityInstance<? super T>>> instanceFactory, NonNullPredicate<T> renderNormally) {
+	public CreateEntityBuilder<T, P> instance(
+			NonNullSupplier<BiFunction<MaterialManager, T, EntityInstance<? super T>>> instanceFactory,
+			NonNullPredicate<T> renderNormally
+	) {
 		if (this.instanceFactory == null) {
 			DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> this::registerInstance);
 		}
-
 		this.instanceFactory = instanceFactory;
 		this.renderNormally = renderNormally;
-
 		return this;
 	}
-
 	protected void registerInstance() {
-		OneTimeEventReceiver.addModListener(Create.REGISTRATE, FMLClientSetupEvent.class, $ -> {
-			NonNullSupplier<BiFunction<MaterialManager, T, EntityInstance<? super T>>> instanceFactory = this.instanceFactory;
-			if (instanceFactory != null) {
-				NonNullPredicate<T> renderNormally = this.renderNormally;
-				InstancedRenderRegistry.configure(getEntry())
-					.factory(instanceFactory.get())
-					.skipRender(be -> !renderNormally.test(be))
-					.apply();
-			}
-
-		});
+		OneTimeEventReceiver.addModListener(
+				Create.REGISTRATE, FMLClientSetupEvent.class, $ -> {
+					NonNullSupplier<BiFunction<MaterialManager, T, EntityInstance<? super T>>>
+							instanceFactory
+							= this.instanceFactory;
+					if (instanceFactory != null) {
+						NonNullPredicate<T> renderNormally = this.renderNormally;
+						InstancedRenderRegistry.configure(getEntry())
+								.factory(instanceFactory.get())
+								.skipRender(be -> !renderNormally.test(be))
+								.apply();
+					}
+				}
+		);
 	}
-
 }

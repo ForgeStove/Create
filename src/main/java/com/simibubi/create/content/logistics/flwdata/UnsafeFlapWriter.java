@@ -1,18 +1,14 @@
 package com.simibubi.create.content.logistics.flwdata;
-
 import org.lwjgl.system.MemoryUtil;
 
 import com.jozufozu.flywheel.api.struct.StructType;
 import com.jozufozu.flywheel.backend.gl.buffer.VecBuffer;
 import com.jozufozu.flywheel.backend.struct.UnsafeBufferWriter;
-
 public class UnsafeFlapWriter extends UnsafeBufferWriter<FlapData> {
 	public UnsafeFlapWriter(VecBuffer backingBuffer, StructType<FlapData> vertexType) {
 		super(backingBuffer, vertexType);
 	}
-
-	@Override
-    protected void writeInternal(FlapData d) {
+	@Override protected void writeInternal(FlapData d) {
 		long addr = writePointer;
 		MemoryUtil.memPutFloat(addr, d.x);
 		MemoryUtil.memPutFloat(addr + 4, d.y);

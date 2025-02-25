@@ -1,5 +1,4 @@
 package com.simibubi.create.content.equipment.zapper;
-
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -48,97 +47,80 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.DistExecutor;
-
 public abstract class ZapperItem extends Item implements CustomArmPoseItem {
-
 	public ZapperItem(Properties properties) {
 		super(properties.stacksTo(1));
 	}
-
-	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Override @OnlyIn(Dist.CLIENT)
 	public void appendHoverText(ItemStack stack, Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
-		if (stack.hasTag() && stack.getTag()
-			.contains("BlockUsed")) {
-			MutableComponent usedBlock = NbtUtils.readBlockState(worldIn.holderLookup(Registries.BLOCK), stack.getTag()
-				.getCompound("BlockUsed"))
-				.getBlock()
-				.getName();
-			tooltip.add(Lang.translateDirect("terrainzapper.usingBlock",
-				usedBlock.withStyle(ChatFormatting.GRAY))
+		if (stack.hasTag() && stack.getTag().contains("BlockUsed")) {
+			MutableComponent usedBlock = NbtUtils.readBlockState(
+							worldIn.holderLookup(Registries.BLOCK),
+							stack.getTag().getCompound("BlockUsed")
+					)
+					.getBlock()
+					.getName();
+			tooltip.add(Lang.translateDirect("terrainzapper.usingBlock", usedBlock.withStyle(ChatFormatting.GRAY))
 					.withStyle(ChatFormatting.DARK_GRAY));
 		}
 	}
-
-	@SuppressWarnings("deprecation")
-	@Override
+	@SuppressWarnings("deprecation") @Override
 	public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
 		boolean differentBlock = false;
-		if (oldStack.hasTag() && newStack.hasTag() && oldStack.getTag()
-			.contains("BlockUsed")
-			&& newStack.getTag()
-				.contains("BlockUsed"))
-			differentBlock = NbtUtils.readBlockState(BuiltInRegistries.BLOCK.asLookup(), oldStack.getTag()
-				.getCompound("BlockUsed")) != NbtUtils.readBlockState(BuiltInRegistries.BLOCK.asLookup(),
-					newStack.getTag()
-						.getCompound("BlockUsed"));
+		if (oldStack.hasTag() && newStack.hasTag() && oldStack.getTag().contains("BlockUsed") && newStack.getTag()
+				.contains("BlockUsed")) differentBlock = NbtUtils.readBlockState(
+				BuiltInRegistries.BLOCK.asLookup(),
+				oldStack.getTag().getCompound("BlockUsed")
+		)
+				!= NbtUtils.readBlockState(
+				BuiltInRegistries.BLOCK.asLookup(),
+				newStack.getTag().getCompound("BlockUsed")
+		);
 		return slotChanged || !isZapper(newStack) || differentBlock;
 	}
-
 	public boolean isZapper(ItemStack newStack) {
 		return newStack.getItem() instanceof ZapperItem;
 	}
-
-	@Nonnull
-	@Override
-	public InteractionResult useOn(UseOnContext context) {
+	@Nonnull @Override public InteractionResult useOn(UseOnContext context) {
 		// Shift -> open GUI
-		if (context.getPlayer() != null && context.getPlayer()
-			.isShiftKeyDown()) {
+		if (context.getPlayer() != null && context.getPlayer().isShiftKeyDown()) {
 			if (context.getLevel().isClientSide) {
-				DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-					openHandgunGUI(context.getItemInHand(), context.getHand());
-				});
-				context.getPlayer()
-					.getCooldowns()
-					.addCooldown(context.getItemInHand()
-						.getItem(), 10);
+				DistExecutor.unsafeRunWhenOn(
+						Dist.CLIENT, () -> () -> {
+							openHandgunGUI(context.getItemInHand(), context.getHand());
+						}
+				);
+				context.getPlayer().getCooldowns().addCooldown(context.getItemInHand().getItem(), 10);
 			}
 			return InteractionResult.SUCCESS;
 		}
 		return super.useOn(context);
 	}
-
-	@Override
-	public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
+	@Override public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
 		ItemStack item = player.getItemInHand(hand);
 		CompoundTag nbt = item.getOrCreateTag();
 		boolean mainHand = hand == InteractionHand.MAIN_HAND;
-
 		// Shift -> Open GUI
 		if (player.isShiftKeyDown()) {
 			if (world.isClientSide) {
-				DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
-					openHandgunGUI(item, hand);
-				});
-				player.getCooldowns()
-					.addCooldown(item.getItem(), 10);
+				DistExecutor.unsafeRunWhenOn(
+						Dist.CLIENT, () -> () -> {
+							openHandgunGUI(item, hand);
+						}
+				);
+				player.getCooldowns().addCooldown(item.getItem(), 10);
 			}
 			return new InteractionResultHolder<>(InteractionResult.SUCCESS, item);
 		}
-
 		if (ShootableGadgetItemMethods.shouldSwap(player, item, hand, this::isZapper))
 			return new InteractionResultHolder<>(InteractionResult.FAIL, item);
-
 		// Check if can be used
 		Component msg = validateUsage(item);
 		if (msg != null) {
 			AllSoundEvents.DENY.play(world, player, player.blockPosition());
-			player.displayClientMessage(msg.plainCopy()
-				.withStyle(ChatFormatting.RED), true);
+			player.displayClientMessage(msg.plainCopy().withStyle(ChatFormatting.RED), true);
 			return new InteractionResultHolder<>(InteractionResult.FAIL, item);
 		}
-
 		BlockState stateToUse = Blocks.AIR.defaultBlockState();
 		if (nbt.contains("BlockUsed"))
 			stateToUse = NbtUtils.readBlockState(world.holderLookup(Registries.BLOCK), nbt.getCompound("BlockUsed"));
@@ -147,99 +129,91 @@ public abstract class ZapperItem extends Item implements CustomArmPoseItem {
 		if (AllBlockTags.SAFE_NBT.matches(stateToUse) && nbt.contains("BlockData", Tag.TAG_COMPOUND)) {
 			data = nbt.getCompound("BlockData");
 		}
-
 		// Raytrace - Find the target
-		Vec3 start = player.position()
-			.add(0, player.getEyeHeight(), 0);
-		Vec3 range = player.getLookAngle()
-			.scale(getZappingRange(item));
-		BlockHitResult raytrace =
-			world.clip(new ClipContext(start, start.add(range), Block.OUTLINE, Fluid.NONE, player));
+		Vec3 start = player.position().add(0, player.getEyeHeight(), 0);
+		Vec3 range = player.getLookAngle().scale(getZappingRange(item));
+		BlockHitResult raytrace = world.clip(new ClipContext(
+				start,
+				start.add(range),
+				Block.OUTLINE,
+				Fluid.NONE,
+				player
+		));
 		BlockPos pos = raytrace.getBlockPos();
 		BlockState stateReplaced = world.getBlockState(pos);
-
 		// No target
 		if (pos == null || stateReplaced.getBlock() == Blocks.AIR) {
 			ShootableGadgetItemMethods.applyCooldown(player, item, hand, this::isZapper, getCooldownDelay(item));
 			return new InteractionResultHolder<>(InteractionResult.SUCCESS, item);
 		}
-
 		// Find exact position of gun barrel for VFX
 		Vec3 barrelPos = ShootableGadgetItemMethods.getGunBarrelVec(player, mainHand, new Vec3(.35f, -0.1f, 1));
-
 		// Client side
 		if (world.isClientSide) {
 			CreateClient.ZAPPER_RENDER_HANDLER.dontAnimateItem(hand);
 			return new InteractionResultHolder<>(InteractionResult.SUCCESS, item);
 		}
-
 		// Server side
 		if (activate(world, player, item, stateToUse, raytrace, data)) {
 			ShootableGadgetItemMethods.applyCooldown(player, item, hand, this::isZapper, getCooldownDelay(item));
-			ShootableGadgetItemMethods.sendPackets(player,
-				b -> new ZapperBeamPacket(barrelPos, raytrace.getLocation(), hand, b));
+			ShootableGadgetItemMethods.sendPackets(
+					player,
+					b -> new ZapperBeamPacket(barrelPos, raytrace.getLocation(), hand, b)
+			);
 		}
-
 		return new InteractionResultHolder<>(InteractionResult.SUCCESS, item);
 	}
-
 	public Component validateUsage(ItemStack item) {
 		CompoundTag tag = item.getOrCreateTag();
 		if (!canActivateWithoutSelectedBlock(item) && !tag.contains("BlockUsed"))
 			return Lang.translateDirect("terrainzapper.leftClickToSet");
 		return null;
 	}
-
-	protected abstract boolean activate(Level world, Player player, ItemStack item, BlockState stateToUse,
-		BlockHitResult raytrace, CompoundTag data);
-
-	@OnlyIn(Dist.CLIENT)
-	protected abstract void openHandgunGUI(ItemStack item, InteractionHand hand);
-
+	protected abstract boolean activate(
+			Level world,
+			Player player,
+			ItemStack item,
+			BlockState stateToUse,
+			BlockHitResult raytrace,
+			CompoundTag data
+	);
+	@OnlyIn(Dist.CLIENT) protected abstract void openHandgunGUI(ItemStack item, InteractionHand hand);
 	protected abstract int getCooldownDelay(ItemStack item);
-
 	protected abstract int getZappingRange(ItemStack stack);
-
 	protected boolean canActivateWithoutSelectedBlock(ItemStack stack) {
 		return false;
 	}
-
-	@Override
-	public boolean onEntitySwing(ItemStack stack, LivingEntity entity) {
+	@Override public boolean onEntitySwing(ItemStack stack, LivingEntity entity) {
 		return true;
 	}
-
-	@Override
-	public boolean canAttackBlock(BlockState state, Level worldIn, BlockPos pos, Player player) {
+	@Override public boolean canAttackBlock(BlockState state, Level worldIn, BlockPos pos, Player player) {
 		return false;
 	}
-
-	@Override
-	public UseAnim getUseAnimation(ItemStack stack) {
+	@Override public UseAnim getUseAnimation(ItemStack stack) {
 		return UseAnim.NONE;
 	}
-
-	@Override
-	@Nullable
-	public ArmPose getArmPose(ItemStack stack, AbstractClientPlayer player, InteractionHand hand) {
+	@Override @Nullable public ArmPose getArmPose(ItemStack stack, AbstractClientPlayer player, InteractionHand hand) {
 		if (!player.swinging) {
 			return ArmPose.CROSSBOW_HOLD;
 		}
 		return null;
 	}
-
 	public static void configureSettings(ItemStack stack, PlacementPatterns pattern) {
 		CompoundTag nbt = stack.getOrCreateTag();
 		NBTHelper.writeEnum(nbt, "Pattern", pattern);
 	}
-
-	public static void setBlockEntityData(Level world, BlockPos pos, BlockState state, CompoundTag data, Player player) {
+	public static void setBlockEntityData(
+			Level world,
+			BlockPos pos,
+			BlockState state,
+			CompoundTag data,
+			Player player
+	) {
 		if (data != null && AllBlockTags.SAFE_NBT.matches(state)) {
 			BlockEntity blockEntity = world.getBlockEntity(pos);
 			if (blockEntity != null) {
 				data = NBTProcessors.process(state, blockEntity, data, !player.isCreative());
-				if (data == null)
-					return;
+				if (data == null) return;
 				data.putInt("x", pos.getX());
 				data.putInt("y", pos.getY());
 				data.putInt("z", pos.getZ());
@@ -247,5 +221,4 @@ public abstract class ZapperItem extends Item implements CustomArmPoseItem {
 			}
 		}
 	}
-
 }

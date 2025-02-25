@@ -1,5 +1,4 @@
 package com.simibubi.create.compat.curios;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +22,6 @@ import top.theillusivec4.curios.api.SlotTypeMessage;
 import top.theillusivec4.curios.api.SlotTypePreset;
 import top.theillusivec4.curios.api.type.capability.ICuriosItemHandler;
 import top.theillusivec4.curios.api.type.inventory.ICurioStacksHandler;
-
 public class Curios {
 	/**
 	 * Resolves the Stacks Handler Map given an Entity.
@@ -36,7 +34,6 @@ public class Curios {
 	private static Optional<Map<String, ICurioStacksHandler>> resolveCuriosMap(LivingEntity entity) {
 		return entity.getCapability(CuriosCapability.INVENTORY).map(ICuriosItemHandler::getCurios);
 	}
-
 	public static void init(IEventBus modEventBus, IEventBus forgeEventBus) {
 		modEventBus.addListener(Curios::onInterModEnqueue);
 		modEventBus.addListener(Curios::onClientSetup);

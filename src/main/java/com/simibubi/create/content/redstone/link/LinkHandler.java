@@ -1,5 +1,4 @@
 package com.simibubi.create.content.redstone.link;
-
 import java.util.Arrays;
 
 import com.simibubi.create.AllItems;
@@ -22,56 +21,37 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-
-@EventBusSubscriber
-public class LinkHandler {
-
-	@SubscribeEvent
-	public static void onBlockActivated(PlayerInteractEvent.RightClickBlock event) {
+@EventBusSubscriber public class LinkHandler {
+	@SubscribeEvent public static void onBlockActivated(PlayerInteractEvent.RightClickBlock event) {
 		Level world = event.getLevel();
 		BlockPos pos = event.getPos();
 		Player player = event.getEntity();
 		InteractionHand hand = event.getHand();
-
-		if (player.isShiftKeyDown() || player.isSpectator())
-			return;
-
+		if (player.isShiftKeyDown() || player.isSpectator()) return;
 		LinkBehaviour behaviour = BlockEntityBehaviour.get(world, pos, LinkBehaviour.TYPE);
-		if (behaviour == null)
-			return;
-
+		if (behaviour == null) return;
 		ItemStack heldItem = player.getItemInHand(hand);
 		BlockHitResult ray = RaycastHelper.rayTraceRange(world, player, 10);
-		if (ray == null)
-			return;
-		if (AllItems.LINKED_CONTROLLER.isIn(heldItem))
-			return;
-		if (AllItems.WRENCH.isIn(heldItem))
-			return;
-
+		if (ray == null) return;
+		if (AllItems.LINKED_CONTROLLER.isIn(heldItem)) return;
+		if (AllItems.WRENCH.isIn(heldItem)) return;
 		boolean fakePlayer = player instanceof FakePlayer;
 		boolean fakePlayerChoice = false;
-
 		if (fakePlayer) {
 			BlockState blockState = world.getBlockState(pos);
 			Vec3 localHit = ray.getLocation()
-				.subtract(Vec3.atLowerCornerOf(pos))
-				.add(Vec3.atLowerCornerOf(ray.getDirection()
-					.getNormal())
-					.scale(.25f));
-			fakePlayerChoice = localHit.distanceToSqr(behaviour.firstSlot.getLocalOffset(blockState)) > localHit
-				.distanceToSqr(behaviour.secondSlot.getLocalOffset(blockState));
+					.subtract(Vec3.atLowerCornerOf(pos))
+					.add(Vec3.atLowerCornerOf(ray.getDirection().getNormal()).scale(.25f));
+			fakePlayerChoice = localHit.distanceToSqr(behaviour.firstSlot.getLocalOffset(blockState))
+					> localHit.distanceToSqr(behaviour.secondSlot.getLocalOffset(blockState));
 		}
-
 		for (boolean first : Arrays.asList(false, true)) {
 			if (behaviour.testHit(first, ray.getLocation()) || fakePlayer && fakePlayerChoice == first) {
-				if (event.getSide() != LogicalSide.CLIENT)
-					behaviour.setFrequency(first, heldItem);
+				if (event.getSide() != LogicalSide.CLIENT) behaviour.setFrequency(first, heldItem);
 				event.setCanceled(true);
 				event.setCancellationResult(InteractionResult.SUCCESS);
 				world.playSound(null, pos, SoundEvents.ITEM_FRAME_ADD_ITEM, SoundSource.BLOCKS, .25f, .1f);
 			}
 		}
 	}
-
 }

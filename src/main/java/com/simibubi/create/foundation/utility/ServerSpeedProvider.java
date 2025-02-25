@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.utility;
-
 import com.simibubi.create.AllPackets;
 import com.simibubi.create.foundation.networking.SimplePacketBase;
 import com.simibubi.create.foundation.utility.animation.LerpedFloat;
@@ -12,14 +11,11 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.NetworkEvent.Context;
 import net.minecraftforge.network.PacketDistributor;
-
 public class ServerSpeedProvider {
-
 	static int clientTimer = 0;
 	static int serverTimer = 0;
 	static boolean initialized = false;
 	static LerpedFloat modifier = LerpedFloat.linear();
-
 	public static void serverTick() {
 		serverTimer++;
 		if (serverTimer > getSyncInterval()) {
@@ -27,37 +23,25 @@ public class ServerSpeedProvider {
 			serverTimer = 0;
 		}
 	}
-
-	@OnlyIn(Dist.CLIENT)
-	public static void clientTick() {
-		if (Minecraft.getInstance()
-			.hasSingleplayerServer()
-			&& Minecraft.getInstance()
-				.isPaused())
-			return;
+	@OnlyIn(Dist.CLIENT) public static void clientTick() {
+		if (Minecraft.getInstance().hasSingleplayerServer() && Minecraft.getInstance().isPaused()) return;
 		modifier.tickChaser();
 		clientTimer++;
 	}
-
 	public static Integer getSyncInterval() {
 		return AllConfigs.server().tickrateSyncTimer.get();
 	}
-
 	public static float get() {
 		return modifier.getValue();
 	}
-
 	public static class Packet extends SimplePacketBase {
-
-		public Packet() {}
-
-		public Packet(FriendlyByteBuf buffer) {}
-
-		@Override
-		public void write(FriendlyByteBuf buffer) {}
-
-		@Override
-		public boolean handle(Context context) {
+		public Packet() {
+		}
+		public Packet(FriendlyByteBuf buffer) {
+		}
+		@Override public void write(FriendlyByteBuf buffer) {
+		}
+		@Override public boolean handle(Context context) {
 			context.enqueueWork(() -> {
 				if (!initialized) {
 					initialized = true;
@@ -73,7 +57,5 @@ public class ServerSpeedProvider {
 			});
 			return true;
 		}
-
 	}
-
 }

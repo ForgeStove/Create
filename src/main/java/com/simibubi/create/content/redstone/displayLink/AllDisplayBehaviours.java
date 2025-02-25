@@ -1,5 +1,4 @@
 package com.simibubi.create.content.redstone.displayLink;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,22 +32,23 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.registries.ForgeRegistries;
-
 public class AllDisplayBehaviours {
 	public static final Map<ResourceLocation, DisplayBehaviour> GATHERER_BEHAVIOURS = new HashMap<>();
-
-	private static final AttachedRegistry<Block, List<DisplaySource>> SOURCES_BY_BLOCK = new AttachedRegistry<>(ForgeRegistries.BLOCKS);
-	private static final AttachedRegistry<BlockEntityType<?>, List<DisplaySource>> SOURCES_BY_BLOCK_ENTITY = new AttachedRegistry<>(ForgeRegistries.BLOCK_ENTITY_TYPES);
-
-	private static final AttachedRegistry<Block, DisplayTarget> TARGETS_BY_BLOCK = new AttachedRegistry<>(ForgeRegistries.BLOCKS);
-	private static final AttachedRegistry<BlockEntityType<?>, DisplayTarget> TARGETS_BY_BLOCK_ENTITY = new AttachedRegistry<>(ForgeRegistries.BLOCK_ENTITY_TYPES);
-
+	private static final AttachedRegistry<Block, List<DisplaySource>> SOURCES_BY_BLOCK = new AttachedRegistry<>(
+			ForgeRegistries.BLOCKS);
+	private static final AttachedRegistry<BlockEntityType<?>, List<DisplaySource>>
+			SOURCES_BY_BLOCK_ENTITY
+			= new AttachedRegistry<>(ForgeRegistries.BLOCK_ENTITY_TYPES);
+	private static final AttachedRegistry<Block, DisplayTarget> TARGETS_BY_BLOCK = new AttachedRegistry<>(
+			ForgeRegistries.BLOCKS);
+	private static final AttachedRegistry<BlockEntityType<?>, DisplayTarget>
+			TARGETS_BY_BLOCK_ENTITY
+			= new AttachedRegistry<>(ForgeRegistries.BLOCK_ENTITY_TYPES);
 	public static DisplayBehaviour register(ResourceLocation id, DisplayBehaviour behaviour) {
 		behaviour.id = id;
 		GATHERER_BEHAVIOURS.put(id, behaviour);
 		return behaviour;
 	}
-
 	public static void assignBlock(DisplayBehaviour behaviour, ResourceLocation block) {
 		if (behaviour instanceof DisplaySource source) {
 			List<DisplaySource> sources = SOURCES_BY_BLOCK.get(block);
@@ -62,7 +62,6 @@ public class AllDisplayBehaviours {
 			TARGETS_BY_BLOCK.register(block, target);
 		}
 	}
-	
 	public static void assignBlockEntity(DisplayBehaviour behaviour, ResourceLocation beType) {
 		if (behaviour instanceof DisplaySource source) {
 			List<DisplaySource> sources = SOURCES_BY_BLOCK_ENTITY.get(beType);
@@ -76,7 +75,6 @@ public class AllDisplayBehaviours {
 			TARGETS_BY_BLOCK_ENTITY.register(beType, target);
 		}
 	}
-
 	public static void assignBlock(DisplayBehaviour behaviour, Block block) {
 		if (behaviour instanceof DisplaySource source) {
 			List<DisplaySource> sources = SOURCES_BY_BLOCK.get(block);
@@ -90,7 +88,6 @@ public class AllDisplayBehaviours {
 			TARGETS_BY_BLOCK.register(block, target);
 		}
 	}
-	
 	public static void assignBlockEntity(DisplayBehaviour behaviour, BlockEntityType<?> beType) {
 		if (behaviour instanceof DisplaySource source) {
 			List<DisplaySource> sources = SOURCES_BY_BLOCK_ENTITY.get(beType);
@@ -104,53 +101,50 @@ public class AllDisplayBehaviours {
 			TARGETS_BY_BLOCK_ENTITY.register(beType, target);
 		}
 	}
-
-	public static <B extends Block> NonNullConsumer<? super B> assignDataBehaviour(DisplayBehaviour behaviour,
-		String... suffix) {
+	public static <B extends Block> NonNullConsumer<? super B> assignDataBehaviour(
+			DisplayBehaviour behaviour,
+			String... suffix
+	) {
 		return b -> {
 			ResourceLocation registryName = RegisteredObjects.getKeyOrThrow(b);
 			String idSuffix = behaviour instanceof DisplaySource ? "_source" : "_target";
-			if (suffix.length > 0)
-				idSuffix += "_" + suffix[0];
-			assignBlock(register(new ResourceLocation(registryName.getNamespace(), registryName.getPath() + idSuffix),
-				behaviour), registryName);
+			if (suffix.length > 0) idSuffix += "_" + suffix[0];
+			assignBlock(
+					register(
+							new ResourceLocation(registryName.getNamespace(), registryName.getPath() + idSuffix),
+							behaviour
+					), registryName
+			);
 		};
 	}
-
 	public static <B extends BlockEntityType<?>> NonNullConsumer<? super B> assignDataBehaviourBE(
-		DisplayBehaviour behaviour, String... suffix) {
+			DisplayBehaviour behaviour,
+			String... suffix
+	) {
 		return b -> {
 			ResourceLocation registryName = RegisteredObjects.getKeyOrThrow(b);
 			String idSuffix = behaviour instanceof DisplaySource ? "_source" : "_target";
-			if (suffix.length > 0)
-				idSuffix += "_" + suffix[0];
+			if (suffix.length > 0) idSuffix += "_" + suffix[0];
 			assignBlockEntity(
-				register(new ResourceLocation(registryName.getNamespace(), registryName.getPath() + idSuffix),
-					behaviour),
-				registryName);
+					register(
+							new ResourceLocation(registryName.getNamespace(), registryName.getPath() + idSuffix),
+							behaviour
+					), registryName
+			);
 		};
 	}
-
 	//
-
-	@Nullable
-	public static DisplaySource getSource(ResourceLocation resourceLocation) {
+	@Nullable public static DisplaySource getSource(ResourceLocation resourceLocation) {
 		DisplayBehaviour available = GATHERER_BEHAVIOURS.getOrDefault(resourceLocation, null);
-		if (available instanceof DisplaySource source)
-			return source;
+		if (available instanceof DisplaySource source) return source;
 		return null;
 	}
-
-	@Nullable
-	public static DisplayTarget getTarget(ResourceLocation resourceLocation) {
+	@Nullable public static DisplayTarget getTarget(ResourceLocation resourceLocation) {
 		DisplayBehaviour available = GATHERER_BEHAVIOURS.getOrDefault(resourceLocation, null);
-		if (available instanceof DisplayTarget target)
-			return target;
+		if (available instanceof DisplayTarget target) return target;
 		return null;
 	}
-
 	//
-
 	public static List<DisplaySource> sourcesOf(Block block) {
 		List<DisplaySource> sources = SOURCES_BY_BLOCK.get(block);
 		if (sources == null) {
@@ -158,11 +152,9 @@ public class AllDisplayBehaviours {
 		}
 		return sources;
 	}
-
 	public static List<DisplaySource> sourcesOf(BlockState state) {
 		return sourcesOf(state.getBlock());
 	}
-
 	public static List<DisplaySource> sourcesOf(BlockEntityType<?> blockEntityType) {
 		List<DisplaySource> sources = SOURCES_BY_BLOCK_ENTITY.get(blockEntityType);
 		if (sources == null) {
@@ -170,73 +162,73 @@ public class AllDisplayBehaviours {
 		}
 		return sources;
 	}
-
 	public static List<DisplaySource> sourcesOf(BlockEntity blockEntity) {
 		return sourcesOf(blockEntity.getType());
 	}
-
-	@Nullable
-	public static DisplayTarget targetOf(Block block) {
+	@Nullable public static DisplayTarget targetOf(Block block) {
 		return TARGETS_BY_BLOCK.get(block);
 	}
-
-	@Nullable
-	public static DisplayTarget targetOf(BlockState state) {
+	@Nullable public static DisplayTarget targetOf(BlockState state) {
 		return targetOf(state.getBlock());
 	}
-
-	@Nullable
-	public static DisplayTarget targetOf(BlockEntityType<?> blockEntityType) {
+	@Nullable public static DisplayTarget targetOf(BlockEntityType<?> blockEntityType) {
 		return TARGETS_BY_BLOCK_ENTITY.get(blockEntityType);
 	}
-
-	@Nullable
-	public static DisplayTarget targetOf(BlockEntity blockEntity) {
+	@Nullable public static DisplayTarget targetOf(BlockEntity blockEntity) {
 		return targetOf(blockEntity.getType());
 	}
-
 	public static List<DisplaySource> sourcesOf(LevelAccessor level, BlockPos pos) {
 		BlockState blockState = level.getBlockState(pos);
 		BlockEntity blockEntity = level.getBlockEntity(pos);
-
 		List<DisplaySource> sourcesOfBlock = sourcesOf(blockState);
-		List<DisplaySource> sourcesOfBlockEntity = blockEntity == null ? Collections.emptyList() : sourcesOf(blockEntity);
-
-		if (sourcesOfBlockEntity.isEmpty())
-			return sourcesOfBlock;
+		List<DisplaySource> sourcesOfBlockEntity = blockEntity == null
+				? Collections.emptyList()
+				: sourcesOf(blockEntity);
+		if (sourcesOfBlockEntity.isEmpty()) return sourcesOfBlock;
 		return sourcesOfBlockEntity;
 	}
-
-	@Nullable
-	public static DisplayTarget targetOf(LevelAccessor level, BlockPos pos) {
+	@Nullable public static DisplayTarget targetOf(LevelAccessor level, BlockPos pos) {
 		BlockState blockState = level.getBlockState(pos);
 		BlockEntity blockEntity = level.getBlockEntity(pos);
-
 		DisplayTarget targetOfBlock = targetOf(blockState);
 		DisplayTarget targetOfBlockEntity = blockEntity == null ? null : targetOf(blockEntity);
-
 		// Commonly added by mods, but with a non-vanilla blockentitytype
 		if (targetOfBlockEntity == null && blockEntity instanceof SignBlockEntity)
 			targetOfBlockEntity = targetOf(BlockEntityType.SIGN);
-
-		if (targetOfBlockEntity == null)
-			return targetOfBlock;
+		if (targetOfBlockEntity == null) return targetOfBlock;
 		return targetOfBlockEntity;
 	}
-
 	//
-
 	public static void registerDefaults() {
-		assignBlockEntity(register(Create.asResource("sign_display_target"), new SignDisplayTarget()), BlockEntityType.SIGN);
-		assignBlockEntity(register(Create.asResource("lectern_display_target"), new LecternDisplayTarget()), BlockEntityType.LECTERN);
-		assignBlock(register(Create.asResource("death_count_display_source"), new DeathCounterDisplaySource()), Blocks.RESPAWN_ANCHOR);
-		assignBlockEntity(register(Create.asResource("scoreboard_display_source"), new ScoreboardDisplaySource()), BlockEntityType.COMMAND_BLOCK);
-		assignBlockEntity(register(Create.asResource("enchant_power_display_source"), new EnchantPowerDisplaySource()), BlockEntityType.ENCHANTING_TABLE);
-		assignBlock(register(Create.asResource("redstone_power_display_source"), new RedstonePowerDisplaySource()), Blocks.TARGET);
-
+		assignBlockEntity(
+				register(Create.asResource("sign_display_target"), new SignDisplayTarget()),
+				BlockEntityType.SIGN
+		);
+		assignBlockEntity(
+				register(Create.asResource("lectern_display_target"), new LecternDisplayTarget()),
+				BlockEntityType.LECTERN
+		);
+		assignBlock(
+				register(Create.asResource("death_count_display_source"), new DeathCounterDisplaySource()),
+				Blocks.RESPAWN_ANCHOR
+		);
+		assignBlockEntity(
+				register(Create.asResource("scoreboard_display_source"), new ScoreboardDisplaySource()),
+				BlockEntityType.COMMAND_BLOCK
+		);
+		assignBlockEntity(
+				register(Create.asResource("enchant_power_display_source"), new EnchantPowerDisplaySource()),
+				BlockEntityType.ENCHANTING_TABLE
+		);
+		assignBlock(
+				register(Create.asResource("redstone_power_display_source"), new RedstonePowerDisplaySource()),
+				Blocks.TARGET
+		);
 		Mods.COMPUTERCRAFT.executeIfInstalled(() -> () -> {
-			DisplayBehaviour computerDisplaySource = register(Create.asResource("computer_display_source"), new ComputerDisplaySource());
-
+			DisplayBehaviour computerDisplaySource = register(
+					Create.asResource("computer_display_source"),
+					new ComputerDisplaySource()
+			);
 			assignBlockEntity(computerDisplaySource, Mods.COMPUTERCRAFT.rl("wired_modem_full"));
 			assignBlockEntity(computerDisplaySource, Mods.COMPUTERCRAFT.rl("computer_normal"));
 			assignBlockEntity(computerDisplaySource, Mods.COMPUTERCRAFT.rl("computer_advanced"));

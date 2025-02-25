@@ -1,5 +1,4 @@
 package com.simibubi.create.content.logistics.filter;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,13 +13,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.items.ItemStackHandler;
-
 public class FilterItemStack {
-
 	private final ItemStack filterItemStack;
 	private boolean fluidExtracted;
 	private FluidStack filterFluidStack;
-
 	public static FilterItemStack of(ItemStack filter) {
 		if (filter.hasTag()) {
 			if (AllItems.FILTER.isIn(filter)) {
@@ -32,7 +28,6 @@ public class FilterItemStack {
 				return new AttributeFilterItemStack(filter);
 			}
 		}
-
 		return new FilterItemStack(filter);
 	}
 	public static FilterItemStack of(CompoundTag tag) {
@@ -51,30 +46,23 @@ public class FilterItemStack {
 	public boolean isEmpty() {
 		return filterItemStack.isEmpty();
 	}
-
 	public CompoundTag serializeNBT() {
 		return filterItemStack.serializeNBT();
 	}
-
 	public ItemStack item() {
 		return filterItemStack;
 	}
-
 	public FluidStack fluid(Level level) {
 		resolveFluid(level);
 		return filterFluidStack;
 	}
-
 	public boolean isFilterItem() {
 		return filterItemStack.getItem() instanceof FilterItem;
 	}
-
 	//
-
 	public boolean test(Level world, ItemStack stack) {
 		return test(world, stack, false);
 	}
-
 	public boolean test(Level world, FluidStack stack) {
 		return test(world, stack, true);
 	}
@@ -82,19 +70,15 @@ public class FilterItemStack {
 		if (isEmpty()) return true;
 		return FilterItem.testDirect(filterItemStack, stack, matchNBT);
 	}
-
 	public boolean test(Level world, FluidStack stack, boolean matchNBT) {
 		if (isEmpty()) return true;
 		if (stack.isEmpty()) return false;
-
 		resolveFluid(world);
 		if (filterFluidStack.isEmpty()) return false;
 		if (!matchNBT) return filterFluidStack.getFluid().isSame(stack.getFluid());
 		return filterFluidStack.isFluidEqual(stack);
 	}
-
 	//
-
 	private void resolveFluid(Level world) {
 		if (!fluidExtracted) {
 			fluidExtracted = true;
@@ -107,7 +91,6 @@ public class FilterItemStack {
 		filterFluidStack = FluidStack.EMPTY;
 		fluidExtracted = false;
 	}
-
 	public static class ListFilterItemStack extends FilterItemStack {
 		public List<FilterItemStack> containedItems;
 		public boolean shouldRespectNBT;
@@ -142,7 +125,6 @@ public class FilterItemStack {
 		public enum WhitelistMode {
 			WHITELIST_DISJ, WHITELIST_CONJ, BLACKLIST
 		}
-
 		public WhitelistMode whitelistMode;
 		public List<Pair<ItemAttribute, Boolean>> attributeTests;
 		protected AttributeFilterItemStack(ItemStack filter) {
@@ -193,5 +175,4 @@ public class FilterItemStack {
 			};
 		}
 	}
-
 }

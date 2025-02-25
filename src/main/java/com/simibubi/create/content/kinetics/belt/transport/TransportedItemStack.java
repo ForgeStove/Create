@@ -1,5 +1,4 @@
 package com.simibubi.create.content.kinetics.belt.transport;
-
 import java.util.Random;
 
 import com.simibubi.create.content.kinetics.belt.BeltHelper;
@@ -10,11 +9,8 @@ import com.simibubi.create.content.kinetics.fan.processing.FanProcessingTypeRegi
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-
 public class TransportedItemStack implements Comparable<TransportedItemStack> {
-
 	private static final Random R = new Random();
-
 	public ItemStack stack;
 	public float beltPosition;
 	public float sideOffset;
@@ -23,13 +19,10 @@ public class TransportedItemStack implements Comparable<TransportedItemStack> {
 	public Direction insertedFrom;
 	public boolean locked;
 	public boolean lockedExternally;
-
 	public float prevBeltPosition;
 	public float prevSideOffset;
-
 	public FanProcessingType processedBy;
 	public int processingTime;
-
 	public TransportedItemStack(ItemStack stack) {
 		this.stack = stack;
 		boolean centered = BeltHelper.isItemUpright(stack);
@@ -37,16 +30,12 @@ public class TransportedItemStack implements Comparable<TransportedItemStack> {
 		sideOffset = prevSideOffset = getTargetSideOffset();
 		insertedFrom = Direction.UP;
 	}
-
 	public float getTargetSideOffset() {
 		return (angle - 180) / (360 * 3f);
 	}
-
-	@Override
-	public int compareTo(TransportedItemStack o) {
-		return beltPosition < o.beltPosition ? 1 : beltPosition > o.beltPosition ? -1 : 0;
+	@Override public int compareTo(TransportedItemStack o) {
+		return Float.compare(o.beltPosition, beltPosition);
 	}
-
 	public TransportedItemStack getSimilar() {
 		TransportedItemStack copy = new TransportedItemStack(stack.copy());
 		copy.beltPosition = beltPosition;
@@ -58,14 +47,12 @@ public class TransportedItemStack implements Comparable<TransportedItemStack> {
 		copy.processingTime = processingTime;
 		return copy;
 	}
-
 	public TransportedItemStack copy() {
 		TransportedItemStack copy = getSimilar();
 		copy.angle = angle;
 		copy.sideOffset = sideOffset;
 		return copy;
 	}
-
 	public static TransportedItemStack read(CompoundTag nbt) {
 		TransportedItemStack stack = new TransportedItemStack(ItemStack.of(nbt.getCompound("Item")));
 		stack.beltPosition = nbt.getFloat("Pos");
@@ -81,7 +68,6 @@ public class TransportedItemStack implements Comparable<TransportedItemStack> {
 			stack.processedBy = AllFanProcessingTypes.parseLegacy(nbt.getString("FanProcessingType"));
 			stack.processingTime = nbt.getInt("FanProcessingTime");
 		}
-
 		return stack;
 	}
 	public CompoundTag serializeNBT() {
@@ -98,16 +84,12 @@ public class TransportedItemStack implements Comparable<TransportedItemStack> {
 			nbt.putString("FanProcessingType", FanProcessingTypeRegistry.getIdOrThrow(processedBy).toString());
 			nbt.putInt("FanProcessingTime", processingTime);
 		}
-
-		if (locked)
-			nbt.putBoolean("Locked", locked);
-		if (lockedExternally)
-			nbt.putBoolean("LockedExternally", lockedExternally);
+		if (locked) nbt.putBoolean("Locked", true);
+		if (lockedExternally) nbt.putBoolean("LockedExternally", true);
 		return nbt;
 	}
 	public void clearFanProcessingData() {
 		processedBy = null;
 		processingTime = 0;
 	}
-
 }

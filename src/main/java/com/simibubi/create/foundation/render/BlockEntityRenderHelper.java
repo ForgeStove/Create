@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.render;
-
 import java.util.Iterator;
 
 import javax.annotation.Nullable;
@@ -26,48 +25,69 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-
 public class BlockEntityRenderHelper {
-
-	public static void renderBlockEntities(Level world, Iterable<BlockEntity> customRenderBEs, PoseStack ms,
-			MultiBufferSource buffer) {
+	public static void renderBlockEntities(
+			Level world,
+			Iterable<BlockEntity> customRenderBEs,
+			PoseStack ms,
+			MultiBufferSource buffer
+	) {
 		renderBlockEntities(world, null, customRenderBEs, ms, null, buffer);
 	}
-
-	public static void renderBlockEntities(Level world, Iterable<BlockEntity> customRenderBEs, PoseStack ms,
-			MultiBufferSource buffer, float pt) {
+	public static void renderBlockEntities(
+			Level world,
+			Iterable<BlockEntity> customRenderBEs,
+			PoseStack ms,
+			MultiBufferSource buffer,
+			float pt
+	) {
 		renderBlockEntities(world, null, customRenderBEs, ms, null, buffer, pt);
 	}
-
-	public static void renderBlockEntities(Level world, @Nullable VirtualRenderWorld renderWorld,
-			Iterable<BlockEntity> customRenderBEs, PoseStack ms, @Nullable Matrix4f lightTransform, MultiBufferSource buffer) {
-		renderBlockEntities(world, renderWorld, customRenderBEs, ms, lightTransform, buffer,
-			AnimationTickHolder.getPartialTicks());
+	public static void renderBlockEntities(
+			Level world,
+			@Nullable VirtualRenderWorld renderWorld,
+			Iterable<BlockEntity> customRenderBEs,
+			PoseStack ms,
+			@Nullable Matrix4f lightTransform,
+			MultiBufferSource buffer
+	) {
+		renderBlockEntities(
+				world,
+				renderWorld,
+				customRenderBEs,
+				ms,
+				lightTransform,
+				buffer,
+				AnimationTickHolder.getPartialTicks()
+		);
 	}
-
-	public static void renderBlockEntities(Level world, @Nullable VirtualRenderWorld renderWorld,
-			Iterable<BlockEntity> customRenderBEs, PoseStack ms, @Nullable Matrix4f lightTransform, MultiBufferSource buffer,
-			float pt) {
+	public static void renderBlockEntities(
+			Level world,
+			@Nullable VirtualRenderWorld renderWorld,
+			Iterable<BlockEntity> customRenderBEs,
+			PoseStack ms,
+			@Nullable Matrix4f lightTransform,
+			MultiBufferSource buffer,
+			float pt
+	) {
 		Iterator<BlockEntity> iterator = customRenderBEs.iterator();
 		while (iterator.hasNext()) {
 			BlockEntity blockEntity = iterator.next();
-			if (Backend.getBackendType() == BackendType.INSTANCING && Backend.isFlywheelWorld(renderWorld) && InstancedRenderRegistry.shouldSkipRender(blockEntity))
-				continue;
-
-			BlockEntityRenderer<BlockEntity> renderer = Minecraft.getInstance().getBlockEntityRenderDispatcher().getRenderer(blockEntity);
+			if (Backend.getBackendType() == BackendType.INSTANCING
+					&& Backend.isFlywheelWorld(renderWorld)
+					&& InstancedRenderRegistry.shouldSkipRender(blockEntity)) continue;
+			BlockEntityRenderer<BlockEntity> renderer = Minecraft.getInstance()
+					.getBlockEntityRenderDispatcher()
+					.getRenderer(blockEntity);
 			if (renderer == null) {
 				iterator.remove();
 				continue;
 			}
-
 			BlockPos pos = blockEntity.getBlockPos();
 			ms.pushPose();
-			TransformStack.cast(ms)
-				.translate(pos);
-
+			TransformStack.cast(ms).translate(pos);
 			try {
 				int worldLight = getCombinedLight(world, getLightPos(lightTransform, pos), renderWorld, pos);
-
 				if (renderWorld != null) {
 					// Swap the real world for the render world so that the renderer gets contraption-local information
 					blockEntity.setLevel(renderWorld);
@@ -76,42 +96,42 @@ public class BlockEntityRenderHelper {
 				} else {
 					renderer.render(blockEntity, pt, ms, buffer, worldLight, OverlayTexture.NO_OVERLAY);
 				}
-
 			} catch (Exception e) {
 				iterator.remove();
-
-				String message = "BlockEntity " + RegisteredObjects.getKeyOrThrow(blockEntity.getType())
-					.toString() + " could not be rendered virtually.";
-				if (AllConfigs.client().explainRenderErrors.get())
-					Create.LOGGER.error(message, e);
-				else
-					Create.LOGGER.error(message);
+				String message = "BlockEntity "
+						+ RegisteredObjects.getKeyOrThrow(blockEntity.getType())
+						+ " could not be rendered virtually.";
+				if (AllConfigs.client().explainRenderErrors.get()) Create.LOGGER.error(message, e);
+				else Create.LOGGER.error(message);
 			}
-
 			ms.popPose();
 		}
 	}
-
 	private static BlockPos getLightPos(@Nullable Matrix4f lightTransform, BlockPos contraptionPos) {
 		if (lightTransform != null) {
-			Vector4f lightVec = new Vector4f(contraptionPos.getX() + .5f, contraptionPos.getY() + .5f, contraptionPos.getZ() + .5f, 1);
+			Vector4f lightVec = new Vector4f(
+					contraptionPos.getX() + .5f,
+					contraptionPos.getY() + .5f,
+					contraptionPos.getZ() + .5f,
+					1
+			);
 			lightVec.mul(lightTransform);
 			return BlockPos.containing(lightVec.x(), lightVec.y(), lightVec.z());
 		} else {
 			return contraptionPos;
 		}
 	}
-
-	public static int getCombinedLight(Level world, BlockPos worldPos, @Nullable VirtualRenderWorld renderWorld,
-			BlockPos renderWorldPos) {
+	public static int getCombinedLight(
+			Level world,
+			BlockPos worldPos,
+			@Nullable VirtualRenderWorld renderWorld,
+			BlockPos renderWorldPos
+	) {
 		int worldLight = LevelRenderer.getLightColor(world, worldPos);
-
 		if (renderWorld != null) {
 			int renderWorldLight = LevelRenderer.getLightColor(renderWorld, renderWorldPos);
 			return SuperByteBuffer.maxLight(worldLight, renderWorldLight);
 		}
-
 		return worldLight;
 	}
-
 }

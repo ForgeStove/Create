@@ -1,5 +1,4 @@
 package com.simibubi.create.compat.jei.category;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,31 +31,24 @@ import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraftforge.common.crafting.IShapedRecipe;
 @ParametersAreNonnullByDefault public class MechanicalCraftingCategory extends CreateRecipeCategory<CraftingRecipe> {
-
 	private final AnimatedCrafter crafter = new AnimatedCrafter();
-
 	public MechanicalCraftingCategory(Info<CraftingRecipe> info) {
 		super(info);
 	}
 	@Override public void setRecipe(IRecipeLayoutBuilder builder, CraftingRecipe recipe, IFocusGroup focuses) {
 		builder.addSlot(RecipeIngredientRole.OUTPUT, 134, 81).addItemStack(getResultItem(recipe));
-
 		int x = getXPadding(recipe);
 		int y = getYPadding(recipe);
 		float scale = getScale(recipe);
-
 		IIngredientRenderer<ItemStack> renderer = new CrafterIngredientRenderer(recipe);
 		int i = 0;
-
 		for (Ingredient ingredient : recipe.getIngredients()) {
 			float f = 19 * scale;
 			int xPosition = (int) (x + 1 + (i % getWidth(recipe)) * f);
 			int yPosition = (int) (y + 1 + (i / getWidth(recipe)) * f);
-
 			builder.addSlot(RecipeIngredientRole.INPUT, xPosition, yPosition)
 					.setCustomRenderer(VanillaTypes.ITEM_STACK, renderer)
 					.addIngredients(ingredient);
-
 			i++;
 		}
 	}
@@ -89,7 +81,6 @@ import net.minecraftforge.common.crafting.IShapedRecipe;
 		matrixStack.pushPose();
 		float scale = getScale(recipe);
 		matrixStack.translate(getXPadding(recipe), getYPadding(recipe), 0);
-
 		for (int row = 0; row < getHeight(recipe); row++)
 			for (int col = 0; col < getWidth(recipe); col++) {
 				int pIndex = row * getWidth(recipe) + col;

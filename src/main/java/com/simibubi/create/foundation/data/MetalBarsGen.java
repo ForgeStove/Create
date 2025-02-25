@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.data;
-
 import static com.simibubi.create.Create.REGISTRATE;
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.EAST;
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.NORTH;
@@ -16,6 +15,7 @@ import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import com.tterrag.registrate.util.nullness.NonNullBiConsumer;
 
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.resources.ResourceLocation;
@@ -25,21 +25,17 @@ import net.minecraft.world.level.block.IronBarsBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraftforge.client.model.generators.ModelFile;
-
 public class MetalBarsGen {
-	public static <P extends IronBarsBlock> NonNullBiConsumer<DataGenContext<Block, P>, RegistrateBlockstateProvider> barsBlockState(
-			String name,
+	public static <P extends IronBarsBlock> NonNullBiConsumer<DataGenContext<Block, P>, RegistrateBlockstateProvider> barsBlockState(String name,
 			boolean specialEdge
 	) {
 		return (c, p) -> {
-
 			ModelFile post_ends = barsSubModel(p, name, "post_ends", specialEdge);
 			ModelFile post = barsSubModel(p, name, "post", specialEdge);
 			ModelFile cap = barsSubModel(p, name, "cap", specialEdge);
 			ModelFile cap_alt = barsSubModel(p, name, "cap_alt", specialEdge);
 			ModelFile side = barsSubModel(p, name, "side", specialEdge);
 			ModelFile side_alt = barsSubModel(p, name, "side_alt", specialEdge);
-
 			p.getMultipartBuilder(c.get())
 					.part()
 					.modelFile(post_ends)
@@ -132,7 +128,7 @@ public class MetalBarsGen {
 			MapColor color
 	) {
 		return REGISTRATE.block(name + "_bars", IronBarsBlock::new)
-				.addLayer(() -> RenderType::cutoutMipped)
+				.onRegister(block -> ItemBlockRenderTypes.setRenderLayer(block, RenderType.cutoutMipped()))
 				.initialProperties(() -> Blocks.IRON_BARS)
 				.properties(p -> p.sound(SoundType.COPPER).mapColor(color))
 				.tag(AllBlockTags.WRENCH_PICKUP.tag)
@@ -147,9 +143,8 @@ public class MetalBarsGen {
 							.texture("edge", specialEdge ? p.modLoc("block/bars/" + name + "_bars_edge") :
 									barsTexture);
 				})
-				.recipe((c, p) -> p.stonecutting(ingredient.get(), RecipeCategory.DECORATIONS, c::get, 4))
+				.recipe((c, p) -> p.stonecutting(ingredient.get(), RecipeCategory.DECORATIONS, c, 4))
 				.build()
 				.register();
 	}
-
 }

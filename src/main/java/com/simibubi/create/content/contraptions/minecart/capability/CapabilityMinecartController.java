@@ -1,5 +1,4 @@
 package com.simibubi.create.content.contraptions.minecart.capability;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,69 +36,51 @@ import net.minecraftforge.common.util.NonNullConsumer;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.level.ChunkEvent;
-
 public class CapabilityMinecartController implements ICapabilitySerializable<CompoundTag> {
-
 	/* Global map of loaded carts */
-
 	public static WorldAttached<Map<UUID, MinecartController>> loadedMinecartsByUUID;
 	public static WorldAttached<Set<UUID>> loadedMinecartsWithCoupling;
 	static WorldAttached<List<AbstractMinecart>> queuedAdditions;
 	static WorldAttached<List<UUID>> queuedUnloads;
-
 	/**
 	 * This callback wrapper ensures that the listeners map in the controller
 	 * capability only ever contains one instance
 	 */
 	public static class MinecartRemovalListener implements NonNullConsumer<LazyOptional<MinecartController>> {
-
-		private Level world;
-		private AbstractMinecart cart;
-
+		private final Level world;
+		private final AbstractMinecart cart;
 		public MinecartRemovalListener(Level world, AbstractMinecart cart) {
 			this.world = world;
 			this.cart = cart;
 		}
-
-		@Override
-		public boolean equals(Object obj) {
+		@Override public boolean equals(Object obj) {
 			return obj instanceof MinecartRemovalListener;
 		}
-
-		@Override
-		public int hashCode() {
+		@Override public int hashCode() {
 			return 100;
 		}
-
-		@Override
-		public void accept(LazyOptional<MinecartController> t) {
+		@Override public void accept(LazyOptional<MinecartController> t) {
 			onCartRemoved(world, cart);
 		}
-
 	}
-
 	static {
 		loadedMinecartsByUUID = new WorldAttached<>($ -> new HashMap<>());
 		loadedMinecartsWithCoupling = new WorldAttached<>($ -> new HashSet<>());
 		queuedAdditions = new WorldAttached<>($ -> ObjectLists.synchronize(new ObjectArrayList<>()));
 		queuedUnloads = new WorldAttached<>($ -> ObjectLists.synchronize(new ObjectArrayList<>()));
 	}
-
 	public static void tick(Level world) {
 		Map<UUID, MinecartController> carts = loadedMinecartsByUUID.get(world);
 		List<AbstractMinecart> queued = queuedAdditions.get(world);
 		List<UUID> queuedRemovals = queuedUnloads.get(world);
 		Set<UUID> cartsWithCoupling = loadedMinecartsWithCoupling.get(world);
 		Set<UUID> keySet = carts.keySet();
-
 		for (UUID removal : queuedRemovals) {
 			keySet.remove(removal);
 			cartsWithCoupling.remove(removal);
 		}
-
 		for (AbstractMinecart cart : queued) {
 			UUID uniqueID = cart.getUUID();
-
 			if (world.isClientSide && carts.containsKey(uniqueID)) {
 				MinecartController minecartController = carts.get(uniqueID);
 				if (minecartController != null) {
@@ -108,29 +89,22 @@ public class CapabilityMinecartController implements ICapabilitySerializable<Com
 						continue; // Away with you, Fake Entities!
 				}
 			}
-
 			cartsWithCoupling.remove(uniqueID);
-
 			LazyOptional<MinecartController> capability = cart.getCapability(MINECART_CONTROLLER_CAPABILITY);
 			MinecartController controller = capability.orElse(null);
 			capability.addListener(new MinecartRemovalListener(world, cart));
 			carts.put(uniqueID, controller);
-
 			if (capability.isPresent()) {
 				MinecartController mc = capability.orElse(null);
 				if (mc.isLeadingCoupling()) {
 					cartsWithCoupling.add(uniqueID);
 				}
 			}
-			if (!world.isClientSide && controller != null)
-				controller.sendData();
+			if (!world.isClientSide && controller != null) controller.sendData();
 		}
-
 		queuedRemovals.clear();
 		queued.clear();
-
 		List<UUID> toRemove = new ArrayList<>();
-		
 		for (Entry<UUID, MinecartController> entry : carts.entrySet()) {
 			MinecartController controller = entry.getValue();
 			if (controller != null) {
@@ -141,131 +115,92 @@ public class CapabilityMinecartController implements ICapabilitySerializable<Com
 			}
 			toRemove.add(entry.getKey());
 		}
-		
 		for (UUID uuid : toRemove) {
 			keySet.remove(uuid);
 			cartsWithCoupling.remove(uuid);
 		}
 	}
-
 	public static void onChunkUnloaded(ChunkEvent.Unload event) {
-		ChunkPos chunkPos = event.getChunk()
-			.getPos();
+		ChunkPos chunkPos = event.getChunk().getPos();
 		Map<UUID, MinecartController> carts = loadedMinecartsByUUID.get(event.getLevel());
 		for (MinecartController minecartController : carts.values()) {
-			if (minecartController == null)
-				continue;
-			if (!minecartController.isPresent())
-				continue;
+			if (minecartController == null) continue;
+			if (!minecartController.isPresent()) continue;
 			AbstractMinecart cart = minecartController.cart();
-			if (cart.chunkPosition()
-				.equals(chunkPos))
-				queuedUnloads.get(event.getLevel())
-					.add(cart.getUUID());
+			if (cart.chunkPosition().equals(chunkPos)) queuedUnloads.get(event.getLevel()).add(cart.getUUID());
 		}
 	}
-
 	protected static void onCartRemoved(Level world, AbstractMinecart entity) {
 		Map<UUID, MinecartController> carts = loadedMinecartsByUUID.get(world);
 		List<UUID> unloads = queuedUnloads.get(world);
 		UUID uniqueID = entity.getUUID();
-		if (!carts.containsKey(uniqueID) || unloads.contains(uniqueID))
-			return;
-		if (world.isClientSide)
-			return;
+		if (!carts.containsKey(uniqueID) || unloads.contains(uniqueID)) return;
+		if (world.isClientSide) return;
 		handleKilledMinecart(world, carts.get(uniqueID), entity.position());
 	}
-
 	protected static void handleKilledMinecart(Level world, MinecartController controller, Vec3 removedPos) {
-		if (controller == null)
-			return;
+		if (controller == null) return;
 		for (boolean forward : Iterate.trueAndFalse) {
 			MinecartController next = CouplingHandler.getNextInCouplingChain(world, controller, forward);
-			if (next == null || next == MinecartController.EMPTY)
-				continue;
-
+			if (next == null || next == MinecartController.EMPTY) continue;
 			next.removeConnection(!forward);
-			if (controller.hasContraptionCoupling(forward))
-				continue;
+			if (controller.hasContraptionCoupling(forward)) continue;
 			AbstractMinecart cart = next.cart();
-			if (cart == null)
-				continue;
-
-			Vec3 itemPos = cart.position()
-				.add(removedPos)
-				.scale(.5f);
-			ItemEntity itemEntity =
-				new ItemEntity(world, itemPos.x, itemPos.y, itemPos.z, AllItems.MINECART_COUPLING.asStack());
+			if (cart == null) continue;
+			Vec3 itemPos = cart.position().add(removedPos).scale(.5f);
+			ItemEntity itemEntity = new ItemEntity(
+					world,
+					itemPos.x,
+					itemPos.y,
+					itemPos.z,
+					AllItems.MINECART_COUPLING.asStack()
+			);
 			itemEntity.setDefaultPickUpDelay();
 			world.addFreshEntity(itemEntity);
 		}
 	}
-
-	@Nullable
-	public static MinecartController getIfPresent(Level world, UUID cartId) {
+	@Nullable public static MinecartController getIfPresent(Level world, UUID cartId) {
 		Map<UUID, MinecartController> carts = loadedMinecartsByUUID.get(world);
-		if (carts == null)
-			return null;
-		if (!carts.containsKey(cartId))
-			return null;
+		if (carts == null) return null;
+		if (!carts.containsKey(cartId)) return null;
 		return carts.get(cartId);
 	}
-
 	/* Capability management */
-
-	public static Capability<MinecartController> MINECART_CONTROLLER_CAPABILITY =
-		CapabilityManager.get(new CapabilityToken<>() {
-		});
-
+	public static Capability<MinecartController>
+			MINECART_CONTROLLER_CAPABILITY
+			= CapabilityManager.get(new CapabilityToken<>() {
+	});
 	public static void attach(AttachCapabilitiesEvent<Entity> event) {
 		Entity entity = event.getObject();
-		if (!(entity instanceof AbstractMinecart))
-			return;
-
+		if (!(entity instanceof AbstractMinecart)) return;
 		CapabilityMinecartController capability = new CapabilityMinecartController((AbstractMinecart) entity);
 		ResourceLocation id = Create.asResource("minecart_controller");
 		event.addCapability(id, capability);
 		event.addListener(() -> {
-			if (capability.cap.isPresent())
-				capability.cap.invalidate();
+			if (capability.cap.isPresent()) capability.cap.invalidate();
 		});
-		queuedAdditions.get(entity.getCommandSenderWorld())
-			.add((AbstractMinecart) entity);
+		queuedAdditions.get(entity.getCommandSenderWorld()).add((AbstractMinecart) entity);
 	}
-
 	public static void startTracking(PlayerEvent.StartTracking event) {
 		Entity entity = event.getTarget();
-		if (!(entity instanceof AbstractMinecart))
-			return;
-		entity.getCapability(MINECART_CONTROLLER_CAPABILITY)
-			.ifPresent(MinecartController::sendData);
+		if (!(entity instanceof AbstractMinecart)) return;
+		entity.getCapability(MINECART_CONTROLLER_CAPABILITY).ifPresent(MinecartController::sendData);
 	}
-
 	/* Capability provider */
-
 	private final LazyOptional<MinecartController> cap;
-	private MinecartController handler;
-
+	private final MinecartController handler;
 	public CapabilityMinecartController(AbstractMinecart minecart) {
 		handler = new MinecartController(minecart);
 		cap = LazyOptional.of(() -> handler);
 	}
-
-	@Override
-	public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
-		if (cap == MINECART_CONTROLLER_CAPABILITY)
-			return this.cap.cast();
+	@Override public <T> LazyOptional<T> getCapability(Capability<T> cap, Direction side) {
+		if (cap == MINECART_CONTROLLER_CAPABILITY) return this.cap.cast();
 		return LazyOptional.empty();
 	}
-
-	@Override
-	public CompoundTag serializeNBT() {
+	@Override public CompoundTag serializeNBT() {
 		return handler.serializeNBT();
 	}
-
-	@Override
-	public void deserializeNBT(CompoundTag nbt) {
+	@Override public void deserializeNBT(CompoundTag nbt) {
 		handler.deserializeNBT(nbt);
 	}
-
 }

@@ -1,5 +1,4 @@
 package com.simibubi.create.content.redstone.displayLink.source;
-
 import java.util.stream.Stream;
 
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
@@ -17,47 +16,36 @@ import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria.RenderType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-
 public abstract class StatTrackingDisplaySource extends ScoreboardDisplaySource {
-
-	@Override
-	protected Stream<IntAttached<MutableComponent>> provideEntries(DisplayLinkContext context, int maxRows) {
-		Level level = context.blockEntity()
-			.getLevel();
-		if (!(level instanceof ServerLevel sLevel))
-			return Stream.empty();
-
+	@Override protected Stream<IntAttached<MutableComponent>> provideEntries(DisplayLinkContext context, int maxRows) {
+		Level level = context.blockEntity().getLevel();
+		if (!(level instanceof ServerLevel sLevel)) return Stream.empty();
 		String name = "create_auto_" + getObjectiveName();
 		Scoreboard scoreboard = level.getScoreboard();
 		if (!scoreboard.hasObjective(name))
 			scoreboard.addObjective(name, ObjectiveCriteria.DUMMY, getObjectiveDisplayName(), RenderType.INTEGER);
 		Objective objective = scoreboard.getObjective(name);
-
-		sLevel.getServer().getPlayerList().getPlayers()
-			.forEach(s -> scoreboard.getOrCreatePlayerScore(s.getScoreboardName(), objective)
-				.setScore(updatedScoreOf(s)));
-
+		sLevel.getServer()
+				.getPlayerList()
+				.getPlayers()
+				.forEach(s -> scoreboard.getOrCreatePlayerScore(s.getScoreboardName(), objective)
+						.setScore(updatedScoreOf(s)));
 		return showScoreboard(sLevel, name, maxRows);
 	}
-
 	protected abstract String getObjectiveName();
-
 	protected abstract Component getObjectiveDisplayName();
-
 	protected abstract int updatedScoreOf(ServerPlayer player);
-
-	@Override
-	protected boolean valueFirst() {
+	@Override protected boolean valueFirst() {
 		return false;
 	}
-
-	@Override
-	protected boolean shortenNumbers(DisplayLinkContext context) {
+	@Override protected boolean shortenNumbers(DisplayLinkContext context) {
 		return false;
 	}
-
-	@Override
-	@OnlyIn(Dist.CLIENT)
-	public void initConfigurationWidgets(DisplayLinkContext context, ModularGuiLineBuilder builder, boolean isFirstLine) {}
-
+	@Override @OnlyIn(Dist.CLIENT)
+	public void initConfigurationWidgets(
+			DisplayLinkContext context,
+			ModularGuiLineBuilder builder,
+			boolean isFirstLine
+	) {
+	}
 }

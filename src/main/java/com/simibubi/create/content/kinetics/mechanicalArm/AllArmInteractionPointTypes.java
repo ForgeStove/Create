@@ -1,5 +1,4 @@
 package com.simibubi.create.content.kinetics.mechanicalArm;
-
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -41,7 +40,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.WorldlyContainer;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.RecordItem;
@@ -61,9 +59,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.items.wrapper.SidedInvWrapper;
-
 public class AllArmInteractionPointTypes {
-
 	public static final BasinType BASIN = register("basin", BasinType::new);
 	public static final BeltType BELT = register("belt", BeltType::new);
 	public static final BlazeBurnerType BLAZE_BURNER = register("blaze_burner", BlazeBurnerType::new);
@@ -75,12 +71,10 @@ public class AllArmInteractionPointTypes {
 	public static final FunnelType FUNNEL = register("funnel", FunnelType::new);
 	public static final MillstoneType MILLSTONE = register("millstone", MillstoneType::new);
 	public static final SawType SAW = register("saw", SawType::new);
-
 	public static final CampfireType CAMPFIRE = register("campfire", CampfireType::new);
 	public static final ComposterType COMPOSTER = register("composter", ComposterType::new);
 	public static final JukeboxType JUKEBOX = register("jukebox", JukeboxType::new);
 	public static final RespawnAnchorType RESPAWN_ANCHOR = register("respawn_anchor", RespawnAnchorType::new);
-
 	private static <T extends ArmInteractionPointType> T register(String id, Function<ResourceLocation, T> factory) {
 		T type = factory.apply(Create.asResource(id));
 		ArmInteractionPointType.register(type);
@@ -88,9 +82,7 @@ public class AllArmInteractionPointTypes {
 	}
 	public static void register() {
 	}
-
 	//
-
 	public static class BasinType extends ArmInteractionPointType {
 		public BasinType(ResourceLocation id) {
 			super(id);
@@ -102,7 +94,6 @@ public class AllArmInteractionPointTypes {
 			return new ArmInteractionPoint(this, level, pos, state);
 		}
 	}
-
 	public static class BeltType extends ArmInteractionPointType {
 		public BeltType(ResourceLocation id) {
 			super(id);
@@ -116,7 +107,6 @@ public class AllArmInteractionPointTypes {
 			return new BeltPoint(this, level, pos, state);
 		}
 	}
-
 	public static class BlazeBurnerType extends ArmInteractionPointType {
 		public BlazeBurnerType(ResourceLocation id) {
 			super(id);
@@ -128,7 +118,6 @@ public class AllArmInteractionPointTypes {
 			return new BlazeBurnerPoint(this, level, pos, state);
 		}
 	}
-
 	public static class ChuteType extends ArmInteractionPointType {
 		public ChuteType(ResourceLocation id) {
 			super(id);
@@ -140,7 +129,6 @@ public class AllArmInteractionPointTypes {
 			return new TopFaceArmInteractionPoint(this, level, pos, state);
 		}
 	}
-
 	public static class CrafterType extends ArmInteractionPointType {
 		public CrafterType(ResourceLocation id) {
 			super(id);
@@ -152,7 +140,6 @@ public class AllArmInteractionPointTypes {
 			return new CrafterPoint(this, level, pos, state);
 		}
 	}
-
 	public static class CrushingWheelsType extends ArmInteractionPointType {
 		public CrushingWheelsType(ResourceLocation id) {
 			super(id);
@@ -164,7 +151,6 @@ public class AllArmInteractionPointTypes {
 			return new CrushingWheelPoint(this, level, pos, state);
 		}
 	}
-
 	public static class DeployerType extends ArmInteractionPointType {
 		public DeployerType(ResourceLocation id) {
 			super(id);
@@ -176,7 +162,6 @@ public class AllArmInteractionPointTypes {
 			return new DeployerPoint(this, level, pos, state);
 		}
 	}
-
 	public static class DepotType extends ArmInteractionPointType {
 		public DepotType(ResourceLocation id) {
 			super(id);
@@ -189,15 +174,13 @@ public class AllArmInteractionPointTypes {
 			return new DepotPoint(this, level, pos, state);
 		}
 	}
-
 	public static class FunnelType extends ArmInteractionPointType {
 		public FunnelType(ResourceLocation id) {
 			super(id);
 		}
 		@Override public boolean canCreatePoint(Level level, BlockPos pos, BlockState state) {
 			return state.getBlock() instanceof AbstractFunnelBlock && !(
-					state.hasProperty(FunnelBlock.EXTRACTING)
-							&& state.getValue(FunnelBlock.EXTRACTING)
+					state.hasProperty(FunnelBlock.EXTRACTING) && state.getValue(FunnelBlock.EXTRACTING)
 			) && !(
 					state.hasProperty(BeltFunnelBlock.SHAPE) && state.getValue(BeltFunnelBlock.SHAPE) == Shape.PUSHING
 			);
@@ -206,7 +189,6 @@ public class AllArmInteractionPointTypes {
 			return new FunnelPoint(this, level, pos, state);
 		}
 	}
-
 	public static class MillstoneType extends ArmInteractionPointType {
 		public MillstoneType(ResourceLocation id) {
 			super(id);
@@ -218,7 +200,6 @@ public class AllArmInteractionPointTypes {
 			return new ArmInteractionPoint(this, level, pos, state);
 		}
 	}
-
 	public static class SawType extends ArmInteractionPointType {
 		public SawType(ResourceLocation id) {
 			super(id);
@@ -232,7 +213,6 @@ public class AllArmInteractionPointTypes {
 			return new DepotPoint(this, level, pos, state);
 		}
 	}
-
 	public static class CampfireType extends ArmInteractionPointType {
 		public CampfireType(ResourceLocation id) {
 			super(id);
@@ -244,7 +224,6 @@ public class AllArmInteractionPointTypes {
 			return new CampfirePoint(this, level, pos, state);
 		}
 	}
-
 	public static class ComposterType extends ArmInteractionPointType {
 		public ComposterType(ResourceLocation id) {
 			super(id);
@@ -256,7 +235,6 @@ public class AllArmInteractionPointTypes {
 			return new ComposterPoint(this, level, pos, state);
 		}
 	}
-
 	public static class JukeboxType extends ArmInteractionPointType {
 		public JukeboxType(ResourceLocation id) {
 			super(id);
@@ -268,7 +246,6 @@ public class AllArmInteractionPointTypes {
 			return new JukeboxPoint(this, level, pos, state);
 		}
 	}
-
 	public static class RespawnAnchorType extends ArmInteractionPointType {
 		public RespawnAnchorType(ResourceLocation id) {
 			super(id);
@@ -280,9 +257,7 @@ public class AllArmInteractionPointTypes {
 			return new RespawnAnchorPoint(this, level, pos, state);
 		}
 	}
-
 	//
-
 	public static class DepositOnlyArmInteractionPoint extends ArmInteractionPoint {
 		public DepositOnlyArmInteractionPoint(
 				ArmInteractionPointType type,
@@ -301,7 +276,6 @@ public class AllArmInteractionPointTypes {
 			return 0;
 		}
 	}
-
 	public static class TopFaceArmInteractionPoint extends ArmInteractionPoint {
 		public TopFaceArmInteractionPoint(ArmInteractionPointType type, Level level, BlockPos pos, BlockState state) {
 			super(type, level, pos, state);
@@ -310,7 +284,6 @@ public class AllArmInteractionPointTypes {
 			return Vec3.atLowerCornerOf(pos).add(.5f, 1, .5f);
 		}
 	}
-
 	public static class BeltPoint extends DepotPoint {
 		public BeltPoint(ArmInteractionPointType type, Level level, BlockPos pos, BlockState state) {
 			super(type, level, pos, state);
@@ -332,7 +305,6 @@ public class AllArmInteractionPointTypes {
 			});
 		}
 	}
-
 	public static class BlazeBurnerPoint extends DepositOnlyArmInteractionPoint {
 		public BlazeBurnerPoint(ArmInteractionPointType type, Level level, BlockPos pos, BlockState state) {
 			super(type, level, pos, state);
@@ -357,7 +329,6 @@ public class AllArmInteractionPointTypes {
 			}
 		}
 	}
-
 	public static class CrafterPoint extends ArmInteractionPoint {
 		public CrafterPoint(ArmInteractionPointType type, Level level, BlockPos pos, BlockState state) {
 			super(type, level, pos, state);
@@ -378,8 +349,7 @@ public class AllArmInteractionPointTypes {
 		}
 		@Override public ItemStack extract(int slot, int amount, boolean simulate) {
 			BlockEntity be = level.getBlockEntity(pos);
-			if (!(be instanceof MechanicalCrafterBlockEntity)) return ItemStack.EMPTY;
-			MechanicalCrafterBlockEntity crafter = (MechanicalCrafterBlockEntity) be;
+			if (!(be instanceof MechanicalCrafterBlockEntity crafter)) return ItemStack.EMPTY;
 			SmartInventory inventory = crafter.getInventory();
 			inventory.allowExtraction();
 			ItemStack extract = super.extract(slot, amount, simulate);
@@ -387,7 +357,6 @@ public class AllArmInteractionPointTypes {
 			return extract;
 		}
 	}
-
 	public static class DeployerPoint extends ArmInteractionPoint {
 		public DeployerPoint(ArmInteractionPointType type, Level level, BlockPos pos, BlockState state) {
 			super(type, level, pos, state);
@@ -405,7 +374,6 @@ public class AllArmInteractionPointTypes {
 			if (oldState != cachedState) cachedAngles = null;
 		}
 	}
-
 	public static class DepotPoint extends ArmInteractionPoint {
 		public DepotPoint(ArmInteractionPointType type, Level level, BlockPos pos, BlockState state) {
 			super(type, level, pos, state);
@@ -442,8 +410,7 @@ public class AllArmInteractionPointTypes {
 			ItemStack insert = inserter.insert(stack);
 			if (!simulate && insert.getCount() != stack.getCount()) {
 				BlockEntity blockEntity = level.getBlockEntity(pos);
-				if (blockEntity instanceof FunnelBlockEntity) {
-					FunnelBlockEntity funnelBlockEntity = (FunnelBlockEntity) blockEntity;
+				if (blockEntity instanceof FunnelBlockEntity funnelBlockEntity) {
 					funnelBlockEntity.onTransfer(stack);
 					if (funnelBlockEntity.hasFlap()) funnelBlockEntity.flap(true);
 				}

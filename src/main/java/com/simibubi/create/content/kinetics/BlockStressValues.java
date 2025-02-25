@@ -1,5 +1,4 @@
 package com.simibubi.create.content.kinetics;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,26 +9,17 @@ import com.simibubi.create.foundation.utility.RegisteredObjects;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
-
 public class BlockStressValues {
-
 	private static final Map<String, IStressValueProvider> PROVIDERS = new HashMap<>();
-
 	public static void registerProvider(String namespace, IStressValueProvider provider) {
 		PROVIDERS.put(namespace, provider);
 	}
-
-	@Nullable
-	public static IStressValueProvider getProvider(String namespace) {
+	@Nullable public static IStressValueProvider getProvider(String namespace) {
 		return PROVIDERS.get(namespace);
 	}
-
-	@Nullable
-	public static IStressValueProvider getProvider(Block block) {
-		return getProvider(RegisteredObjects.getKeyOrThrow(block)
-			.getNamespace());
+	@Nullable public static IStressValueProvider getProvider(Block block) {
+		return getProvider(RegisteredObjects.getKeyOrThrow(block).getNamespace());
 	}
-
 	public static double getImpact(Block block) {
 		ResourceLocation blockId = RegisteredObjects.getKeyOrThrow(block);
 		IStressValueProvider provider = getProvider(blockId.getNamespace());
@@ -42,7 +32,6 @@ public class BlockStressValues {
 		}
 		return 0;
 	}
-
 	public static double getCapacity(Block block) {
 		ResourceLocation blockId = RegisteredObjects.getKeyOrThrow(block);
 		IStressValueProvider provider = getProvider(blockId.getNamespace());
@@ -55,7 +44,6 @@ public class BlockStressValues {
 		}
 		return 0;
 	}
-
 	public static boolean hasImpact(Block block) {
 		ResourceLocation blockId = RegisteredObjects.getKeyOrThrow(block);
 		IStressValueProvider provider = getProvider(blockId.getNamespace());
@@ -64,7 +52,6 @@ public class BlockStressValues {
 		}
 		return BlockStressDefaults.DEFAULT_IMPACTS.containsKey(blockId);
 	}
-
 	public static boolean hasCapacity(Block block) {
 		ResourceLocation blockId = RegisteredObjects.getKeyOrThrow(block);
 		IStressValueProvider provider = getProvider(blockId.getNamespace());
@@ -73,9 +60,7 @@ public class BlockStressValues {
 		}
 		return BlockStressDefaults.DEFAULT_CAPACITIES.containsKey(blockId);
 	}
-
-	@Nullable
-	public static Couple<Integer> getGeneratedRPM(Block block) {
+	@Nullable public static Couple<Integer> getGeneratedRPM(Block block) {
 		ResourceLocation blockId = RegisteredObjects.getKeyOrThrow(block);
 		IStressValueProvider provider = getProvider(blockId.getNamespace());
 		if (provider != null) {
@@ -83,35 +68,27 @@ public class BlockStressValues {
 		}
 		return null;
 	}
-
 	public interface IStressValueProvider {
 		/**
 		 * Gets the stress impact of a block.
-		 * 
+		 *
 		 * @param block The block.
 		 * @return the stress impact value of the block, or 0 if it does not have one.
 		 */
 		double getImpact(Block block);
-
 		/**
 		 * Gets the stress capacity of a block.
-		 * 
+		 *
 		 * @param block The block.
 		 * @return the stress capacity value of the block, or 0 if it does not have one.
 		 */
 		double getCapacity(Block block);
-
 		boolean hasImpact(Block block);
-
 		boolean hasCapacity(Block block);
-
 		/**
-		 * 
 		 * @param block
 		 * @return min, max generated RPM; null if block does not have a stress capacity
 		 */
-		@Nullable
-		Couple<Integer> getGeneratedRPM(Block block);
+		@Nullable Couple<Integer> getGeneratedRPM(Block block);
 	}
-
 }

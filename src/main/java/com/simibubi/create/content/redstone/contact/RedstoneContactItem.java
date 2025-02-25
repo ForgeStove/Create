@@ -1,5 +1,4 @@
 package com.simibubi.create.content.redstone.contact;
-
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.contraptions.elevator.ElevatorColumn;
 import com.simibubi.create.content.contraptions.elevator.ElevatorColumn.ColumnCoords;
@@ -13,31 +12,19 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-
 public class RedstoneContactItem extends BlockItem {
-
 	public RedstoneContactItem(Block pBlock, Properties pProperties) {
 		super(pBlock, pProperties);
 	}
-
-	@Override
-	protected BlockState getPlacementState(BlockPlaceContext ctx) {
+	@Override protected BlockState getPlacementState(BlockPlaceContext ctx) {
 		Level world = ctx.getLevel();
 		BlockPos pos = ctx.getClickedPos();
 		BlockState state = super.getPlacementState(ctx);
-
-		if (state == null)
-			return state;
-		if (!(state.getBlock() instanceof RedstoneContactBlock))
-			return state;
+		if (state == null) return null;
+		if (!(state.getBlock() instanceof RedstoneContactBlock)) return state;
 		Direction facing = state.getValue(RedstoneContactBlock.FACING);
-		if (facing.getAxis() == Axis.Y)
-			return state;
-
-		if (ElevatorColumn.get(world, new ColumnCoords(pos.getX(), pos.getZ(), facing)) == null)
-			return state;
-
+		if (facing.getAxis() == Axis.Y) return state;
+		if (ElevatorColumn.get(world, new ColumnCoords(pos.getX(), pos.getZ(), facing)) == null) return state;
 		return BlockHelper.copyProperties(state, AllBlocks.ELEVATOR_CONTACT.getDefaultState());
 	}
-
 }

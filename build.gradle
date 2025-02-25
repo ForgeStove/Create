@@ -296,10 +296,10 @@ task jarJarRelease {
     finalizedBy tasks.jarJar
 }
 
-java {
-    withSourcesJar()
-    withJavadocJar()
-}
+//java {
+//    withSourcesJar()
+//    withJavadocJar()
+//}
 
 void addLicense(jarTask) {
     jarTask.from('LICENSE') {

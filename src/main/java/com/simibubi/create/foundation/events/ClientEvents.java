@@ -1,5 +1,4 @@
 package com.simibubi.create.foundation.events;
-
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllPackets;
@@ -103,15 +102,9 @@ import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
-
-@EventBusSubscriber(Dist.CLIENT)
-public class ClientEvents {
-
-	@SubscribeEvent
-	public static void onTick(ClientTickEvent event) {
-		if (!isGameActive())
-			return;
-
+@EventBusSubscriber(Dist.CLIENT) public class ClientEvents {
+	@SubscribeEvent public static void onTick(ClientTickEvent event) {
+		if (!isGameActive()) return;
 		Level world = Minecraft.getInstance().level;
 		if (event.phase == Phase.START) {
 			LinkedControllerClientHandler.tick();
@@ -119,10 +112,8 @@ public class ClientEvents {
 			AirCurrent.tickClientPlayerSounds();
 			return;
 		}
-
 		SoundScapes.tick();
 		AnimationTickHolder.tick();
-
 		CreateClient.SCHEMATIC_SENDER.tick();
 		CreateClient.SCHEMATIC_AND_QUILL_HANDLER.tick();
 		CreateClient.GLUE_HANDLER.tick();
@@ -131,16 +122,14 @@ public class ClientEvents {
 		CreateClient.POTATO_CANNON_RENDER_HANDLER.tick();
 		CreateClient.SOUL_PULSE_EFFECT_HANDLER.tick(world);
 		CreateClient.RAILWAYS.clientTick();
-
 		ContraptionHandler.tick(world);
 		CapabilityMinecartController.tick(world);
 		CouplingPhysics.tick(world);
-
 		PonderTooltipHandler.tick();
 		// ScreenOpener.tick();
 		ServerSpeedProvider.clientTick();
 		BeltConnectorHandler.tick();
-//		BeltSlicer.tickHoveringInformation();
+		//		BeltSlicer.tickHoveringInformation();
 		FilteringRenderer.tick();
 		LinkRenderer.tick();
 		ScrollValueRenderer.tick();
@@ -175,49 +164,33 @@ public class ClientEvents {
 		NetheriteBacktankFirstPersonRenderer.clientTick();
 		ContraptionPlayerPassengerRotation.tick();
 	}
-
-	@SubscribeEvent
-	public static void onJoin(ClientPlayerNetworkEvent.LoggingIn event) {
+	@SubscribeEvent public static void onJoin(ClientPlayerNetworkEvent.LoggingIn event) {
 		CreateClient.checkGraphicsFanciness();
 	}
-
-	@SubscribeEvent
-	public static void onLeave(ClientPlayerNetworkEvent.LoggingOut event) {
+	@SubscribeEvent public static void onLeave(ClientPlayerNetworkEvent.LoggingOut event) {
 		CreateClient.RAILWAYS.cleanUp();
 	}
-
-	@SubscribeEvent
-	public static void onLoadWorld(LevelEvent.Load event) {
+	@SubscribeEvent public static void onLoadWorld(LevelEvent.Load event) {
 		LevelAccessor world = event.getLevel();
 		if (world.isClientSide() && world instanceof ClientLevel && !(world instanceof WrappedClientWorld)) {
 			CreateClient.invalidateRenderers();
 			AnimationTickHolder.reset();
 		}
 	}
-
-	@SubscribeEvent
-	public static void onUnloadWorld(LevelEvent.Unload event) {
-		if (!event.getLevel()
-			.isClientSide())
-			return;
+	@SubscribeEvent public static void onUnloadWorld(LevelEvent.Unload event) {
+		if (!event.getLevel().isClientSide()) return;
 		CreateClient.invalidateRenderers();
 		CreateClient.SOUL_PULSE_EFFECT_HANDLER.refresh();
 		AnimationTickHolder.reset();
 		ControlsHandler.levelUnloaded(event.getLevel());
 	}
-
-	@SubscribeEvent
-	public static void onRenderWorld(RenderLevelStageEvent event) {
-		if (event.getStage() != Stage.AFTER_PARTICLES)
-			return;
-
+	@SubscribeEvent public static void onRenderWorld(RenderLevelStageEvent event) {
+		if (event.getStage() != Stage.AFTER_PARTICLES) return;
 		PoseStack ms = event.getPoseStack();
 		ms.pushPose();
 		SuperRenderTypeBuffer buffer = SuperRenderTypeBuffer.getInstance();
 		float partialTicks = AnimationTickHolder.getPartialTicks();
-		Vec3 camera = Minecraft.getInstance().gameRenderer.getMainCamera()
-			.getPosition();
-
+		Vec3 camera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
 		TrackBlockOutline.drawCurveSelection(ms, buffer, camera);
 		TrackTargetingClient.render(ms, buffer, camera);
 		CouplingRenderer.renderAll(ms, buffer, camera);
@@ -225,132 +198,88 @@ public class ClientEvents {
 		CreateClient.SCHEMATIC_HANDLER.render(ms, buffer, camera);
 		CreateClient.GHOST_BLOCKS.renderAll(ms, buffer, camera);
 		CreateClient.OUTLINER.renderOutlines(ms, buffer, camera, partialTicks);
-
 		buffer.draw();
 		RenderSystem.enableCull();
 		ms.popPose();
-		
 		ContraptionPlayerPassengerRotation.frame();
 	}
-
-	@SubscribeEvent
-	public static void onCameraSetup(ViewportEvent.ComputeCameraAngles event) {
+	@SubscribeEvent public static void onCameraSetup(ViewportEvent.ComputeCameraAngles event) {
 		float partialTicks = AnimationTickHolder.getPartialTicks();
-
 		if (CameraAngleAnimationService.isYawAnimating())
 			event.setYaw(CameraAngleAnimationService.getYaw(partialTicks));
-
 		if (CameraAngleAnimationService.isPitchAnimating())
 			event.setPitch(CameraAngleAnimationService.getPitch(partialTicks));
 	}
-
-	@SubscribeEvent
-	public static void getItemTooltipColor(RenderTooltipEvent.Color event) {
+	@SubscribeEvent public static void getItemTooltipColor(RenderTooltipEvent.Color event) {
 		PonderTooltipHandler.handleTooltipColor(event);
 	}
-
-	@SubscribeEvent
-	public static void addToItemTooltip(ItemTooltipEvent event) {
-		if (!AllConfigs.client().tooltips.get())
-			return;
-		if (event.getEntity() == null)
-			return;
-
+	@SubscribeEvent public static void addToItemTooltip(ItemTooltipEvent event) {
+		if (!AllConfigs.client().tooltips.get()) return;
+		if (event.getEntity() == null) return;
 		Item item = event.getItemStack().getItem();
 		TooltipModifier modifier = TooltipModifier.REGISTRY.get(item);
 		if (modifier != null && modifier != TooltipModifier.EMPTY) {
 			modifier.modify(event);
 		}
-
 		PonderTooltipHandler.addToTooltip(event);
 		SequencedAssemblyRecipe.addToTooltip(event);
 	}
-
-	@SubscribeEvent
-	public static void onRenderTick(RenderTickEvent event) {
-		if (!isGameActive())
-			return;
+	@SubscribeEvent public static void onRenderTick(RenderTickEvent event) {
+		if (!isGameActive()) return;
 		TurntableHandler.gameRenderTick();
 	}
-
-	@SubscribeEvent
-	public static void onMount(EntityMountEvent event) {
-		if (event.getEntityMounting() != Minecraft.getInstance().player)
-			return;
-
+	@SubscribeEvent public static void onMount(EntityMountEvent event) {
+		if (event.getEntityMounting() != Minecraft.getInstance().player) return;
 		if (event.isDismounting()) {
 			CameraDistanceModifier.reset();
 			return;
 		}
-
 		if (!event.isMounting() || !(event.getEntityBeingMounted() instanceof CarriageContraptionEntity carriage)) {
 			return;
 		}
-
 		CameraDistanceModifier.zoomOut();
 	}
-
 	protected static boolean isGameActive() {
 		return !(Minecraft.getInstance().level == null || Minecraft.getInstance().player == null);
 	}
-
-	@SubscribeEvent
-	public static void getFogDensity(ViewportEvent.RenderFog event) {
+	@SubscribeEvent public static void getFogDensity(ViewportEvent.RenderFog event) {
 		Camera camera = event.getCamera();
 		Level level = Minecraft.getInstance().level;
 		BlockPos blockPos = camera.getBlockPosition();
 		FluidState fluidState = level.getFluidState(blockPos);
-		if (camera.getPosition().y >= blockPos.getY() + fluidState.getHeight(level, blockPos))
-			return;
-
+		if (camera.getPosition().y >= blockPos.getY() + fluidState.getHeight(level, blockPos)) return;
 		Fluid fluid = fluidState.getType();
 		Entity entity = camera.getEntity();
-
-		if (entity.isSpectator())
-			return;
-
+		if (entity.isSpectator()) return;
 		ItemStack divingHelmet = DivingHelmetItem.getWornItem(entity);
 		if (!divingHelmet.isEmpty()) {
 			if (FluidHelper.isWater(fluid)) {
 				event.scaleFarPlaneDistance(6.25f);
 				event.setCanceled(true);
-				return;
 			} else if (FluidHelper.isLava(fluid) && NetheriteDivingHandler.isNetheriteDivingHelmet(divingHelmet)) {
 				event.setNearPlaneDistance(-4.0f);
 				event.setFarPlaneDistance(20.0f);
 				event.setCanceled(true);
-				return;
 			}
 		}
 	}
-
-	@SubscribeEvent
-	public static void leftClickEmpty(PlayerInteractEvent.LeftClickEmpty event) {
+	@SubscribeEvent public static void leftClickEmpty(PlayerInteractEvent.LeftClickEmpty event) {
 		ItemStack stack = event.getItemStack();
 		if (stack.getItem() instanceof ZapperItem) {
 			AllPackets.getChannel().sendToServer(new LeftClickPacket());
 		}
 	}
-
-	@EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
-	public static class ModBusEvents {
-
-		@SubscribeEvent
-		public static void registerClientReloadListeners(RegisterClientReloadListenersEvent event) {
+	@EventBusSubscriber(value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD) public static class ModBusEvents {
+		@SubscribeEvent public static void registerClientReloadListeners(RegisterClientReloadListenersEvent event) {
 			event.registerReloadListener(CreateClient.RESOURCE_RELOAD_LISTENER);
 			event.registerReloadListener(TrainHatInfoReloadListener.LISTENER);
 		}
-
-		@SubscribeEvent
-		public static void addEntityRendererLayers(EntityRenderersEvent.AddLayers event) {
-			EntityRenderDispatcher dispatcher = Minecraft.getInstance()
-				.getEntityRenderDispatcher();
+		@SubscribeEvent public static void addEntityRendererLayers(EntityRenderersEvent.AddLayers event) {
+			EntityRenderDispatcher dispatcher = Minecraft.getInstance().getEntityRenderDispatcher();
 			BacktankArmorLayer.registerOnAll(dispatcher);
 			TrainHatArmorLayer.registerOnAll(dispatcher);
 		}
-
-		@SubscribeEvent
-		public static void registerGuiOverlays(RegisterGuiOverlaysEvent event) {
+		@SubscribeEvent public static void registerGuiOverlays(RegisterGuiOverlaysEvent event) {
 			// Register overlays in reverse order
 			event.registerAbove(VanillaGuiOverlay.AIR_LEVEL.id(), "remaining_air", RemainingAirOverlay.INSTANCE);
 			event.registerAbove(VanillaGuiOverlay.EXPERIENCE_BAR.id(), "train_hud", TrainHUD.OVERLAY);
@@ -358,21 +287,23 @@ public class ClientEvents {
 			event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "track_placement", TrackPlacementOverlay.INSTANCE);
 			event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "goggle_info", GoggleOverlayRenderer.OVERLAY);
 			event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "blueprint", BlueprintOverlayRenderer.OVERLAY);
-			event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "linked_controller", LinkedControllerClientHandler.OVERLAY);
+			event.registerAbove(
+					VanillaGuiOverlay.HOTBAR.id(),
+					"linked_controller",
+					LinkedControllerClientHandler.OVERLAY
+			);
 			event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "schematic", CreateClient.SCHEMATIC_HANDLER);
 			event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), "toolbox", ToolboxHandlerClient.OVERLAY);
 		}
-
-		@SubscribeEvent
-		public static void onLoadComplete(FMLLoadCompleteEvent event) {
+		@SubscribeEvent public static void onLoadComplete(FMLLoadCompleteEvent event) {
 			ModContainer createContainer = ModList.get()
-				.getModContainerById(Create.ID)
-				.orElseThrow(() -> new IllegalStateException("Create mod container missing on LoadComplete"));
-			createContainer.registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class,
-				() -> new ConfigScreenHandler.ConfigScreenFactory(
-					(mc, previousScreen) -> BaseConfigScreen.forCreate(previousScreen)));
+					.getModContainerById(Create.ID)
+					.orElseThrow(() -> new IllegalStateException("Create mod container missing on LoadComplete"));
+			createContainer.registerExtensionPoint(
+					ConfigScreenHandler.ConfigScreenFactory.class,
+					() -> new ConfigScreenHandler.ConfigScreenFactory((mc, previousScreen) -> BaseConfigScreen.forCreate(
+							previousScreen))
+			);
 		}
-
 	}
-
 }

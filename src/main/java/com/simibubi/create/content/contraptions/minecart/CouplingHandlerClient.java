@@ -1,5 +1,4 @@
 package com.simibubi.create.content.contraptions.minecart;
-
 import org.joml.Vector3f;
 
 import com.simibubi.create.AllItems;
@@ -18,15 +17,11 @@ import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-
 public class CouplingHandlerClient {
-
 	static AbstractMinecart selectedCart;
 	static RandomSource r = RandomSource.create();
-
 	public static void tick() {
-		if (selectedCart == null)
-			return;
+		if (selectedCart == null) return;
 		spawnSelectionParticles(selectedCart.getBoundingBox(), false);
 		LocalPlayer player = Minecraft.getInstance().player;
 		ItemStack heldItemMainhand = player.getMainHandItem();
@@ -35,10 +30,8 @@ public class CouplingHandlerClient {
 			return;
 		selectedCart = null;
 	}
-
 	static void onCartClicked(Player player, AbstractMinecart entity) {
-		if (Minecraft.getInstance().player != player)
-			return;
+		if (Minecraft.getInstance().player != player) return;
 		if (selectedCart == null || selectedCart == entity) {
 			selectedCart = entity;
 			spawnSelectionParticles(selectedCart.getBoundingBox(), true);
@@ -48,26 +41,21 @@ public class CouplingHandlerClient {
 		AllPackets.getChannel().sendToServer(new CouplingCreationPacket(selectedCart, entity));
 		selectedCart = null;
 	}
-
 	static void sneakClick() {
 		selectedCart = null;
 	}
-
 	private static void spawnSelectionParticles(AABB AABB, boolean highlight) {
 		ClientLevel world = Minecraft.getInstance().level;
 		Vec3 center = AABB.getCenter();
 		int amount = highlight ? 100 : 2;
-		ParticleOptions particleData =
-			highlight ? ParticleTypes.END_ROD : new DustParticleOptions(new Vector3f(1, 1, 1), 1);
+		ParticleOptions particleData = highlight
+				? ParticleTypes.END_ROD
+				: new DustParticleOptions(new Vector3f(1, 1, 1), 1);
 		for (int i = 0; i < amount; i++) {
 			Vec3 v = VecHelper.offsetRandomly(Vec3.ZERO, r, 1);
 			double yOffset = v.y;
-			v = v.multiply(1, 0, 1)
-				.normalize()
-				.add(0, yOffset / 8f, 0)
-				.add(center);
+			v = v.multiply(1, 0, 1).normalize().add(0, yOffset / 8f, 0).add(center);
 			world.addParticle(particleData, v.x, v.y, v.z, 0, 0, 0);
 		}
 	}
-
 }
