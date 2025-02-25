@@ -332,8 +332,7 @@ public class AllBlocks {
 			.transform(pickaxeOnly())
 			.blockstate(BlockStateGen.axisBlockProvider(false))
 			.onRegister(CreateRegistrate.blockModel(() -> BracketedKineticBlockModel::new))
-			.simpleItem()
-			.register();	// Schematics
+			.simpleItem().register();	// Schematics
 	public static final BlockEntry<SchematicannonBlock> SCHEMATICANNON = REGISTRATE.block(
 					"schematicannon",
 					SchematicannonBlock::new
@@ -358,6 +357,33 @@ public class AllBlocks {
 			.item()
 			.transform(customItemModel())
 			.register();
+	public static final BlockEntry<CogWheelBlock> COGWHEEL = REGISTRATE.block("cogwheel", CogWheelBlock::small)
+			.initialProperties(SharedProperties::stone)
+			.properties(p -> p.sound(SoundType.WOOD).mapColor(MapColor.DIRT))
+			.transform(BlockStressDefaults.setNoImpact())
+			.transform(axeOrPickaxe())
+			.blockstate(BlockStateGen.axisBlockProvider(false))
+			.onRegister(CreateRegistrate.blockModel(() -> BracketedKineticBlockModel::new))
+			.item(CogwheelBlockItem::new)
+			.build()
+			.register();
+	public static final BlockEntry<BracketBlock> METAL_BRACKET = REGISTRATE.block("metal_bracket", BracketBlock::new)
+			.blockstate(new BracketGenerator("metal")::generate)
+			.properties(p -> p.sound(SoundType.NETHERITE_BLOCK))
+			.transform(pickaxeOnly())
+			.item(BracketBlockItem::new)
+			.transform(BracketGenerator.itemModel("metal"))
+			.register();
+	// Fluids
+	public static final BlockEntry<FluidPipeBlock> FLUID_PIPE = REGISTRATE.block("fluid_pipe", FluidPipeBlock::new)
+			.initialProperties(SharedProperties::copperMetal)
+			.properties(p -> p.forceSolidOn())
+			.transform(pickaxeOnly())
+			.blockstate(BlockStateGen.pipe())
+			.onRegister(CreateRegistrate.blockModel(() -> PipeAttachmentModel::new))
+			.item()
+			.transform(customItemModel())
+			.register();
 	public static final BlockEntry<CogWheelBlock> LARGE_COGWHEEL = REGISTRATE.block(
 					"large_cogwheel",
 					CogWheelBlock::large
@@ -376,17 +402,6 @@ public class AllBlocks {
 			.transform(BuilderTransformers.encasedShaft("andesite", () -> AllSpriteShifts.ANDESITE_CASING))
 			.transform(EncasingRegistry.addVariantTo(AllBlocks.SHAFT))
 			.transform(axeOrPickaxe())
-			.register();
-
-	public static final BlockEntry<CogWheelBlock> COGWHEEL = REGISTRATE.block("cogwheel", CogWheelBlock::small)
-			.initialProperties(SharedProperties::stone)
-			.properties(p -> p.sound(SoundType.WOOD).mapColor(MapColor.DIRT))
-			.transform(BlockStressDefaults.setNoImpact())
-			.transform(axeOrPickaxe())
-			.blockstate(BlockStateGen.axisBlockProvider(false))
-			.onRegister(CreateRegistrate.blockModel(() -> BracketedKineticBlockModel::new))
-			.item(CogwheelBlockItem::new)
-			.build()
 			.register();
 	public static final BlockEntry<EncasedShaftBlock> BRASS_ENCASED_SHAFT = REGISTRATE.block(
 					"brass_encased_shaft",
@@ -442,21 +457,6 @@ public class AllBlocks {
 			.transform(BuilderTransformers.encasedLargeCogwheel("brass", () -> AllSpriteShifts.BRASS_CASING))
 			.transform(EncasingRegistry.addVariantTo(AllBlocks.LARGE_COGWHEEL))
 			.transform(axeOrPickaxe())
-			.register();
-	public static final BlockEntry<BracketBlock> METAL_BRACKET = REGISTRATE.block("metal_bracket", BracketBlock::new)
-			.blockstate(new BracketGenerator("metal")::generate)
-			.properties(p -> p.sound(SoundType.NETHERITE_BLOCK))
-			.transform(pickaxeOnly())
-			.item(BracketBlockItem::new).transform(BracketGenerator.itemModel("metal")).register();
-	// Fluids
-	public static final BlockEntry<FluidPipeBlock> FLUID_PIPE = REGISTRATE.block("fluid_pipe", FluidPipeBlock::new)
-			.initialProperties(SharedProperties::copperMetal)
-			.properties(p -> p.forceSolidOn())
-			.transform(pickaxeOnly())
-			.blockstate(BlockStateGen.pipe())
-			.onRegister(CreateRegistrate.blockModel(() -> PipeAttachmentModel::new))
-			.item()
-			.transform(customItemModel())
 			.register();
 
 	public static final BlockEntry<GearboxBlock> GEARBOX = REGISTRATE.block("gearbox", GearboxBlock::new)
@@ -748,7 +748,8 @@ public class AllBlocks {
 			.transform(axeOrPickaxe())
 			.blockstate(BlockStateGen.directionalAxisBlockProvider())
 			.item()
-			.transform(customItemModel()).register();	public static final BlockEntry<BlazeBurnerBlock> BLAZE_BURNER = REGISTRATE.block(
+			.transform(customItemModel())
+			.register();	public static final BlockEntry<BlazeBurnerBlock> BLAZE_BURNER = REGISTRATE.block(
 					"blaze_burner",
 					BlazeBurnerBlock::new
 			)
@@ -1532,7 +1533,9 @@ public class AllBlocks {
 			.transform(pickaxeOnly())
 			.blockstate(GirderBlockStateGenerator::blockState)
 			.onRegister(CreateRegistrate.blockModel(() -> ConnectedGirderModel::new))
-			.item().transform(customItemModel()).register();
+			.item()
+			.transform(customItemModel())
+			.register();
 	public static final BlockEntry<CasingBlock> SHADOW_STEEL_CASING = REGISTRATE.block(
 					"shadow_steel_casing",
 					CasingBlock::new
@@ -2087,7 +2090,7 @@ public class AllBlocks {
 			.build()
 			.register();
 	public static final BlockEntry<GirderEncasedShaftBlock> METAL_GIRDER_ENCASED_SHAFT = REGISTRATE.block(
-					"metal_girder_encased_shaft",
+			"metal_girder_encased_shaft",
 					GirderEncasedShaftBlock::new
 			)
 			.initialProperties(SharedProperties::softMetal)
@@ -2173,7 +2176,9 @@ public class AllBlocks {
 					RecipeCategory.BUILDING_BLOCKS,
 					c::get,
 					2
-			)).simpleItem().register();
+			))
+			.simpleItem()
+			.register();
 	public static final BlockEntry<Block> SMALL_ROSE_QUARTZ_TILES = REGISTRATE.block(
 					"small_rose_quartz_tiles",
 					Block::new
