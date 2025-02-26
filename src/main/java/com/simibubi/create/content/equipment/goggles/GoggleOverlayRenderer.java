@@ -76,7 +76,7 @@ public class GoggleOverlayRenderer {
 		if (world != null) {
 			be = world.getBlockEntity(pos);
 		}
-		boolean wearingGoggles = true;//GogglesItem.isWearingGoggles(mc.player);
+		boolean wearingGoggles = GogglesItem.isWearingGoggles(mc.player);
 		boolean hasGoggleInformation = be instanceof IHaveGoggleInformation;
 		boolean hasHoveringInformation = be instanceof IHaveHoveringInformation;
 		boolean goggleAddedInformation = false;
