@@ -4,11 +4,11 @@ import static net.minecraftforge.eventbus.api.Event.Result.DENY;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.jetbrains.annotations.NotNull;
 
 import com.google.common.collect.Multimap;
 import com.simibubi.create.AllSoundEvents;
@@ -83,6 +83,19 @@ public class DeployerHandler {
 				|| facing != Direction.DOWN
 				|| BlockEntityBehaviour.get(world, targetPos, TransportedItemStackHandlerBehaviour.TYPE) == null;
 	}
+	static void activate(
+			@NotNull DeployerFakePlayer player,
+			Vec3 vec,
+			BlockPos clickedPos,
+			Vec3 extensionVector,
+			Mode mode
+	) {
+		Multimap<Attribute, AttributeModifier> attributeModifiers = player.getMainHandItem()
+				.getAttributeModifiers(EquipmentSlot.MAINHAND);
+		player.getAttributes().addTransientAttributeModifiers(attributeModifiers);
+		activateInner(player, vec, clickedPos, extensionVector, mode);
+		player.getAttributes().addTransientAttributeModifiers(attributeModifiers);
+	}
 	private static void activateInner(
 			DeployerFakePlayer player,
 			Vec3 vec,
@@ -98,9 +111,9 @@ public class DeployerHandler {
 		Item item = stack.getItem();
 		// Check for entities
 		final Level world = player.level();
-		List<Entity> entities = world.getEntitiesOfClass(Entity.class, new AABB(clickedPos))
-				.stream()
-				.filter(e -> !(e instanceof AbstractContraptionEntity)).toList();
+		List<Entity> entities = new ArrayList<>();
+		for (Entity entity : world.getEntitiesOfClass(Entity.class, new AABB(clickedPos)))
+			if (!(entity instanceof AbstractContraptionEntity)) entities.add(entity);
 		InteractionHand hand = InteractionHand.MAIN_HAND;
 		if (!entities.isEmpty()) {
 			Entity entity = entities.get(world.random.nextInt(entities.size()));
@@ -130,7 +143,7 @@ public class DeployerHandler {
 				if (!success && entity instanceof Player playerEntity) {
 					if (stack.isEdible()) {
 						FoodProperties foodProperties = item.getFoodProperties(stack, player);
-						if (playerEntity.canEat(foodProperties.canAlwaysEat())) {
+						if (foodProperties != null && playerEntity.canEat(foodProperties.canAlwaysEat())) {
 							ItemStack copy = stack.copy();
 							player.setItemInHand(hand, stack.finishUsingItem(world, playerEntity));
 							player.spawnedItemEffects = copy;
@@ -167,8 +180,6 @@ public class DeployerHandler {
 			result = new BlockHitResult(result.getLocation(), result.getDirection(), clickedPos, result.isInside());
 		BlockState clickedState = world.getBlockState(clickedPos);
 		Direction face = result.getDirection();
-		if (face == null)
-			face = Direction.getNearest(extensionVector.x, extensionVector.y, extensionVector.z).getOpposite();
 		// Left click
 		if (mode == Mode.PUNCH) {
 			if (!world.mayInteract(player, clickedPos)) return;
@@ -272,14 +283,11 @@ public class DeployerHandler {
 		if (!player.getUseItem().isEmpty()) player.setItemInHand(hand, stack.finishUsingItem(world, player));
 		player.stopUsingItem();
 	}
-	static void activate(DeployerFakePlayer player, Vec3 vec, BlockPos clickedPos, Vec3 extensionVector, Mode mode) {
-		Multimap<Attribute, AttributeModifier> attributeModifiers = player.getMainHandItem()
-				.getAttributeModifiers(EquipmentSlot.MAINHAND);
-		player.getAttributes().addTransientAttributeModifiers(attributeModifiers);
-		activateInner(player, vec, clickedPos, extensionVector, mode);
-		player.getAttributes().addTransientAttributeModifiers(attributeModifiers);
-	}
-	public static boolean tryHarvestBlock(ServerPlayer player, ServerPlayerGameMode interactionManager, BlockPos pos) {
+	public static boolean tryHarvestBlock(
+			@NotNull ServerPlayer player,
+			@NotNull ServerPlayerGameMode interactionManager,
+			BlockPos pos
+	) {
 		// <> PlayerInteractionManager#tryHarvestBlock
 		ServerLevel world = player.serverLevel();
 		BlockState blockstate = world.getBlockState(pos);
@@ -304,38 +312,14 @@ public class DeployerHandler {
 			// hack to prevent DoublePlantBlock from dropping a duplicate item
 			world.setBlock(pos, Blocks.AIR.defaultBlockState(), 35);
 			world.setBlock(posUp, Blocks.AIR.defaultBlockState(), 35);
-		} else {
-			if (!blockstate.onDestroyedByPlayer(world, pos, player, canHarvest, world.getFluidState(pos))) return true;
-		}
+		} else if (!blockstate.onDestroyedByPlayer(world, pos, player, canHarvest, world.getFluidState(pos)))
+			return true;
 		blockstate.getBlock().destroy(world, pos, blockstate);
 		if (!canHarvest) return true;
 		Block.getDrops(blockstate, world, pos, blockEntity, player, prevHeldItem)
 				.forEach(item -> player.getInventory().placeItemBackInInventory(item));
 		blockstate.spawnAfterBreak(world, pos, prevHeldItem, true);
 		return true;
-	}
-	private static final class ItemUseWorld extends WrappedWorld {
-		private final Direction face;
-		private final BlockPos pos;
-		boolean rayMode = false;
-		private ItemUseWorld(Level world, Direction face, BlockPos pos) {
-			super(world);
-			this.face = face;
-			this.pos = pos;
-		}
-		@Override public BlockHitResult clip(ClipContext context) {
-			rayMode = true;
-			BlockHitResult rayTraceBlocks = super.clip(context);
-			rayMode = false;
-			return rayTraceBlocks;
-		}
-		@Override public BlockState getBlockState(BlockPos position) {
-			if (rayMode && (
-					pos.relative(face.getOpposite(), 3).equals(position) || pos.relative(face.getOpposite(), 1)
-							.equals(position)
-			)) return Blocks.BEDROCK.defaultBlockState();
-			return world.getBlockState(position);
-		}
 	}
 	public static InteractionResult safeOnUse(
 			BlockState state,
@@ -397,5 +381,28 @@ public class DeployerHandler {
 		if (!success) return InteractionResult.PASS;
 		block.resetHoneyLevel(world, state, pos);
 		return InteractionResult.SUCCESS;
+	}
+	private static final class ItemUseWorld extends WrappedWorld {
+		private final Direction face;
+		private final BlockPos pos;
+		boolean rayMode = false;
+		private ItemUseWorld(Level world, Direction face, BlockPos pos) {
+			super(world);
+			this.face = face;
+			this.pos = pos;
+		}
+		@Override public @NotNull BlockHitResult clip(@NotNull ClipContext context) {
+			rayMode = true;
+			BlockHitResult rayTraceBlocks = super.clip(context);
+			rayMode = false;
+			return rayTraceBlocks;
+		}
+		@Override public @NotNull BlockState getBlockState(BlockPos position) {
+			if (rayMode && (
+					pos.relative(face.getOpposite(), 3).equals(position) || pos.relative(face.getOpposite(), 1)
+							.equals(position)
+			)) return Blocks.BEDROCK.defaultBlockState();
+			return world.getBlockState(position);
+		}
 	}
 }

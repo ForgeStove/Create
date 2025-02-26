@@ -1,8 +1,10 @@
 package com.simibubi.create.content.kinetics.deployer;
 import static com.simibubi.create.content.kinetics.base.DirectionalKineticBlock.FACING;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import org.jetbrains.annotations.NotNull;
 
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllSoundEvents;
@@ -33,7 +35,7 @@ public class BeltDeployerCallbacks {
 	public static ProcessingResult onItemReceived(
 			TransportedItemStack s,
 			TransportedItemStackHandlerBehaviour i,
-			DeployerBlockEntity blockEntity
+			@NotNull DeployerBlockEntity blockEntity
 	) {
 		if (blockEntity.getSpeed() == 0) return ProcessingResult.PASS;
 		if (blockEntity.mode == Mode.PUNCH) return ProcessingResult.PASS;
@@ -52,7 +54,7 @@ public class BeltDeployerCallbacks {
 	public static ProcessingResult whenItemHeld(
 			TransportedItemStack s,
 			TransportedItemStackHandlerBehaviour i,
-			DeployerBlockEntity blockEntity
+			@NotNull DeployerBlockEntity blockEntity
 	) {
 		if (blockEntity.getSpeed() == 0) return ProcessingResult.PASS;
 		BlockState blockState = blockEntity.getBlockState();
@@ -74,32 +76,31 @@ public class BeltDeployerCallbacks {
 		return ProcessingResult.HOLD;
 	}
 	public static void activate(
-			TransportedItemStack transported,
+			@NotNull TransportedItemStack transported,
 			TransportedItemStackHandlerBehaviour handler,
-			DeployerBlockEntity blockEntity,
+			@NotNull DeployerBlockEntity blockEntity,
 			Recipe<?> recipe
 	) {
-		List<TransportedItemStack> collect = RecipeApplier.applyRecipeOn(
-						blockEntity.getLevel(),
-						ItemHandlerHelper.copyStackWithSize(transported.stack, 1),
-						recipe
-				)
-				.stream()
-				.map(stack -> {
-					TransportedItemStack copy = transported.copy();
-					boolean centered = BeltHelper.isItemUpright(stack);
-					copy.stack = stack;
-					copy.locked = true;
-					copy.angle = centered ? 180 : Create.RANDOM.nextInt(360);
-					return copy;
-				}).peek(t -> t.locked = false)
-				.collect(Collectors.toList());
+		List<TransportedItemStack> collect = new ArrayList<>();
+		for (ItemStack itemStack : RecipeApplier.applyRecipeOn(
+				blockEntity.getLevel(),
+				ItemHandlerHelper.copyStackWithSize(transported.stack, 1),
+				recipe
+		)) {
+			TransportedItemStack copy = transported.copy();
+			boolean centered = BeltHelper.isItemUpright(itemStack);
+			copy.stack = itemStack;
+			copy.locked = true;
+			copy.angle = centered ? 180 : Create.RANDOM.nextInt(360);
+			copy.locked = false;
+			collect.add(copy);
+		}
 		blockEntity.award(AllAdvancements.DEPLOYER);
 		transported.clearFanProcessingData();
 		TransportedItemStack left = transported.copy();
 		blockEntity.player.spawnedItemEffects = transported.stack.copy();
 		left.stack.shrink(1);
-		ItemStack resultItem = null;
+		ItemStack resultItem;
 		if (collect.isEmpty()) {
 			resultItem = left.stack.copy();
 			handler.handleProcessingOnItem(transported, TransportedResult.convertTo(left));
@@ -120,7 +121,7 @@ public class BeltDeployerCallbacks {
 				heldItem.hurtAndBreak(1, blockEntity.player, s -> s.broadcastBreakEvent(InteractionHand.MAIN_HAND));
 			else heldItem.shrink(1);
 		}
-		if (resultItem != null && !resultItem.isEmpty()) awardAdvancements(blockEntity, resultItem);
+		if (!resultItem.isEmpty()) awardAdvancements(blockEntity, resultItem);
 		BlockPos pos = blockEntity.getBlockPos();
 		Level world = blockEntity.getLevel();
 		if (heldItem.isEmpty()) world.playSound(null, pos, SoundEvents.ITEM_BREAK, SoundSource.BLOCKS, .25f, 1);
@@ -130,7 +131,7 @@ public class BeltDeployerCallbacks {
 		blockEntity.sendData();
 	}
 	private static void awardAdvancements(DeployerBlockEntity blockEntity, ItemStack created) {
-		CreateAdvancement advancement = null;
+		CreateAdvancement advancement;
 		if (AllBlocks.ANDESITE_CASING.isIn(created)) advancement = AllAdvancements.ANDESITE_CASING;
 		else if (AllBlocks.BRASS_CASING.isIn(created)) advancement = AllAdvancements.BRASS_CASING;
 		else if (AllBlocks.COPPER_CASING.isIn(created)) advancement = AllAdvancements.COPPER_CASING;

@@ -4,7 +4,6 @@ import static com.simibubi.create.content.kinetics.belt.behaviour.BeltProcessing
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.simibubi.create.Create;
 import com.simibubi.create.content.kinetics.belt.BeltHelper;
@@ -15,11 +14,13 @@ import com.simibubi.create.content.kinetics.belt.transport.TransportedItemStack;
 import com.simibubi.create.content.kinetics.press.PressingBehaviour.Mode;
 
 import net.minecraft.world.item.ItemStack;
+
+import org.jetbrains.annotations.NotNull;
 public class BeltPressingCallbacks {
 	static ProcessingResult onItemReceived(
 			TransportedItemStack transported,
 			TransportedItemStackHandlerBehaviour handler,
-			PressingBehaviour behaviour
+			@NotNull PressingBehaviour behaviour
 	) {
 		if (behaviour.specifics.getKineticSpeed() == 0) return PASS;
 		if (behaviour.running) return HOLD;
@@ -30,7 +31,7 @@ public class BeltPressingCallbacks {
 	static ProcessingResult whenItemHeld(
 			TransportedItemStack transported,
 			TransportedItemStackHandlerBehaviour handler,
-			PressingBehaviour behaviour
+			@NotNull PressingBehaviour behaviour
 	) {
 		if (behaviour.specifics.getKineticSpeed() == 0) return PASS;
 		if (!behaviour.running) return PASS;
@@ -40,14 +41,15 @@ public class BeltPressingCallbacks {
 		if (!behaviour.specifics.tryProcessOnBelt(transported, results, false)) return PASS;
 		boolean bulk = behaviour.specifics.canProcessInBulk() || transported.stack.getCount() == 1;
 		transported.clearFanProcessingData();
-		List<TransportedItemStack> collect = results.stream().map(stack -> {
+		List<TransportedItemStack> collect = new ArrayList<>();
+		for (ItemStack result : results) {
 			TransportedItemStack copy = transported.copy();
-			boolean centered = BeltHelper.isItemUpright(stack);
-			copy.stack = stack;
+			boolean centered = BeltHelper.isItemUpright(result);
+			copy.stack = result;
 			copy.locked = true;
 			copy.angle = centered ? 180 : Create.RANDOM.nextInt(360);
-			return copy;
-		}).collect(Collectors.toList());
+			collect.add(copy);
+		}
 		if (bulk) {
 			if (collect.isEmpty()) handler.handleProcessingOnItem(transported, TransportedResult.removeItem());
 			else handler.handleProcessingOnItem(transported, TransportedResult.convertTo(collect));

@@ -45,6 +45,8 @@ import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
+
+import org.jetbrains.annotations.NotNull;
 @EventBusSubscriber public class DeployerFakePlayer extends FakePlayer {
 	private static final Connection NETWORK_MANAGER = new Connection(PacketFlow.CLIENTBOUND);
 	public static final UUID fallbackID = UUID.fromString("9e2faded-cafe-4ec2-c314-dad129ae971d");
@@ -58,16 +60,16 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 		connection = new FakePlayNetHandler(world.getServer(), this);
 		this.owner = owner;
 	}
-	@Override public OptionalInt openMenu(MenuProvider menuProvider) {
+	@Override public @NotNull OptionalInt openMenu(MenuProvider menuProvider) {
 		return OptionalInt.empty();
 	}
-	@Override public Component getDisplayName() {
+	@Override public @NotNull Component getDisplayName() {
 		return Lang.translateDirect("block.deployer.damage_source_name");
 	}
-	@Override @OnlyIn(Dist.CLIENT) public float getEyeHeight(Pose poseIn) {
+	@Override @OnlyIn(Dist.CLIENT) public float getEyeHeight(@NotNull Pose poseIn) {
 		return 0;
 	}
-	@Override public Vec3 position() {
+	@Override public @NotNull Vec3 position() {
 		return new Vec3(getX(), getY(), getZ());
 	}
 	@Override public float getCurrentItemAttackStrengthDelay() {
@@ -76,21 +78,21 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 	@Override public boolean canEat(boolean ignoreHunger) {
 		return false;
 	}
-	@Override public ItemStack eat(Level world, ItemStack stack) {
+	@Override public @NotNull ItemStack eat(@NotNull Level world, @NotNull ItemStack stack) {
 		stack.shrink(1);
 		return stack;
 	}
-	@Override public boolean canBeAffected(MobEffectInstance pEffectInstance) {
+	@Override public boolean canBeAffected(@NotNull MobEffectInstance pEffectInstance) {
 		return false;
 	}
-	@Override public UUID getUUID() {
+	@Override public @NotNull UUID getUUID() {
 		return owner == null ? super.getUUID() : owner;
 	}
-	@SubscribeEvent public static void deployerHasEyesOnHisFeet(EntityEvent.Size event) {
+	@SubscribeEvent public static void deployerHasEyesOnHisFeet(EntityEvent.@NotNull Size event) {
 		if (event.getEntity() instanceof DeployerFakePlayer) event.setNewEyeHeight(0);
 	}
 	@SubscribeEvent(priority = EventPriority.LOWEST)
-	public static void deployerCollectsDropsFromKilledEntities(LivingDropsEvent event) {
+	public static void deployerCollectsDropsFromKilledEntities(@NotNull LivingDropsEvent event) {
 		DamageSource source = event.getSource();
 		Entity trueSource = source.getEntity();
 		if (trueSource instanceof DeployerFakePlayer fakePlayer) {
@@ -98,18 +100,18 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 			event.setCanceled(true);
 		}
 	}
-	@Override protected boolean doesEmitEquipEvent(EquipmentSlot p_217035_) {
+	@Override protected boolean doesEmitEquipEvent(@NotNull EquipmentSlot p_217035_) {
 		return false;
 	}
-	@Override public void remove(RemovalReason p_150097_) {
+	@Override public void remove(@NotNull RemovalReason p_150097_) {
 		if (blockBreakingProgress != null && !level().isClientSide)
 			level().destroyBlockProgress(getId(), blockBreakingProgress.getKey(), -1);
 		super.remove(p_150097_);
 	}
-	@SubscribeEvent public static void deployerKillsDoNotSpawnXP(LivingExperienceDropEvent event) {
+	@SubscribeEvent public static void deployerKillsDoNotSpawnXP(@NotNull LivingExperienceDropEvent event) {
 		if (event.getAttackingPlayer() instanceof DeployerFakePlayer) event.setCanceled(true);
 	}
-	@SubscribeEvent public static void entitiesDontRetaliate(LivingChangeTargetEvent event) {
+	@SubscribeEvent public static void entitiesDontRetaliate(@NotNull LivingChangeTargetEvent event) {
 		if (!(event.getOriginalTarget() instanceof DeployerFakePlayer)) return;
 		LivingEntity entityLiving = event.getEntity();
 		if (!(entityLiving instanceof Mob mob)) return;
@@ -154,9 +156,9 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 		public FakePlayNetHandler(MinecraftServer server, ServerPlayer playerIn) {
 			super(server, NETWORK_MANAGER, playerIn);
 		}
-		@Override public void send(Packet<?> packetIn) {
+		@Override public void send(@NotNull Packet<?> packetIn) {
 		}
-		@Override public void send(Packet<?> p_243227_, @Nullable PacketSendListener p_243273_) {
+		@Override public void send(@NotNull Packet<?> p_243227_, @Nullable PacketSendListener p_243273_) {
 		}
 	}
 }

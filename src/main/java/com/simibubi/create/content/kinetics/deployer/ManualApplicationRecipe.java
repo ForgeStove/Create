@@ -30,8 +30,10 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.items.wrapper.RecipeWrapper;
+
+import org.jetbrains.annotations.NotNull;
 @EventBusSubscriber public class ManualApplicationRecipe extends ItemApplicationRecipe {
-	@SubscribeEvent public static void manualApplicationRecipesApplyInWorld(PlayerInteractEvent.RightClickBlock event) {
+	@SubscribeEvent public static void manualApplicationRecipesApplyInWorld(PlayerInteractEvent.@NotNull RightClickBlock event) {
 		Level level = event.getLevel();
 		ItemStack heldItem = event.getItemStack();
 		BlockPos pos = event.getPos();
@@ -59,7 +61,8 @@ import net.minecraftforge.items.wrapper.RecipeWrapper;
 		level.setBlock(pos, transformedBlock, 3);
 		recipe.rollResults().forEach(stack -> Block.popResource(level, pos, stack));
 		boolean creative = event.getEntity() != null && event.getEntity().isCreative();
-		boolean unbreakable = heldItem.hasTag() && heldItem.getTag().getBoolean("Unbreakable");
+		boolean unbreakable = false;
+		if (heldItem.getTag() != null) unbreakable = heldItem.hasTag() && heldItem.getTag().getBoolean("Unbreakable");
 		boolean keepHeld = recipe.shouldKeepHeldItem() || creative;
 		if (!unbreakable && !keepHeld) {
 			if (heldItem.isDamageableItem())
@@ -69,7 +72,7 @@ import net.minecraftforge.items.wrapper.RecipeWrapper;
 		awardAdvancements(event.getEntity(), transformedBlock);
 	}
 	private static void awardAdvancements(Player player, BlockState placed) {
-		CreateAdvancement advancement = null;
+		CreateAdvancement advancement;
 		if (AllBlocks.ANDESITE_CASING.has(placed)) advancement = AllAdvancements.ANDESITE_CASING;
 		else if (AllBlocks.BRASS_CASING.has(placed)) advancement = AllAdvancements.BRASS_CASING;
 		else if (AllBlocks.COPPER_CASING.has(placed)) advancement = AllAdvancements.COPPER_CASING;
@@ -91,7 +94,7 @@ import net.minecraftforge.items.wrapper.RecipeWrapper;
 		if (mar.shouldKeepHeldItem()) builder.toolNotConsumed();
 		return builder.build();
 	}
-	public boolean testBlock(BlockState in) {
+	public boolean testBlock(@NotNull BlockState in) {
 		return ingredients.get(0).test(new ItemStack(in.getBlock().asItem()));
 	}
 	public BlockState transformBlock(BlockState in) {
@@ -101,7 +104,7 @@ import net.minecraftforge.items.wrapper.RecipeWrapper;
 			return BlockHelper.copyProperties(in, bi.getBlock().defaultBlockState());
 		return Blocks.AIR.defaultBlockState();
 	}
-	@Override public List<ItemStack> rollResults() {
+	@Override public @NotNull List<ItemStack> rollResults() {
 		return rollResults(getRollableResultsExceptBlock());
 	}
 	public List<ProcessingOutput> getRollableResultsExceptBlock() {
