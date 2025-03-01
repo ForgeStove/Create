@@ -955,7 +955,8 @@ public abstract class Contraption {
 							targetPos.relative(face)
 					);
 				BlockState blockState = world.getBlockState(targetPos);
-				if (blockState.getDestroySpeed(world, targetPos) == -1 || (
+				float worldHardness = blockState.getDestroySpeed(world, targetPos);
+				if (worldHardness < 0 || state.getDestroySpeed(world, targetPos) < worldHardness || (
 						state.getCollisionShape(world, targetPos).isEmpty() && !blockState.getCollisionShape(
 								world,
 								targetPos
@@ -963,7 +964,13 @@ public abstract class Contraption {
 				)) {
 					if (targetPos.getY() == world.getMinBuildHeight()) targetPos = targetPos.above();
 					world.levelEvent(2001, targetPos, Block.getId(state));
-					Block.dropResources(state, world, targetPos, null);
+					BlockEntity blockEntity = world.getBlockEntity(targetPos);
+					world.removeBlockEntity(targetPos);
+					world.setBlock(targetPos, state, Block.UPDATE_NONE);
+					addBlockEntity(world, transform, block, targetPos, state);
+					world.destroyBlock(targetPos, true);
+					world.setBlock(targetPos, blockState, Block.UPDATE_NONE);
+					if (blockEntity != null) world.setBlockEntity(blockEntity);
 					continue;
 				}
 				if (state.getBlock() instanceof SimpleWaterloggedBlock
@@ -981,37 +988,7 @@ public abstract class Contraption {
 					state = Blocks.SCULK_SHRIEKER.defaultBlockState();
 				}
 				world.setBlock(targetPos, state, Block.UPDATE_MOVE_BY_PISTON | Block.UPDATE_ALL);
-				boolean verticalRotation = transform.rotationAxis == null || transform.rotationAxis.isHorizontal();
-				verticalRotation = verticalRotation && transform.rotation != Rotation.NONE;
-				if (verticalRotation) {
-					if (state.getBlock() instanceof RopeBlock
-							|| state.getBlock() instanceof MagnetBlock
-							|| state.getBlock() instanceof DoorBlock) world.destroyBlock(targetPos, true);
-				}
-				BlockEntity blockEntity = world.getBlockEntity(targetPos);
-				CompoundTag tag = block.nbt();
-				// Temporary fix: Calling load(CompoundTag tag) on a Sculk sensor causes it to not react to vibrations.
-				if (state.is(Blocks.SCULK_SENSOR) || state.is(Blocks.SCULK_SHRIEKER)) tag = null;
-				if (blockEntity != null) tag = NBTProcessors.process(state, blockEntity, tag, false);
-				if (blockEntity != null && tag != null) {
-					tag.putInt("x", targetPos.getX());
-					tag.putInt("y", targetPos.getY());
-					tag.putInt("z", targetPos.getZ());
-					if (verticalRotation && blockEntity instanceof PulleyBlockEntity) {
-						tag.remove("Offset");
-						tag.remove("InitialOffset");
-					}
-					if (blockEntity instanceof IMultiBlockEntityContainer) {
-						if (tag.contains("LastKnownPos") || capturedMultiblocks.isEmpty()) {
-							tag.put("LastKnownPos",
-									NbtUtils.writeBlockPos(BlockPos.ZERO.below(Integer.MAX_VALUE - 1)));
-							tag.remove("Controller");
-						}
-					}
-					blockEntity.load(tag);
-					storage.addStorageToWorld(block, blockEntity);
-				}
-				transform.apply(blockEntity);
+				addBlockEntity(world, transform, block, targetPos, state);
 			}
 		}
 		for (StructureBlockInfo block : blocks.values()) {
@@ -1034,6 +1011,45 @@ public abstract class Contraption {
 			if (!world.isClientSide) world.addFreshEntity(new SuperGlueEntity(world, box));
 		}
 		storage.clear();
+	}
+	private void addBlockEntity(
+			Level world,
+			StructureTransform transform,
+			StructureBlockInfo block,
+			BlockPos targetPos,
+			BlockState state
+	) {
+		boolean verticalRotation = transform.rotationAxis == null || transform.rotationAxis.isHorizontal();
+		verticalRotation = verticalRotation && transform.rotation != Rotation.NONE;
+		if (verticalRotation) {
+			if (state.getBlock() instanceof RopeBlock
+					|| state.getBlock() instanceof MagnetBlock
+					|| state.getBlock() instanceof DoorBlock) world.destroyBlock(targetPos, true);
+		}
+		BlockEntity blockEntity = world.getBlockEntity(targetPos);
+		CompoundTag tag = block.nbt();
+		// Temporary fix: Calling load(CompoundTag tag) on a Sculk sensor causes it to not react to vibrations.
+		if (state.is(Blocks.SCULK_SENSOR) || state.is(Blocks.SCULK_SHRIEKER)) tag = null;
+		if (blockEntity != null) tag = NBTProcessors.process(state, blockEntity, tag, false);
+		if (blockEntity != null && tag != null) {
+			tag.putInt("x", targetPos.getX());
+			tag.putInt("y", targetPos.getY());
+			tag.putInt("z", targetPos.getZ());
+			if (verticalRotation && blockEntity instanceof PulleyBlockEntity) {
+				tag.remove("Offset");
+				tag.remove("InitialOffset");
+			}
+			if (blockEntity instanceof IMultiBlockEntityContainer) {
+				if (tag.contains("LastKnownPos") || capturedMultiblocks.isEmpty()) {
+					tag.put("LastKnownPos",
+							NbtUtils.writeBlockPos(BlockPos.ZERO.below(Integer.MAX_VALUE - 1)));
+					tag.remove("Controller");
+				}
+			}
+			blockEntity.load(tag);
+			storage.addStorageToWorld(block, blockEntity);
+		}
+		transform.apply(blockEntity);
 	}
 	protected void translateMultiblockControllers(StructureTransform transform) {
 		if (transform.rotationAxis != null && transform.rotationAxis != Axis.Y && transform.rotation != Rotation.NONE) {
