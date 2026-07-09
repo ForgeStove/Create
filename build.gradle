@@ -17,7 +17,7 @@ version = mod_version + (dev && buildNumber != null ? "-${buildNumber}" : "")
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 java.withSourcesJar()
-java.withJavadocJar()
+// java.withJavadocJar()
 
 println("Java: ${System.getProperty("java.version")}, JVM: ${System.getProperty("java.vm.version")} (${System.getProperty("java.vendor")}), Arch: ${System.getProperty("os.arch")}")
 
